@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +69,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+=======
+# Application-de-Recrutement
+SmartRecruit est une plateforme de recrutement orientée Business Intelligence combinant développement web, analyse de données et aide à la décision. L’introduction de trois acteurs principaux (Administrateur, Recruteur et Candidat) permet une architecture ouverte et évolutive adaptée aux besoins modernes du recrutement.
+>>>>>>> 640861cccc68c16e376b5b7382469fcd3500f346
