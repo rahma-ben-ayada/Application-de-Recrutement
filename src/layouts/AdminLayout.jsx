@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../components/common/Sidebar';
-import Navbar from '../components/common/Navbar';
+import Header from '../components/common/Header';
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children, title = 'Dashboard' }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>
       <Sidebar role="admin" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Navbar />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Header title={title} />
         <main style={{
           flex: 1,
           padding: '32px 40px',
-          background: '#F8FAFC',
+          overflowY: 'auto',
         }}>
           {children}
         </main>
