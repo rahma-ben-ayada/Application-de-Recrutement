@@ -10,16 +10,16 @@ export default function Button({
 }) {
   const styles = {
     primary: {
-      background: 'var(--color-primary)',
-      color: '#fff',
+      background: '#1E3A8A',
+      color: '#FFFFFF',
       border: 'none',
       boxShadow: '0 4px 16px rgba(30,58,138,.25)',
     },
     outline: {
       background: 'transparent',
-      color: 'var(--color-primary)',
-      border: '1.5px solid var(--color-primary)',
-    }
+      color: '#1E3A8A',
+      border: '1.5px solid #1E3A8A',
+    },
   };
 
   return (
@@ -42,7 +42,7 @@ export default function Button({
         alignItems: 'center',
         justifyContent: 'center',
         gap: '8px',
-        transition: '220ms cubic-bezier(.4,0,.2,1)',
+        color: '#FFFFFF',
       }}
     >
       {children}
