@@ -28,18 +28,21 @@ export default function Login() {
     setErrors(e2);
     if (Object.keys(e2).length) return;
     setLoading(true);
+    setAlert(null);
+
     setTimeout(() => {
       setLoading(false);
-      // Simulation rôles — à remplacer par API
       if (form.email.includes('admin')) {
-        login({ name: 'Admin', email: form.email, role: 'admin' });
+        login({ name: 'Administrateur', email: form.email, role: 'admin' });
         navigate('/admin/dashboard');
       } else if (form.email.includes('recruteur')) {
-        login({ name: 'Recruteur', email: form.email, role: 'recruteur' });
+        login({ name: 'Recruteur RH', email: form.email, role: 'recruteur' });
         navigate('/recruteur/dashboard');
-      } else {
+      } else if (form.email.includes('candidat')) {
         login({ name: 'Candidat', email: form.email, role: 'candidat' });
-        navigate('/candidat/dashboard');
+        navigate('/candidat/offres');
+      } else {
+        setAlert({ type: 'error', msg: 'Email non reconnu. Utilisez admin@..., recruteur@... ou candidat@...' });
       }
     }, 1200);
   };
@@ -52,23 +55,48 @@ export default function Login() {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
     }}>
-      {/* Panel gauche */}
+
+      {/* ===== Panel gauche ===== */}
       <div style={{
         background: '#0F172A',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         padding: '60px',
+        position: 'relative',
+        overflow: 'hidden',
       }}>
+        {/* Cercle décoratif */}
+        <div style={{
+          position: 'absolute',
+          width: '500px', height: '500px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(37,99,235,.3) 0%, transparent 70%)',
+          top: '-150px', left: '-100px',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute',
+          width: '300px', height: '300px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(96,165,250,.15) 0%, transparent 70%)',
+          bottom: '-80px', right: '-50px',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Logo */}
         <div style={{
           fontFamily: 'Syne, sans-serif',
           fontSize: '28px',
           fontWeight: '800',
           color: '#fff',
-          marginBottom: '48px',
+          marginBottom: '56px',
+          position: 'relative', zIndex: 1,
         }}>
           Smart<span style={{ color: '#60A5FA' }}>Recruit</span>
         </div>
+
+        {/* Titre */}
         <h1 style={{
           fontFamily: 'Syne, sans-serif',
           fontSize: '42px',
@@ -76,15 +104,49 @@ export default function Login() {
           color: '#fff',
           lineHeight: '1.15',
           marginBottom: '20px',
+          position: 'relative', zIndex: 1,
         }}>
-          Recrutez les <span style={{ color: '#60A5FA' }}>meilleurs</span> talents
+          Recrutez les{' '}
+          <span style={{ color: '#60A5FA' }}>meilleurs</span>{' '}
+          talents
         </h1>
-        <p style={{ fontSize: '16px', color: '#94A3B8', lineHeight: '1.7' }}>
+
+        <p style={{
+          fontSize: '16px',
+          color: '#94A3B8',
+          lineHeight: '1.7',
+          maxWidth: '380px',
+          position: 'relative', zIndex: 1,
+        }}>
           Gérez vos candidatures et prenez de meilleures décisions grâce à SmartRecruit.
         </p>
+
+        {/* Stats */}
+        <div style={{
+          display: 'flex', gap: '32px', marginTop: '56px',
+          position: 'relative', zIndex: 1,
+        }}>
+          {[
+            { value: '12k+', label: 'Candidats actifs' },
+            { value: '340+', label: 'Entreprises' },
+            { value: '98%',  label: 'Satisfaction' },
+          ].map((s, i) => (
+            <div key={i}>
+              <div style={{
+                fontFamily: 'Syne, sans-serif',
+                fontSize: '26px', fontWeight: '800', color: '#60A5FA',
+              }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '2px' }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Panel droit */}
+      {/* ===== Panel droit ===== */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -102,7 +164,11 @@ export default function Login() {
           }}>
             Bon retour 👋
           </h2>
-          <p style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '32px' }}>
+          <p style={{
+            fontSize: '14px',
+            color: '#94A3B8',
+            marginBottom: '32px',
+          }}>
             Connectez-vous à votre espace SmartRecruit
           </p>
 
@@ -137,12 +203,9 @@ export default function Login() {
                 type="button"
                 onClick={() => navigate('/forgot-password')}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#2563EB',
-                  fontSize: '13.5px',
-                  cursor: 'pointer',
-                  fontFamily: 'DM Sans, sans-serif',
+                  background: 'none', border: 'none',
+                  color: '#2563EB', fontSize: '13.5px',
+                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
                   fontWeight: '500',
                 }}
               >
@@ -155,9 +218,46 @@ export default function Login() {
             </Button>
           </form>
 
+          {/* Comptes de test */}
+          <div style={{
+            marginTop: '20px',
+            background: '#F8FAFC',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            border: '1px solid #E2E8F0',
+          }}>
+            <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+              Comptes de test
+            </div>
+            {[
+              { role: 'Admin',     email: 'admin@test.com',     color: '#1E3A8A' },
+              { role: 'Recruteur', email: 'recruteur@test.com', color: '#059669' },
+              { role: 'Candidat',  email: 'candidat@test.com',  color: '#7C3AED' },
+            ].map((c, i) => (
+              <div
+                key={i}
+                onClick={() => setForm({ email: c.email, password: '12345678' })}
+                style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', padding: '6px 0',
+                  borderBottom: i < 2 ? '1px solid #F1F5F9' : 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{
+                  fontSize: '12px', fontWeight: '600', color: c.color,
+                  background: c.color + '15', padding: '2px 8px', borderRadius: '4px',
+                }}>
+                  {c.role}
+                </span>
+                <span style={{ fontSize: '12px', color: '#94A3B8' }}>{c.email}</span>
+              </div>
+            ))}
+          </div>
+
           <p style={{
             textAlign: 'center',
-            marginTop: '24px',
+            marginTop: '20px',
             fontSize: '14px',
             color: '#475569',
           }}>
@@ -165,12 +265,9 @@ export default function Login() {
             <button
               onClick={() => navigate('/register')}
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#2563EB',
-                cursor: 'pointer',
-                fontWeight: '500',
-                fontFamily: 'DM Sans, sans-serif',
+                background: 'none', border: 'none',
+                color: '#2563EB', cursor: 'pointer',
+                fontWeight: '500', fontFamily: 'DM Sans, sans-serif',
               }}
             >
               S'inscrire
