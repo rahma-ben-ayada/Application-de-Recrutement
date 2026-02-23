@@ -14,12 +14,12 @@ const menus = {
     { label: 'Entretiens',      icon: '🎯', path: '/recruteur/entretiens' },
     { label: 'Profil',          icon: '👤', path: '/recruteur/profil' },
   ],
-  candidat: [
-    { label: 'Offres d\'emploi', icon: '🔍', path: '/candidat/offres' },
-    { label: 'Mes Candidatures', icon: '📨', path: '/candidat/candidatures' },
-    { label: 'Mon CV',           icon: '📄', path: '/candidat/cv' },
-    { label: 'Profil',           icon: '👤', path: '/candidat/profil' },
-  ],
+ candidat: [
+  { label: 'Offres d\'emploi',   icon: '🔍', path: '/candidat/offres' },
+  { label: 'Mes Candidatures',   icon: '📨', path: '/candidat/candidatures' },
+  { label: 'Mon Profil & CV',    icon: '👤', path: '/candidat/profil' },
+],
+
 };
 
 export default function Sidebar({ role = 'admin' }) {

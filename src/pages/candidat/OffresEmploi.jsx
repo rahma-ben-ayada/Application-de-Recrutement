@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import RecruteurLayout from '../../layouts/RecruteurLayout';
 
-// Offres du recruteur connecté (mes offres)
 const mesOffresData = [
   {
     id: 1,
@@ -14,6 +13,7 @@ const mesOffresData = [
     description: 'Nous recherchons un développeur React expérimenté...',
     recruteur: 'Moi',
     entreprise: 'Mon Entreprise',
+    salaire: '2500 - 3500 TND',
   },
   {
     id: 2,
@@ -26,10 +26,10 @@ const mesOffresData = [
     description: 'Rejoignez notre équipe data pour analyser...',
     recruteur: 'Moi',
     entreprise: 'Mon Entreprise',
+    salaire: '3000 - 4000 TND',
   },
 ];
 
-// Offres des autres recruteurs (consultation uniquement)
 const autresOffresData = [
   {
     id: 3,
@@ -42,6 +42,7 @@ const autresOffresData = [
     description: 'Créer des interfaces utilisateur modernes...',
     recruteur: 'Sophie Lambert',
     entreprise: 'Tech Corp',
+    salaire: '800 - 1200 TND',
   },
   {
     id: 4,
@@ -54,6 +55,7 @@ const autresOffresData = [
     description: 'Gérer les projets informatiques...',
     recruteur: 'Marc Dubois',
     entreprise: 'StartUp RH',
+    salaire: '3500 - 4500 TND',
   },
   {
     id: 5,
@@ -66,16 +68,17 @@ const autresOffresData = [
     description: 'Développement d\'applications Java...',
     recruteur: 'Julie Petit',
     entreprise: 'Big Finance',
+    salaire: '2800 - 3800 TND',
   },
 ];
 
 const emptyForm = {
-  titre: '', lieu: '', type: 'CDI', description: '', status: true,
+  titre: '', lieu: '', type: 'CDI', description: '', status: true, salaire: '',
 };
 
 export default function MesOffres() {
   const [mesOffres, setMesOffres] = useState(mesOffresData);
-  const [activeTab, setActiveTab] = useState('mes'); // 'mes' | 'autres'
+  const [activeTab, setActiveTab] = useState('mes');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editOffre, setEditOffre] = useState(null);
@@ -141,7 +144,7 @@ export default function MesOffres() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
         {[
-          { key: 'mes',    label: `Mes offres (${mesOffres.length})`,              icon: '📋' },
+          { key: 'mes',    label: `Mes offres (${mesOffres.length})`,                     icon: '📋' },
           { key: 'autres', label: `Offres des autres recruteurs (${autresOffresData.length})`, icon: '👁' },
         ].map(t => (
           <button
@@ -162,16 +165,15 @@ export default function MesOffres() {
         ))}
       </div>
 
-      {/* ======================== MES OFFRES ======================== */}
+      {/* ======= MES OFFRES ======= */}
       {activeTab === 'mes' && (
         <>
-          {/* Stats + actions */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               {[
-                { label: 'Total',    value: mesOffres.length,                          color: '#1E3A8A' },
-                { label: 'Actives',  value: mesOffres.filter(o => o.status).length,   color: '#059669' },
-                { label: 'Inactives',value: mesOffres.filter(o => !o.status).length,  color: '#EF4444' },
+                { label: 'Total',     value: mesOffres.length,                         color: '#1E3A8A' },
+                { label: 'Actives',   value: mesOffres.filter(o => o.status).length,  color: '#059669' },
+                { label: 'Inactives', value: mesOffres.filter(o => !o.status).length, color: '#EF4444' },
               ].map((s, i) => (
                 <div key={i} style={{
                   background: '#fff', borderRadius: '10px', padding: '10px 20px',
@@ -198,7 +200,6 @@ export default function MesOffres() {
             </div>
           </div>
 
-          {/* Table mes offres */}
           <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 340px' : '1fr', gap: '20px', alignItems: 'start' }}>
             <TableOffres
               offres={filteredMes}
@@ -209,8 +210,6 @@ export default function MesOffres() {
               onToggle={toggleStatus}
               onDelete={deleteOffre}
             />
-
-            {/* Panel détail */}
             {selected && (
               <DetailPanel
                 offre={selected}
@@ -224,10 +223,9 @@ export default function MesOffres() {
         </>
       )}
 
-      {/* ======================== AUTRES OFFRES ======================== */}
+      {/* ======= AUTRES OFFRES ======= */}
       {activeTab === 'autres' && (
         <>
-          {/* Bandeau info */}
           <div style={{
             background: '#EFF6FF', border: '1px solid #BFDBFE',
             borderRadius: '10px', padding: '12px 20px',
@@ -253,7 +251,6 @@ export default function MesOffres() {
               selected={selected}
               onSelect={setSelected}
             />
-
             {selected && (
               <DetailPanel
                 offre={selected}
@@ -265,7 +262,7 @@ export default function MesOffres() {
         </>
       )}
 
-      {/* Modal Créer/Modifier */}
+      {/* ======= Modal ======= */}
       {showModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(15,23,42,.5)',
@@ -273,8 +270,9 @@ export default function MesOffres() {
         }} onClick={() => setShowModal(false)}>
           <div style={{
             background: '#fff', borderRadius: '16px', padding: '32px',
-            width: '100%', maxWidth: '480px',
+            width: '100%', maxWidth: '500px',
             boxShadow: '0 20px 48px rgba(15,23,42,.2)',
+            maxHeight: '90vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -284,30 +282,36 @@ export default function MesOffres() {
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
             </div>
 
-            {[
-              { label: 'Titre du poste', key: 'titre', type: 'text', placeholder: 'Ex: Développeur React' },
-              { label: 'Lieu',           key: 'lieu',  type: 'text', placeholder: 'Ex: Tunis, Remote...' },
-            ].map(f => (
-              <div key={f.key} style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}>{f.label}</label>
-                <input
-                  type={f.type} placeholder={f.placeholder}
-                  value={form[f.key]} onChange={set(f.key)}
-                  style={inputStyle}
-                />
-              </div>
-            ))}
-
+            {/* Titre */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>Type de contrat</label>
-              <select value={form.type} onChange={set('type')} style={inputStyle}>
-                <option>CDI</option>
-                <option>CDD</option>
-                <option>Stage</option>
-                <option>Freelance</option>
-              </select>
+              <label style={labelStyle}>Titre du poste *</label>
+              <input type="text" placeholder="Ex: Développeur React" value={form.titre} onChange={set('titre')} style={inputStyle} />
             </div>
 
+            {/* Lieu + Type */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={labelStyle}>Lieu</label>
+                <input type="text" placeholder="Ex: Tunis, Remote..." value={form.lieu} onChange={set('lieu')} style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Type de contrat</label>
+                <select value={form.type} onChange={set('type')} style={inputStyle}>
+                  <option>CDI</option>
+                  <option>CDD</option>
+                  <option>Stage</option>
+                  <option>Freelance</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Salaire */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={labelStyle}>Salaire</label>
+              <input type="text" placeholder="Ex: 2500 - 3500 TND" value={form.salaire} onChange={set('salaire')} style={inputStyle} />
+            </div>
+
+            {/* Description */}
             <div style={{ marginBottom: '24px' }}>
               <label style={labelStyle}>Description</label>
               <textarea
@@ -344,7 +348,7 @@ function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onD
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-            {['Titre', 'Entreprise', 'Lieu', 'Type', 'Candidatures', 'Date', 'Statut', 'Actions'].map(h => (
+            {['Titre', 'Entreprise', 'Lieu', 'Type', 'Salaire', 'Candidatures', 'Date', 'Statut', 'Actions'].map(h => (
               <th key={h} style={{
                 padding: '14px 16px', textAlign: 'left', fontSize: '11px',
                 fontWeight: '600', color: '#94A3B8',
@@ -361,15 +365,22 @@ function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onD
               borderBottom: i < offres.length - 1 ? '1px solid #F1F5F9' : 'none',
               background: selected?.id === o.id ? '#F0F9FF' : 'transparent',
             }}>
+              {/* Titre */}
               <td style={{ padding: '14px 16px' }}>
                 <div style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B' }}>{o.titre}</div>
               </td>
+
+              {/* Entreprise */}
               <td style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>
                 🏢 {o.entreprise}
               </td>
+
+              {/* Lieu */}
               <td style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>
                 📍 {o.lieu}
               </td>
+
+              {/* Type */}
               <td style={{ padding: '14px 16px' }}>
                 <span style={{
                   background: o.type === 'CDI' ? '#DBEAFE' : o.type === 'CDD' ? '#FFF7ED' : '#F0FDF4',
@@ -379,6 +390,19 @@ function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onD
                   {o.type}
                 </span>
               </td>
+
+              {/* Salaire */}
+              <td style={{ padding: '14px 16px' }}>
+                <span style={{
+                  background: '#F0FDF4', color: '#059669',
+                  padding: '4px 10px', borderRadius: '50px',
+                  fontSize: '12px', fontWeight: '500',
+                }}>
+                  💰 {o.salaire || 'Non précisé'}
+                </span>
+              </td>
+
+              {/* Candidatures */}
               <td style={{ padding: '14px 16px' }}>
                 <span style={{
                   background: '#DBEAFE', color: '#1E3A8A',
@@ -387,7 +411,11 @@ function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onD
                   {o.candidatures}
                 </span>
               </td>
+
+              {/* Date */}
               <td style={{ padding: '14px 16px', fontSize: '13px', color: '#94A3B8' }}>{o.date}</td>
+
+              {/* Statut */}
               <td style={{ padding: '14px 16px' }}>
                 <span style={{
                   background: o.status ? '#F0FDF4' : '#FEF2F2',
@@ -397,33 +425,22 @@ function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onD
                   {o.status ? '✓ Active' : '✕ Inactive'}
                 </span>
               </td>
+
+              {/* Actions */}
               <td style={{ padding: '14px 16px' }}>
                 <div style={{ display: 'flex', gap: '6px' }}>
-                  {/* Bouton voir — toujours disponible */}
-                  <button
-                    onClick={() => onSelect(selected?.id === o.id ? null : o)}
-                    style={btnStyle('#DBEAFE', '#1E3A8A')}
-                  >
-                    👁
-                  </button>
-
-                  {/* Boutons CRUD — seulement pour mes offres */}
+                  <button onClick={() => onSelect(selected?.id === o.id ? null : o)} style={btnStyle('#DBEAFE', '#1E3A8A')}>👁</button>
                   {isMine && (
                     <>
                       <button onClick={() => onEdit(o)} style={btnStyle('#F0FDF4', '#059669')}>✏️</button>
-                      <button onClick={() => onToggle(o.id)} style={btnStyle('#FFF7ED', '#FB923C')}>
-                        {o.status ? '⏸' : '▶'}
-                      </button>
+                      <button onClick={() => onToggle(o.id)} style={btnStyle('#FFF7ED', '#FB923C')}>{o.status ? '⏸' : '▶'}</button>
                       <button onClick={() => onDelete(o.id)} style={btnStyle('#FEF2F2', '#EF4444')}>🗑</button>
                     </>
                   )}
-
-                  {/* Badge lecture seule pour les autres offres */}
                   {!isMine && (
                     <span style={{
                       background: '#F1F5F9', color: '#94A3B8',
-                      padding: '4px 10px', borderRadius: '6px',
-                      fontSize: '11px', fontWeight: '500',
+                      padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '500',
                     }}>
                       Lecture seule
                     </span>
@@ -460,7 +477,6 @@ function DetailPanel({ offre, isMine, onClose, onEdit, onDelete }) {
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
       </div>
 
-      {/* Badge si lecture seule */}
       {!isMine && (
         <div style={{
           background: '#EFF6FF', border: '1px solid #BFDBFE',
@@ -477,13 +493,14 @@ function DetailPanel({ offre, isMine, onClose, onEdit, onDelete }) {
       </div>
 
       {[
-        { label: 'Entreprise',    value: offre.entreprise },
-        { label: 'Recruteur',     value: offre.recruteur },
-        { label: 'Lieu',          value: offre.lieu },
-        { label: 'Type',          value: offre.type },
-        { label: 'Candidatures',  value: `${offre.candidatures} candidats` },
-        { label: 'Date',          value: offre.date },
-        { label: 'Statut',        value: offre.status ? 'Active' : 'Inactive' },
+        { label: 'Entreprise',   value: offre.entreprise },
+        { label: 'Recruteur',    value: offre.recruteur },
+        { label: 'Lieu',         value: offre.lieu },
+        { label: 'Type',         value: offre.type },
+        { label: 'Salaire',      value: offre.salaire || 'Non précisé' },
+        { label: 'Candidatures', value: `${offre.candidatures} candidats` },
+        { label: 'Date',         value: offre.date },
+        { label: 'Statut',       value: offre.status ? 'Active' : 'Inactive' },
       ].map((f, i) => (
         <div key={i} style={{
           display: 'flex', justifyContent: 'space-between',
@@ -499,7 +516,6 @@ function DetailPanel({ offre, isMine, onClose, onEdit, onDelete }) {
         <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.6' }}>{offre.description}</p>
       </div>
 
-      {/* Actions seulement pour mes offres */}
       {isMine && (
         <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
           <button onClick={() => onEdit(offre)} style={saveBtnStyle}>✏️ Modifier</button>
