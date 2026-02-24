@@ -6,7 +6,7 @@ import { AuthProvider } from '../context/AuthContext';
 import Login          from '../pages/auth/Login';
 import Register       from '../pages/auth/Register';
 import ForgotPassword from '../pages/auth/ForgotPassword';
-import LandingPage from '../pages/LandingPage';
+import LandingPage    from '../pages/LandingPage';
 
 // Admin
 import DashboardAdmin        from '../pages/admin/DashboardAdmin';
@@ -35,12 +35,14 @@ export default function AppRoutes() {
       <AuthProvider>
         <Routes>
 
+          {/* ===== Landing Page ===== */}
+          <Route path="/"     element={<LandingPage />} />
+          <Route path="/home" element={<LandingPage />} />
+
           {/* ===== Auth ===== */}
           <Route path="/login"           element={<Login />} />
           <Route path="/register"        element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/"      element={<LandingPage />} />
-          <Route path="/home"  element={<LandingPage />} />
 
           {/* ===== Admin ===== */}
           <Route path="/admin" element={<ProtectedRoute role="admin" />}>
@@ -67,9 +69,8 @@ export default function AppRoutes() {
             <Route path="profil"       element={<ProfilCandidat />} />
           </Route>
 
-          {/* ===== Redirections ===== */}
-          <Route path="/"  element={<Navigate to="/login" replace />} />
-          <Route path="*"  element={<Navigate to="/login" replace />} />
+          {/* ===== 404 ===== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
       </AuthProvider>
