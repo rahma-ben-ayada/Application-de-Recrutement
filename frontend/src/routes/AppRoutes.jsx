@@ -26,8 +26,9 @@ import ProfilRecruteur    from '../pages/recruteur/Profil';
 // Candidat
 import OffresEmploi    from '../pages/candidat/OffresEmploi';
 import MesCandidatures from '../pages/candidat/MesCandidatures';
-import ProfilCandidat  from '../pages/candidat/Profil';
+import ProfilCandidat     from '../pages/candidat/Profil';
 import ParametresCandidat from '../pages/candidat/Parametres';
+import MonCV              from '../pages/candidat/MonCV';
 
 import ProtectedRoute from './ProtectedRoute';
 
@@ -71,7 +72,8 @@ export default function AppRoutes() {
           <Route path="offres"       element={<OffresEmploi />} />
           <Route path="candidatures" element={<MesCandidatures />} />
           <Route path="profil"       element={<ProfilCandidat />} />
-          <Route path="parametres"   element={<ParametresCandidat />} />  {/* ✅ Nouveau */}
+          <Route path="parametres" element={<ParametresCandidat />} />
+          <Route path="cv"         element={<MonCV />} />
           </Route>
 
           {/* ===== 404 ===== */}
