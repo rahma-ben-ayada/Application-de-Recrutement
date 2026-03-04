@@ -15,10 +15,14 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-app.use('/api/auth',   require('./routes/authRoutes'));
-app.use('/api/offres', require('./routes/offreRoutes'));
+app.use('/api/auth',          require('./routes/authRoutes'));
+app.use('/api/users',         require('./routes/userRoutes'));
+app.use('/api/offres',        require('./routes/offreRoutes'));
+app.use('/api/candidatures',  require('./routes/candidatureRoutes'));
 
 // Route test
 app.get('/', (req, res) => {
@@ -33,7 +37,6 @@ app.use((err, req, res, next) => {
     message: err.message || 'Erreur serveur interne',
   });
 });
-app.use('/api/users', require('./routes/userRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

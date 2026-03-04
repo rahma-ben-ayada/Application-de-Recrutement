@@ -11,6 +11,10 @@ export default function Header({ title }) {
     navigate('/login');
   };
 
+  // ✅ FIX : user.nom au lieu de user.name
+  const displayName = user?.nom || user?.name || 'Utilisateur';
+  const displayRole = user?.role || '';
+
   return (
     <div style={{
       height: '64px',
@@ -25,7 +29,6 @@ export default function Header({ title }) {
       top: 0,
       zIndex: 100,
     }}>
-      {/* Titre page */}
       <h2 style={{
         fontFamily: 'Syne, sans-serif',
         fontSize: '18px',
@@ -35,14 +38,13 @@ export default function Header({ title }) {
         {title}
       </h2>
 
-      {/* Profil + Déconnexion */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '14px', fontWeight: '500', color: '#1E293B' }}>
-            {user?.name || 'Administrateur'}
+          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>
+            {displayName}
           </div>
-          <div style={{ fontSize: '12px', color: '#94A3B8' }}>
-            {user?.role || 'admin'}
+          <div style={{ fontSize: '12px', color: '#94A3B8', textTransform: 'capitalize' }}>
+            {displayRole}
           </div>
         </div>
 
@@ -54,23 +56,20 @@ export default function Header({ title }) {
           color: '#fff', fontWeight: '700', fontSize: '15px',
           fontFamily: 'Syne, sans-serif',
         }}>
-          {(user?.name || 'A')[0].toUpperCase()}
+          {displayName[0].toUpperCase()}
         </div>
 
-        <button
-          onClick={handleLogout}
-          style={{
-            background: '#FEF2F2',
-            color: '#EF4444',
-            border: 'none',
-            borderRadius: '50px',
-            padding: '8px 16px',
-            fontSize: '13px',
-            cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif',
-            fontWeight: '500',
-          }}
-        >
+        <button onClick={handleLogout} style={{
+          background: '#FEF2F2',
+          color: '#EF4444',
+          border: 'none',
+          borderRadius: '50px',
+          padding: '8px 16px',
+          fontSize: '13px',
+          cursor: 'pointer',
+          fontFamily: 'DM Sans, sans-serif',
+          fontWeight: '500',
+        }}>
           Déconnexion
         </button>
       </div>

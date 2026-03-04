@@ -1,97 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RecruteurLayout from '../../layouts/RecruteurLayout';
-
-// Offres du recruteur connecté (mes offres)
-const mesOffresData = [
-  {
-    id: 1,
-    titre: 'Développeur React Senior',
-    lieu: 'Tunis',
-    type: 'CDI',
-    candidatures: 24,
-    status: true,
-    date: '2026-01-15',
-    description: 'Nous recherchons un développeur React expérimenté...',
-    recruteur: 'Moi',
-    entreprise: 'Mon Entreprise',
-  },
-  {
-    id: 2,
-    titre: 'Data Scientist',
-    lieu: 'Remote',
-    type: 'CDD',
-    candidatures: 18,
-    status: true,
-    date: '2026-01-20',
-    description: 'Rejoignez notre équipe data pour analyser...',
-    recruteur: 'Moi',
-    entreprise: 'Mon Entreprise',
-  },
-];
-
-// Offres des autres recruteurs (consultation uniquement)
-const autresOffresData = [
-  {
-    id: 3,
-    titre: 'UX/UI Designer',
-    lieu: 'Sfax',
-    type: 'Stage',
-    candidatures: 31,
-    status: true,
-    date: '2026-01-10',
-    description: 'Créer des interfaces utilisateur modernes...',
-    recruteur: 'Sophie Lambert',
-    entreprise: 'Tech Corp',
-  },
-  {
-    id: 4,
-    titre: 'Chef de projet IT',
-    lieu: 'Tunis',
-    type: 'CDI',
-    candidatures: 12,
-    status: true,
-    date: '2026-01-18',
-    description: 'Gérer les projets informatiques...',
-    recruteur: 'Marc Dubois',
-    entreprise: 'StartUp RH',
-  },
-  {
-    id: 5,
-    titre: 'Développeur Java',
-    lieu: 'Sousse',
-    type: 'CDI',
-    candidatures: 8,
-    status: false,
-    date: '2026-01-05',
-    description: 'Développement d\'applications Java...',
-    recruteur: 'Julie Petit',
-    entreprise: 'Big Finance',
-  },
-];
+import api from '../../utils/api';
 
 const emptyForm = {
-  titre: '', lieu: '', type: 'CDI', description: '', status: true,
+  titre: '', lieu: '', type: 'CDI', description: '', salaire: '', competences: '',
 };
 
 export default function MesOffres() {
-  const [mesOffres, setMesOffres] = useState(mesOffresData);
-  const [activeTab, setActiveTab] = useState('mes'); // 'mes' | 'autres'
+  const [mesOffres, setMesOffres] = useState([]);
+  const [toutesOffres, setToutesOffres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('mes');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editOffre, setEditOffre] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [selected, setSelected] = useState(null);
+  const [message, setMessage] = useState(null);
 
-  const filteredMes = mesOffres.filter(o =>
-    o.titre.toLowerCase().includes(search.toLowerCase()) ||
-    o.lieu.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    fetchMesOffres();
+    fetchToutesOffres();
+  }, []);
 
-  const filteredAutres = autresOffresData.filter(o =>
-    o.titre.toLowerCase().includes(search.toLowerCase()) ||
-    o.lieu.toLowerCase().includes(search.toLowerCase()) ||
-    o.entreprise.toLowerCase().includes(search.toLowerCase())
-  );
+  const fetchMesOffres = async () => {
+    try {
+      const data = await api('/offres/mes');
+      setMesOffres(data.offres);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchToutesOffres = async () => {
+    try {
+      const data = await api('/offres');
+      setToutesOffres(data.offres);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   const openCreate = () => {
     setEditOffre(null);
@@ -101,84 +56,160 @@ export default function MesOffres() {
 
   const openEdit = (offre) => {
     setEditOffre(offre);
-    setForm({ ...offre });
+    setForm({
+      titre: offre.titre,
+      lieu: offre.lieu,
+      type: offre.type,
+      description: offre.description,
+      salaire: offre.salaire || '',
+      competences: (offre.competences || []).join(', '),
+    });
     setShowModal(true);
   };
 
-  const saveOffre = () => {
+  const saveOffre = async () => {
     if (!form.titre.trim()) return alert('Le titre est requis');
-    if (editOffre) {
-      setMesOffres(os => os.map(o => o.id === editOffre.id ? { ...o, ...form } : o));
-    } else {
-      setMesOffres(os => [...os, {
-        ...form,
-        id: Date.now(),
-        candidatures: 0,
-        date: new Date().toISOString().split('T')[0],
-        recruteur: 'Moi',
-        entreprise: 'Mon Entreprise',
-      }]);
+    if (!form.lieu.trim()) return alert('Le lieu est requis');
+
+    const payload = {
+      ...form,
+      competences: form.competences
+        ? form.competences.split(',').map(c => c.trim()).filter(Boolean)
+        : [],
+    };
+
+    try {
+      if (editOffre) {
+        await api(`/offres/${editOffre._id}`, 'PUT', payload);
+        showMessage('success', '✅ Offre modifiée avec succès !');
+      } else {
+        await api('/offres', 'POST', payload);
+        showMessage('success', '✅ Offre créée avec succès !');
+      }
+      setShowModal(false);
+      fetchMesOffres();
+    } catch (err) {
+      showMessage('error', err.message);
     }
-    setShowModal(false);
   };
 
-  const deleteOffre = (id) => {
-    if (window.confirm('Supprimer cette offre ?')) {
-      setMesOffres(os => os.filter(o => o.id !== id));
-      if (selected?.id === id) setSelected(null);
+  const deleteOffre = async (id) => {
+    if (!window.confirm('Supprimer cette offre ?')) return;
+    try {
+      await api(`/offres/${id}`, 'DELETE');
+      showMessage('success', '🗑️ Offre supprimée');
+      if (selected?._id === id) setSelected(null);
+      fetchMesOffres();
+    } catch (err) {
+      showMessage('error', err.message);
     }
   };
 
-  const toggleStatus = (id) => {
-    setMesOffres(os => os.map(o => o.id === id ? { ...o, status: !o.status } : o));
+  const toggleStatus = async (offre) => {
+    try {
+      await api(`/offres/${offre._id}`, 'PUT', {
+        status: offre.status === 'active' ? 'closed' : 'active',
+      });
+      fetchMesOffres();
+    } catch (err) {
+      showMessage('error', err.message);
+    }
   };
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const filteredMes = mesOffres.filter(o =>
+    o.titre?.toLowerCase().includes(search.toLowerCase()) ||
+    o.lieu?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredTous = toutesOffres.filter(o =>
+    o.titre?.toLowerCase().includes(search.toLowerCase()) ||
+    o.lieu?.toLowerCase().includes(search.toLowerCase()) ||
+    o.recruteur?.entreprise?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const typeBadge = (type) => {
+    const styles = {
+      CDI:       { bg: '#DBEAFE', color: '#1E3A8A' },
+      CDD:       { bg: '#FEF3C7', color: '#D97706' },
+      Stage:     { bg: '#D1FAE5', color: '#059669' },
+      Freelance: { bg: '#EDE9FE', color: '#7C3AED' },
+    };
+    const s = styles[type] || { bg: '#F1F5F9', color: '#475569' };
+    return (
+      <span style={{
+        background: s.bg, color: s.color,
+        padding: '4px 10px', borderRadius: '50px',
+        fontSize: '12px', fontWeight: '600',
+      }}>
+        {type}
+      </span>
+    );
+  };
+
   return (
     <RecruteurLayout title="Offres d'emploi">
+
+      {/* Message */}
+      {message && (
+        <div style={{
+          padding: '12px 16px', borderRadius: '10px', marginBottom: '20px',
+          background: message.type === 'success' ? '#D1FAE5' : '#FEE2E2',
+          color: message.type === 'success' ? '#059669' : '#EF4444',
+          fontSize: '14px', fontWeight: '500',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          {message.text}
+          <button onClick={() => setMessage(null)} style={{
+            background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'inherit',
+          }}>✕</button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
         {[
-          { key: 'mes',    label: `Mes offres (${mesOffres.length})`,              icon: '📋' },
-          { key: 'autres', label: `Offres des autres recruteurs (${autresOffresData.length})`, icon: '👁' },
+          { key: 'mes',  label: `📋 Mes offres (${mesOffres.length})` },
+          { key: 'tous', label: `👁 Toutes les offres (${toutesOffres.length})` },
         ].map(t => (
-          <button
-            key={t.key}
-            onClick={() => { setActiveTab(t.key); setSelected(null); setSearch(''); }}
-            style={{
-              padding: '10px 20px', borderRadius: '10px', border: 'none',
-              cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-              fontSize: '14px', fontWeight: '500',
-              background: activeTab === t.key ? '#1E3A8A' : '#fff',
-              color: activeTab === t.key ? '#fff' : '#475569',
-              boxShadow: '0 1px 3px rgba(15,23,42,.08)',
-              display: 'flex', alignItems: 'center', gap: '8px',
-            }}
-          >
-            {t.icon} {t.label}
+          <button key={t.key} onClick={() => { setActiveTab(t.key); setSelected(null); setSearch(''); }} style={{
+            padding: '10px 20px', borderRadius: '10px', border: 'none',
+            cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+            fontSize: '14px', fontWeight: '500',
+            background: activeTab === t.key ? '#1E3A8A' : '#fff',
+            color: activeTab === t.key ? '#fff' : '#475569',
+            boxShadow: '0 1px 3px rgba(15,23,42,.08)',
+          }}>
+            {t.label}
           </button>
         ))}
       </div>
 
-      {/* ======================== MES OFFRES ======================== */}
+      {/* ===== MES OFFRES ===== */}
       {activeTab === 'mes' && (
         <>
           {/* Stats + actions */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               {[
-                { label: 'Total',    value: mesOffres.length,                          color: '#1E3A8A' },
-                { label: 'Actives',  value: mesOffres.filter(o => o.status).length,   color: '#059669' },
-                { label: 'Inactives',value: mesOffres.filter(o => !o.status).length,  color: '#EF4444' },
+                { label: 'Total',     value: mesOffres.length,                                    color: '#1E3A8A', bg: '#DBEAFE' },
+                { label: 'Actives',   value: mesOffres.filter(o => o.status === 'active').length,  color: '#059669', bg: '#D1FAE5' },
+                { label: 'Fermées',   value: mesOffres.filter(o => o.status === 'closed').length,  color: '#EF4444', bg: '#FEE2E2' },
               ].map((s, i) => (
                 <div key={i} style={{
-                  background: '#fff', borderRadius: '10px', padding: '10px 20px',
+                  background: '#fff', borderRadius: '12px', padding: '12px 20px',
                   border: '1px solid #E2E8F0', textAlign: 'center',
+                  display: 'flex', alignItems: 'center', gap: '12px',
                 }}>
-                  <div style={{ fontSize: '20px', fontWeight: '800', color: s.color, fontFamily: 'Syne, sans-serif' }}>
-                    {s.value}
+                  <div style={{
+                    width: '36px', height: '36px', borderRadius: '8px',
+                    background: s.bg, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <div style={{ fontSize: '16px', fontWeight: '800', color: s.color, fontFamily: 'Syne, sans-serif' }}>
+                      {s.value}
+                    </div>
                   </div>
                   <div style={{ fontSize: '12px', color: '#94A3B8' }}>{s.label}</div>
                 </div>
@@ -188,8 +219,7 @@ export default function MesOffres() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <input
                 placeholder="🔍 Rechercher..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
+                value={search} onChange={e => setSearch(e.target.value)}
                 style={searchStyle}
               />
               <button onClick={openCreate} style={createBtnStyle}>
@@ -198,69 +228,228 @@ export default function MesOffres() {
             </div>
           </div>
 
-          {/* Table mes offres */}
-          <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 340px' : '1fr', gap: '20px', alignItems: 'start' }}>
-            <TableOffres
-              offres={filteredMes}
-              isMine={true}
-              selected={selected}
-              onSelect={setSelected}
-              onEdit={openEdit}
-              onToggle={toggleStatus}
-              onDelete={deleteOffre}
-            />
+          {/* Table */}
+          <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 340px' : '1fr', gap: '20px' }}>
+            <div style={{
+              background: '#fff', borderRadius: '16px',
+              border: '1px solid #E2E8F0', overflow: 'hidden',
+            }}>
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>Chargement...</div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#1E3A8A' }}>
+                        {['Titre', 'Lieu', 'Type', 'Salaire', 'Status', 'Date', 'Actions'].map(h => (
+                          <th key={h} style={{
+                            padding: '14px 16px', textAlign: 'left',
+                            color: '#fff', fontSize: '13px', fontWeight: '600',
+                            fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
+                          }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMes.map((o, i) => (
+                        <tr key={o._id} style={{
+                          borderBottom: '1px solid #F1F5F9',
+                          background: selected?._id === o._id ? '#F0F9FF' : i % 2 === 0 ? '#fff' : '#FAFAFA',
+                          transition: '150ms',
+                        }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#F1F5F9'}
+                          onMouseLeave={e => e.currentTarget.style.background = selected?._id === o._id ? '#F0F9FF' : i % 2 === 0 ? '#fff' : '#FAFAFA'}
+                        >
+                          <td style={tdStyle}>
+                            <div style={{ fontSize: '14px', fontWeight: '500', color: '#1E293B' }}>{o.titre}</div>
+                          </td>
+                          <td style={tdStyle}>📍 {o.lieu}</td>
+                          <td style={tdStyle}>{typeBadge(o.type)}</td>
+                          <td style={tdStyle}>{o.salaire || '—'}</td>
+                          <td style={tdStyle}>
+                            <span style={{
+                              background: o.status === 'active' ? '#D1FAE5' : '#FEE2E2',
+                              color: o.status === 'active' ? '#059669' : '#EF4444',
+                              padding: '4px 10px', borderRadius: '50px',
+                              fontSize: '12px', fontWeight: '600',
+                            }}>
+                              {o.status === 'active' ? '✅ Active' : '❌ Fermée'}
+                            </span>
+                          </td>
+                          <td style={tdStyle}>
+                            {new Date(o.createdAt).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button onClick={() => setSelected(selected?._id === o._id ? null : o)} style={btnStyle('#DBEAFE', '#1E3A8A')}>👁</button>
+                              <button onClick={() => openEdit(o)} style={btnStyle('#D1FAE5', '#059669')}>✏️</button>
+                              <button onClick={() => toggleStatus(o)} style={btnStyle('#FEF3C7', '#D97706')}>
+                                {o.status === 'active' ? '⏸' : '▶'}
+                              </button>
+                              <button onClick={() => deleteOffre(o._id)} style={btnStyle('#FEE2E2', '#EF4444')}>🗑️</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredMes.length === 0 && (
+                        <tr>
+                          <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '14px' }}>
+                            Aucune offre — cliquez sur "Nouvelle offre" pour commencer !
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
 
             {/* Panel détail */}
             {selected && (
-              <DetailPanel
-                offre={selected}
-                isMine={true}
-                onClose={() => setSelected(null)}
-                onEdit={openEdit}
-                onDelete={deleteOffre}
-              />
+              <div style={{
+                background: '#fff', borderRadius: '16px', padding: '24px',
+                border: '1px solid #E2E8F0', height: 'fit-content',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>
+                    Détail offre
+                  </h3>
+                  <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
+                </div>
+
+                <div style={{
+                  background: '#EFF6FF', borderRadius: '12px', padding: '16px', marginBottom: '16px',
+                }}>
+                  <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: '700', color: '#1E3A8A', marginBottom: '8px' }}>
+                    {selected.titre}
+                  </div>
+                  {typeBadge(selected.type)}
+                </div>
+
+                {[
+                  { label: 'Lieu',      value: selected.lieu || '—' },
+                  { label: 'Salaire',   value: selected.salaire || '—' },
+                  { label: 'Status',    value: selected.status === 'active' ? '✅ Active' : '❌ Fermée' },
+                  { label: 'Publié le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
+                ].map((f, i) => (
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px',
+                  }}>
+                    <span style={{ color: '#94A3B8' }}>{f.label}</span>
+                    <span style={{ color: '#1E293B', fontWeight: '500' }}>{f.value}</span>
+                  </div>
+                ))}
+
+                {selected.description && (
+                  <div style={{ marginTop: '16px' }}>
+                    <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>Description</div>
+                    <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.7' }}>{selected.description}</p>
+                  </div>
+                )}
+
+                {(selected.competences || []).length > 0 && (
+                  <div style={{ marginTop: '16px' }}>
+                    <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>Compétences</div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {selected.competences.map((k, i) => (
+                        <span key={i} style={{
+                          background: '#DBEAFE', color: '#1E3A8A',
+                          padding: '4px 12px', borderRadius: '6px',
+                          fontSize: '12px', fontWeight: '500',
+                        }}>
+                          {k}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+                  <button onClick={() => openEdit(selected)} style={{ ...fullBtnStyle, background: '#DBEAFE', color: '#1E3A8A' }}>
+                    ✏️ Modifier
+                  </button>
+                  <button onClick={() => deleteOffre(selected._id)} style={{ ...fullBtnStyle, background: '#FEE2E2', color: '#EF4444' }}>
+                    🗑️ Supprimer
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </>
       )}
 
-      {/* ======================== AUTRES OFFRES ======================== */}
-      {activeTab === 'autres' && (
+      {/* ===== TOUTES LES OFFRES ===== */}
+      {activeTab === 'tous' && (
         <>
-          {/* Bandeau info */}
           <div style={{
             background: '#EFF6FF', border: '1px solid #BFDBFE',
             borderRadius: '10px', padding: '12px 20px',
             color: '#1E3A8A', fontSize: '13px', fontWeight: '500',
-            marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px',
+            marginBottom: '20px',
           }}>
-            👁 Mode consultation uniquement — vous ne pouvez pas modifier les offres des autres recruteurs
+            👁 Mode consultation uniquement
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
             <input
               placeholder="🔍 Rechercher par titre, lieu, entreprise..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+              value={search} onChange={e => setSearch(e.target.value)}
               style={{ ...searchStyle, width: '300px' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 340px' : '1fr', gap: '20px', alignItems: 'start' }}>
-            <TableOffres
-              offres={filteredAutres}
-              isMine={false}
-              selected={selected}
-              onSelect={setSelected}
-            />
-
-            {selected && (
-              <DetailPanel
-                offre={selected}
-                isMine={false}
-                onClose={() => setSelected(null)}
-              />
-            )}
+          <div style={{
+            background: '#fff', borderRadius: '16px',
+            border: '1px solid #E2E8F0', overflow: 'hidden',
+          }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#1E3A8A' }}>
+                    {['Titre', 'Recruteur', 'Entreprise', 'Lieu', 'Type', 'Date'].map(h => (
+                      <th key={h} style={{
+                        padding: '14px 16px', textAlign: 'left',
+                        color: '#fff', fontSize: '13px', fontWeight: '600',
+                        fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
+                      }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTous.map((o, i) => (
+                    <tr key={o._id} style={{
+                      borderBottom: '1px solid #F1F5F9',
+                      background: i % 2 === 0 ? '#fff' : '#FAFAFA',
+                      transition: '150ms',
+                    }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#F1F5F9'}
+                      onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? '#fff' : '#FAFAFA'}
+                    >
+                      <td style={tdStyle}>
+                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#1E293B' }}>{o.titre}</div>
+                      </td>
+                      <td style={tdStyle}>{o.recruteur?.nom || '—'}</td>
+                      <td style={tdStyle}>{o.recruteur?.entreprise || '—'}</td>
+                      <td style={tdStyle}>📍 {o.lieu}</td>
+                      <td style={tdStyle}>{typeBadge(o.type)}</td>
+                      <td style={tdStyle}>{new Date(o.createdAt).toLocaleDateString('fr-FR')}</td>
+                    </tr>
+                  ))}
+                  {filteredTous.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8', fontSize: '14px' }}>
+                        Aucune offre trouvée
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
@@ -273,8 +462,9 @@ export default function MesOffres() {
         }} onClick={() => setShowModal(false)}>
           <div style={{
             background: '#fff', borderRadius: '16px', padding: '32px',
-            width: '100%', maxWidth: '480px',
+            width: '100%', maxWidth: '500px',
             boxShadow: '0 20px 48px rgba(15,23,42,.2)',
+            maxHeight: '90vh', overflowY: 'auto',
           }} onClick={e => e.stopPropagation()}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -285,13 +475,15 @@ export default function MesOffres() {
             </div>
 
             {[
-              { label: 'Titre du poste', key: 'titre', type: 'text', placeholder: 'Ex: Développeur React' },
-              { label: 'Lieu',           key: 'lieu',  type: 'text', placeholder: 'Ex: Tunis, Remote...' },
+              { label: 'Titre du poste *', key: 'titre', placeholder: 'Ex: Développeur React' },
+              { label: 'Lieu *',           key: 'lieu',  placeholder: 'Ex: Tunis, Remote...' },
+              { label: 'Salaire',          key: 'salaire', placeholder: 'Ex: 2000-3000 TND' },
+              { label: 'Compétences (séparées par virgule)', key: 'competences', placeholder: 'Ex: React, Node.js, MongoDB' },
             ].map(f => (
               <div key={f.key} style={{ marginBottom: '16px' }}>
                 <label style={labelStyle}>{f.label}</label>
                 <input
-                  type={f.type} placeholder={f.placeholder}
+                  placeholder={f.placeholder}
                   value={form[f.key]} onChange={set(f.key)}
                   style={inputStyle}
                 />
@@ -331,193 +523,22 @@ export default function MesOffres() {
   );
 }
 
-// ============================================================
-// Composant Table
-// ============================================================
-function TableOffres({ offres, isMine, selected, onSelect, onEdit, onToggle, onDelete }) {
-  return (
-    <div style={{
-      background: '#fff', borderRadius: '12px',
-      border: '1px solid #E2E8F0', overflow: 'hidden',
-      boxShadow: '0 4px 16px rgba(15,23,42,.06)',
-    }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-            {['Titre', 'Entreprise', 'Lieu', 'Type', 'Candidatures', 'Date', 'Statut', 'Actions'].map(h => (
-              <th key={h} style={{
-                padding: '14px 16px', textAlign: 'left', fontSize: '11px',
-                fontWeight: '600', color: '#94A3B8',
-                textTransform: 'uppercase', letterSpacing: '.05em',
-              }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {offres.map((o, i) => (
-            <tr key={o.id} style={{
-              borderBottom: i < offres.length - 1 ? '1px solid #F1F5F9' : 'none',
-              background: selected?.id === o.id ? '#F0F9FF' : 'transparent',
-            }}>
-              <td style={{ padding: '14px 16px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B' }}>{o.titre}</div>
-              </td>
-              <td style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>
-                🏢 {o.entreprise}
-              </td>
-              <td style={{ padding: '14px 16px', fontSize: '13px', color: '#475569' }}>
-                📍 {o.lieu}
-              </td>
-              <td style={{ padding: '14px 16px' }}>
-                <span style={{
-                  background: o.type === 'CDI' ? '#DBEAFE' : o.type === 'CDD' ? '#FFF7ED' : '#F0FDF4',
-                  color: o.type === 'CDI' ? '#1E3A8A' : o.type === 'CDD' ? '#FB923C' : '#059669',
-                  padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '500',
-                }}>
-                  {o.type}
-                </span>
-              </td>
-              <td style={{ padding: '14px 16px' }}>
-                <span style={{
-                  background: '#DBEAFE', color: '#1E3A8A',
-                  padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '500',
-                }}>
-                  {o.candidatures}
-                </span>
-              </td>
-              <td style={{ padding: '14px 16px', fontSize: '13px', color: '#94A3B8' }}>{o.date}</td>
-              <td style={{ padding: '14px 16px' }}>
-                <span style={{
-                  background: o.status ? '#F0FDF4' : '#FEF2F2',
-                  color: o.status ? '#059669' : '#EF4444',
-                  padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '500',
-                }}>
-                  {o.status ? '✓ Active' : '✕ Inactive'}
-                </span>
-              </td>
-              <td style={{ padding: '14px 16px' }}>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {/* Bouton voir — toujours disponible */}
-                  <button
-                    onClick={() => onSelect(selected?.id === o.id ? null : o)}
-                    style={btnStyle('#DBEAFE', '#1E3A8A')}
-                  >
-                    👁
-                  </button>
+const tdStyle = {
+  padding: '14px 16px', fontSize: '14px',
+  color: '#475569', fontFamily: 'DM Sans, sans-serif',
+};
 
-                  {/* Boutons CRUD — seulement pour mes offres */}
-                  {isMine && (
-                    <>
-                      <button onClick={() => onEdit(o)} style={btnStyle('#F0FDF4', '#059669')}>✏️</button>
-                      <button onClick={() => onToggle(o.id)} style={btnStyle('#FFF7ED', '#FB923C')}>
-                        {o.status ? '⏸' : '▶'}
-                      </button>
-                      <button onClick={() => onDelete(o.id)} style={btnStyle('#FEF2F2', '#EF4444')}>🗑</button>
-                    </>
-                  )}
-
-                  {/* Badge lecture seule pour les autres offres */}
-                  {!isMine && (
-                    <span style={{
-                      background: '#F1F5F9', color: '#94A3B8',
-                      padding: '4px 10px', borderRadius: '6px',
-                      fontSize: '11px', fontWeight: '500',
-                    }}>
-                      Lecture seule
-                    </span>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {offres.length === 0 && (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#94A3B8', fontSize: '14px' }}>
-          Aucune offre trouvée
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// Composant Panel Détail
-// ============================================================
-function DetailPanel({ offre, isMine, onClose, onEdit, onDelete }) {
-  return (
-    <div style={{
-      background: '#fff', borderRadius: '12px', padding: '24px',
-      border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>
-          Détail offre
-        </h3>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
-      </div>
-
-      {/* Badge si lecture seule */}
-      {!isMine && (
-        <div style={{
-          background: '#EFF6FF', border: '1px solid #BFDBFE',
-          borderRadius: '8px', padding: '8px 14px',
-          color: '#1E3A8A', fontSize: '12px', fontWeight: '500',
-          marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px',
-        }}>
-          👁 Consultation uniquement
-        </div>
-      )}
-
-      <div style={{ fontSize: '15px', fontWeight: '700', color: '#1E293B', marginBottom: '16px', fontFamily: 'Syne, sans-serif' }}>
-        {offre.titre}
-      </div>
-
-      {[
-        { label: 'Entreprise',    value: offre.entreprise },
-        { label: 'Recruteur',     value: offre.recruteur },
-        { label: 'Lieu',          value: offre.lieu },
-        { label: 'Type',          value: offre.type },
-        { label: 'Candidatures',  value: `${offre.candidatures} candidats` },
-        { label: 'Date',          value: offre.date },
-        { label: 'Statut',        value: offre.status ? 'Active' : 'Inactive' },
-      ].map((f, i) => (
-        <div key={i} style={{
-          display: 'flex', justifyContent: 'space-between',
-          padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px',
-        }}>
-          <span style={{ color: '#94A3B8' }}>{f.label}</span>
-          <span style={{ color: '#1E293B', fontWeight: '500' }}>{f.value}</span>
-        </div>
-      ))}
-
-      <div style={{ marginTop: '16px' }}>
-        <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px' }}>Description</div>
-        <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.6' }}>{offre.description}</p>
-      </div>
-
-      {/* Actions seulement pour mes offres */}
-      {isMine && (
-        <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
-          <button onClick={() => onEdit(offre)} style={saveBtnStyle}>✏️ Modifier</button>
-          <button onClick={() => onDelete(offre.id)} style={cancelBtnStyle}>🗑 Supprimer</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// Styles
-// ============================================================
 const btnStyle = (bg, color) => ({
   background: bg, color, border: 'none', borderRadius: '6px',
-  padding: '7px 10px', fontSize: '13px', cursor: 'pointer',
+  padding: '6px 10px', fontSize: '12px', cursor: 'pointer',
   fontFamily: 'DM Sans, sans-serif', fontWeight: '500',
 });
+
+const fullBtnStyle = {
+  flex: 1, padding: '10px', borderRadius: '8px',
+  border: 'none', cursor: 'pointer', fontSize: '13px',
+  fontWeight: '600', fontFamily: 'DM Sans, sans-serif',
+};
 
 const searchStyle = {
   height: '42px', padding: '0 16px', borderRadius: '10px',

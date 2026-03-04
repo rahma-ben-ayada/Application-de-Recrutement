@@ -2,25 +2,27 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const menus = {
-    admin: [
-  { label: 'Dashboard',  icon: '📊', path: '/admin/dashboard' },
-  { label: 'Recruteurs', icon: '🏢', path: '/admin/recruteurs' },
-  { label: 'Candidats',  icon: '👤', path: '/admin/candidats' },
-  { label: 'Paramètres', icon: '⚙️', path: '/admin/parametres' },
-],
-  recruteur: [
-    { label: 'Mes Offres',      icon: '📋', path: '/recruteur/offres' },
-    { label: 'Candidatures',    icon: '📨', path: '/recruteur/candidatures' },
-    { label: 'Entretiens',      icon: '🎯', path: '/recruteur/entretiens' },
-    { label: 'Profil',          icon: '👤', path: '/recruteur/profil' },
+  admin: [
+    { label: 'Dashboard',    icon: '📊', path: '/admin/dashboard' },
+    { label: 'Recruteurs',   icon: '🏢', path: '/admin/recruteurs' },
+    { label: 'Candidats',    icon: '👤', path: '/admin/candidats' },
+    { label: 'Offres',       icon: '📋', path: '/admin/offres' },
+    { label: 'Paramètres',   icon: '⚙️', path: '/admin/parametres' },
   ],
- candidat: [
-  { label: 'Offres d\'emploi',  icon: '🔍', path: '/candidat/offres' },
-  { label: 'Mes Candidatures',  icon: '📨', path: '/candidat/candidatures' },
-  { label: 'Mon Profil & CV',   icon: '👤', path: '/candidat/profil' },
-  { label: 'Paramètres',        icon: '⚙️', path: '/candidat/parametres' },
-],
-
+  recruteur: [
+    { label: 'Dashboard',    icon: '📊', path: '/recruteur/dashboard' },
+    { label: 'Mes Offres',   icon: '📋', path: '/recruteur/offres' },
+    { label: 'Candidatures', icon: '📨', path: '/recruteur/candidatures' },
+    { label: 'Entretiens',   icon: '🎯', path: '/recruteur/entretiens' },
+    { label: 'Profil',       icon: '👤', path: '/recruteur/profil' },
+  ],
+  candidat: [
+    { label: "Offres d'emploi",  icon: '🔍', path: '/candidat/offres' },
+    { label: 'Mes Candidatures', icon: '📨', path: '/candidat/candidatures' },
+    { label: 'Mon CV',           icon: '📄', path: '/candidat/cv' },
+    { label: 'Profil',           icon: '👤', path: '/candidat/profil' },
+    { label: 'Paramètres',       icon: '⚙️', path: '/candidat/parametres' },
+  ],
 };
 
 export default function Sidebar({ role = 'admin' }) {
@@ -41,17 +43,21 @@ export default function Sidebar({ role = 'admin' }) {
       position: 'relative',
       flexShrink: 0,
     }}>
-      {/* Logo */}
-      <div style={{
-        fontFamily: 'Syne, sans-serif',
-        fontSize: collapsed ? '14px' : '20px',
-        fontWeight: '800',
-        color: '#fff',
-        padding: '8px 12px',
-        marginBottom: '16px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-      }}>
+      {/* Logo — cliquable vers dashboard */}
+      <div
+        onClick={() => navigate(`/${role}/dashboard`)}
+        style={{
+          fontFamily: 'Syne, sans-serif',
+          fontSize: collapsed ? '14px' : '20px',
+          fontWeight: '800',
+          color: '#fff',
+          padding: '8px 12px',
+          marginBottom: '16px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          cursor: 'pointer',
+        }}
+      >
         {collapsed ? 'SR' : <>Smart<span style={{ color: '#60A5FA' }}>Recruit</span></>}
       </div>
 
@@ -119,10 +125,12 @@ export default function Sidebar({ role = 'admin' }) {
               color: isActive ? '#fff' : '#94A3B8',
               width: '100%',
               textAlign: 'left',
-              transition: '220ms cubic-bezier(.4,0,.2,1)',
+              transition: '150ms',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
             }}
+            onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94A3B8'; }}
           >
             <span style={{ fontSize: '18px', flexShrink: 0 }}>{item.icon}</span>
             {!collapsed && item.label}
