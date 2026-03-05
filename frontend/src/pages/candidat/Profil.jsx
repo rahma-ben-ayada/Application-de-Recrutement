@@ -1,39 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CandidatLayout from '../../layouts/CandidatLayout';
+import api from '../../utils/api';
 
 export default function ProfilCandidat() {
-  const [profil, setProfil] = useState({
-    nom: 'Mon Nom',
-    email: 'candidat@mail.com',
-    telephone: '+216 XX XXX XXX',
-    adresse: 'Tunis, Tunisie',
-    titre: 'Développeur Full Stack',
-    bio: 'Passionné par le développement web et les nouvelles technologies...',
-    motdepasse: '',
-    confirmer: '',
+  const [profil, setProfil] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [activeTab, setActiveTab] = useState('infos');
+
+  // Formulaire infos
+  const [form, setForm] = useState({
+    nom: '', telephone: '', titre: '', bio: '',
+    ancienPassword: '', nouveauPassword: '', confirmer: '',
   });
 
-  const [competences, setCompetences] = useState(['React', 'Node.js', 'Python']);
+  // Compétences
+  const [competences, setCompetences] = useState([]);
   const [newComp, setNewComp] = useState('');
-  const [experiences, setExperiences] = useState([
-    { id: 1, poste: 'Développeur Front-end', entreprise: 'Tech Corp', debut: '2023-01', fin: '2024-06', desc: 'Développement d\'interfaces React' },
-  ]);
-  const [formations, setFormations] = useState([
-    { id: 1, diplome: 'Licence en Informatique', ecole: 'FST Tunis', annee: '2022' },
-  ]);
-  const [activeTab, setActiveTab] = useState('infos');
-  const [saved, setSaved] = useState(false);
 
-  const set = (k) => (e) => setProfil(p => ({ ...p, [k]: e.target.value }));
+  // Expérience (années)
+  const [experience, setExperience] = useState(0);
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  // Formations (texte libre)
+  const [formation, setFormation] = useState('');
+
+  // Langues
+  const [langues, setLangues] = useState('');
+
+  // CV
+  const [cvFile, setCvFile] = useState(null);
+  const [uploadingCV, setUploadingCV] = useState(false);
+
+  useEffect(() => {
+    fetchProfil();
+  }, []);
+
+  const fetchProfil = async () => {
+    try {
+      const data = await api('/auth/profil');
+      const u = data.user;
+      setProfil(u);
+      setForm({
+        nom: u.nom || '',
+        telephone: u.telephone || '',
+        titre: u.titre || '',
+        bio: u.bio || '',
+        ancienPassword: '',
+        nouveauPassword: '',
+        confirmer: '',
+      });
+      setCompetences(u.competences || []);
+      setExperience(u.experience || 0);
+      setFormation(u.formation || '');
+      setLangues(u.langues || '');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 4000);
+  };
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Vérifier passwords
+      if (form.nouveauPassword && form.nouveauPassword !== form.confirmer) {
+        return showMessage('error', '❌ Les mots de passe ne correspondent pas !');
+      }
+
+      // Mettre à jour profil
+      await api('/auth/profil', 'PUT', {
+        nom: form.nom,
+        telephone: form.telephone,
+        titre: form.titre,
+        bio: form.bio,
+        competences,
+        experience: Number(experience),
+        formation,
+        langues,
+      });
+
+      // Changer password si rempli
+      if (form.nouveauPassword) {
+        await api('/users/change-password', 'PUT', {
+          ancienPassword: form.ancienPassword,
+          nouveauPassword: form.nouveauPassword,
+        });
+      }
+
+      showMessage('success', '✅ Profil mis à jour avec succès !');
+      fetchProfil();
+    } catch (err) {
+      showMessage('error', err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUploadCV = async () => {
+    if (!cvFile) return;
+    setUploadingCV(true);
+    try {
+      const formData = new FormData();
+      formData.append('cv', cvFile);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/auth/upload-cv', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      showMessage('success', '✅ CV uploadé avec succès !');
+      setCvFile(null);
+      fetchProfil();
+    } catch (err) {
+      showMessage('error', err.message);
+    } finally {
+      setUploadingCV(false);
+    }
   };
 
   const addCompetence = () => {
-    if (newComp.trim() && !competences.includes(newComp.trim())) {
-      setCompetences(cs => [...cs, newComp.trim()]);
+    const c = newComp.trim();
+    if (c && !competences.includes(c)) {
+      setCompetences(cs => [...cs, c]);
       setNewComp('');
     }
   };
@@ -41,24 +140,37 @@ export default function ProfilCandidat() {
   const removeCompetence = (c) => setCompetences(cs => cs.filter(x => x !== c));
 
   const tabs = [
-    { key: 'infos',      label: 'Informations',  icon: '👤' },
-    { key: 'competences',label: 'Compétences',    icon: '🛠' },
-    { key: 'experience', label: 'Expérience',     icon: '💼' },
-    { key: 'formation',  label: 'Formation',      icon: '🎓' },
-    { key: 'cv',         label: 'Mon CV',         icon: '📄' },
+    { key: 'infos',       label: 'Informations', icon: '👤' },
+    { key: 'competences', label: 'Compétences',  icon: '🛠' },
+    { key: 'experience',  label: 'Expérience',   icon: '💼' },
+    { key: 'formation',   label: 'Formation',    icon: '🎓' },
+    { key: 'cv',          label: 'Mon CV',       icon: '📄' },
   ];
 
-  return (
-    <CandidatLayout title="Mon Profil & CV">
+  if (loading) return (
+    <CandidatLayout title="Mon Profil">
+      <div style={{ textAlign: 'center', padding: '60px', color: '#94A3B8' }}>
+        Chargement...
+      </div>
+    </CandidatLayout>
+  );
 
-      {saved && (
+  return (
+    <CandidatLayout title="Mon Profil">
+
+      {/* Message */}
+      {message && (
         <div style={{
-          background: '#F0FDF4', border: '1px solid #22C55E',
-          borderRadius: '10px', padding: '14px 20px',
-          color: '#059669', fontSize: '14px', fontWeight: '500',
-          marginBottom: '24px',
+          padding: '12px 16px', borderRadius: '10px', marginBottom: '20px',
+          background: message.type === 'success' ? '#D1FAE5' : '#FEE2E2',
+          color: message.type === 'success' ? '#059669' : '#EF4444',
+          fontSize: '14px', fontWeight: '500',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          ✓ Profil mis à jour avec succès !
+          {message.text}
+          <button onClick={() => setMessage(null)} style={{
+            background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'inherit',
+          }}>✕</button>
         </div>
       )}
 
@@ -67,38 +179,32 @@ export default function ProfilCandidat() {
         {/* Sidebar tabs */}
         <div style={{
           background: '#fff', borderRadius: '12px', padding: '8px',
-          border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
-          position: 'sticky', top: '20px',
+          border: '1px solid #E2E8F0', position: 'sticky', top: '20px',
         }}>
-          {/* Mini profil */}
           <div style={{ textAlign: 'center', padding: '16px 8px', borderBottom: '1px solid #F1F5F9', marginBottom: '8px' }}>
             <div style={{
               width: '56px', height: '56px', borderRadius: '50%',
-              background: '#1E3A8A', display: 'flex', alignItems: 'center',
+              background: '#7C3AED', display: 'flex', alignItems: 'center',
               justifyContent: 'center', color: '#fff',
               fontWeight: '800', fontSize: '22px', fontFamily: 'Syne, sans-serif',
               margin: '0 auto 8px',
             }}>
-              {profil.nom[0]}
+              {profil?.nom?.[0]?.toUpperCase() || '?'}
             </div>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>{profil.nom}</div>
-            <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>{profil.titre}</div>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>{profil?.nom}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>{profil?.email}</div>
           </div>
 
           {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center',
-                gap: '10px', padding: '11px 14px', borderRadius: '10px',
-                border: 'none', cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: '500',
-                background: activeTab === t.key ? '#1E3A8A' : 'transparent',
-                color: activeTab === t.key ? '#fff' : '#475569',
-                marginBottom: '2px', textAlign: 'left', transition: '150ms',
-              }}
-            >
+            <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
+              width: '100%', display: 'flex', alignItems: 'center',
+              gap: '10px', padding: '11px 14px', borderRadius: '10px',
+              border: 'none', cursor: 'pointer',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: '500',
+              background: activeTab === t.key ? '#1E3A8A' : 'transparent',
+              color: activeTab === t.key ? '#fff' : '#475569',
+              marginBottom: '2px', textAlign: 'left', transition: '150ms',
+            }}>
               <span>{t.icon}</span> {t.label}
             </button>
           ))}
@@ -107,62 +213,66 @@ export default function ProfilCandidat() {
         {/* Contenu */}
         <div style={{
           background: '#fff', borderRadius: '12px', padding: '32px',
-          border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
+          border: '1px solid #E2E8F0',
         }}>
 
-          {/* ---- INFOS ---- */}
+          {/* INFOS */}
           {activeTab === 'infos' && (
             <div>
               <h3 style={titleStyle}>👤 Informations personnelles</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                {[
-                  { label: 'Nom complet',  key: 'nom',       type: 'text',  placeholder: 'Votre nom' },
-                  { label: 'Email',        key: 'email',     type: 'email', placeholder: 'email@mail.com' },
-                  { label: 'Téléphone',    key: 'telephone', type: 'tel',   placeholder: '+216 XX XXX XXX' },
-                  { label: 'Adresse',      key: 'adresse',   type: 'text',  placeholder: 'Ville, Pays' },
-                  { label: 'Titre professionnel', key: 'titre', type: 'text', placeholder: 'Ex: Développeur Full Stack' },
-                ].map(f => (
-                  <div key={f.key}>
-                    <label style={labelStyle}>{f.label}</label>
-                    <input type={f.type} placeholder={f.placeholder} value={profil[f.key]} onChange={set(f.key)} style={inputStyle} />
-                  </div>
-                ))}
+                <div>
+                  <label style={labelStyle}>Nom complet</label>
+                  <input value={form.nom} onChange={set('nom')} style={inputStyle} placeholder="Votre nom" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Téléphone</label>
+                  <input value={form.telephone} onChange={set('telephone')} style={inputStyle} placeholder="+216 XX XXX XXX" />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>Titre professionnel</label>
+                <input value={form.titre} onChange={set('titre')} style={inputStyle} placeholder="Ex: Développeur Full Stack" />
               </div>
 
               <div style={{ marginBottom: '24px' }}>
                 <label style={labelStyle}>Bio / Présentation</label>
                 <textarea
-                  placeholder="Parlez de vous..."
-                  value={profil.bio} onChange={set('bio')}
-                  rows={4}
+                  value={form.bio} onChange={set('bio')}
+                  rows={4} placeholder="Parlez de vous..."
                   style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'vertical' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '16px 0' }}>
+              {/* Changer password */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0 16px' }}>
                 <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
                 <span style={{ fontSize: '12px', color: '#94A3B8' }}>Changer le mot de passe</span>
                 <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={labelStyle}>Ancien mot de passe</label>
+                  <input type="password" value={form.ancienPassword} onChange={set('ancienPassword')} style={inputStyle} placeholder="••••••••" />
+                </div>
                 <div>
                   <label style={labelStyle}>Nouveau mot de passe</label>
-                  <input type="password" placeholder="••••••••" value={profil.motdepasse} onChange={set('motdepasse')} style={inputStyle} />
+                  <input type="password" value={form.nouveauPassword} onChange={set('nouveauPassword')} style={inputStyle} placeholder="••••••••" />
                 </div>
                 <div>
                   <label style={labelStyle}>Confirmer</label>
-                  <input type="password" placeholder="••••••••" value={profil.confirmer} onChange={set('confirmer')} style={inputStyle} />
+                  <input type="password" value={form.confirmer} onChange={set('confirmer')} style={inputStyle} placeholder="••••••••" />
                 </div>
               </div>
             </div>
           )}
 
-          {/* ---- COMPÉTENCES ---- */}
+          {/* COMPÉTENCES */}
           {activeTab === 'competences' && (
             <div>
               <h3 style={titleStyle}>🛠 Mes compétences</h3>
-
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                 <input
                   placeholder="Ajouter une compétence..."
@@ -179,7 +289,6 @@ export default function ProfilCandidat() {
                   ➕ Ajouter
                 </button>
               </div>
-
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {competences.map((c, i) => (
                   <div key={i} style={{
@@ -189,150 +298,76 @@ export default function ProfilCandidat() {
                     display: 'flex', alignItems: 'center', gap: '8px',
                   }}>
                     {c}
-                    <button
-                      onClick={() => removeCompetence(c)}
-                      style={{
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: '#1E3A8A', fontSize: '14px', padding: '0',
-                        display: 'flex', alignItems: 'center',
-                      }}
-                    >
-                      ✕
-                    </button>
+                    <button onClick={() => removeCompetence(c)} style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#1E3A8A', fontSize: '14px', padding: '0',
+                    }}>✕</button>
                   </div>
                 ))}
+                {competences.length === 0 && (
+                  <div style={{ color: '#94A3B8', padding: '20px' }}>
+                    Aucune compétence ajoutée
+                  </div>
+                )}
               </div>
-
-              {competences.length === 0 && (
-                <div style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>
-                  Aucune compétence ajoutée
-                </div>
-              )}
             </div>
           )}
 
-          {/* ---- EXPÉRIENCE ---- */}
+          {/* EXPÉRIENCE */}
           {activeTab === 'experience' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={titleStyle}>💼 Expériences professionnelles</h3>
-                <button
-                  onClick={() => setExperiences(es => [...es, {
-                    id: Date.now(), poste: '', entreprise: '', debut: '', fin: '', desc: ''
-                  }])}
-                  style={{
-                    padding: '8px 16px', borderRadius: '10px', border: 'none',
-                    background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                    fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
-                  }}
-                >
-                  ➕ Ajouter
-                </button>
+              <h3 style={titleStyle}>💼 Expérience professionnelle</h3>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>Nombre d'années d'expérience</label>
+                <input
+                  type="number" min="0" max="50"
+                  value={experience}
+                  onChange={e => setExperience(e.target.value)}
+                  style={{ ...inputStyle, width: '200px' }}
+                  placeholder="Ex: 3"
+                />
               </div>
-
-              {experiences.map((exp, i) => (
-                <div key={exp.id} style={{
-                  border: '1px solid #E2E8F0', borderRadius: '12px',
-                  padding: '20px', marginBottom: '16px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-                    <button
-                      onClick={() => setExperiences(es => es.filter(e => e.id !== exp.id))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: '13px' }}
-                    >
-                      🗑 Supprimer
-                    </button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    {[
-                      { label: 'Poste', key: 'poste', placeholder: 'Ex: Développeur React' },
-                      { label: 'Entreprise', key: 'entreprise', placeholder: 'Nom entreprise' },
-                      { label: 'Début', key: 'debut', placeholder: '2023-01' },
-                      { label: 'Fin', key: 'fin', placeholder: '2024-06 (ou En cours)' },
-                    ].map(f => (
-                      <div key={f.key}>
-                        <label style={labelStyle}>{f.label}</label>
-                        <input
-                          type="text" placeholder={f.placeholder}
-                          value={exp[f.key]}
-                          onChange={e => setExperiences(es => es.map(x => x.id === exp.id ? { ...x, [f.key]: e.target.value } : x))}
-                          style={inputStyle}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: '12px' }}>
-                    <label style={labelStyle}>Description</label>
-                    <textarea
-                      placeholder="Décrivez vos missions..."
-                      value={exp.desc}
-                      onChange={e => setExperiences(es => es.map(x => x.id === exp.id ? { ...x, desc: e.target.value } : x))}
-                      rows={3}
-                      style={{ ...inputStyle, height: 'auto', padding: '10px 14px', resize: 'vertical' }}
-                    />
-                  </div>
-                </div>
-              ))}
+              <div style={{
+                background: '#EFF6FF', borderRadius: '10px', padding: '16px',
+                fontSize: '13px', color: '#1E3A8A',
+              }}>
+                ℹ️ Cette information sera visible par les recruteurs dans vos candidatures.
+              </div>
             </div>
           )}
 
-          {/* ---- FORMATION ---- */}
+          {/* FORMATION */}
           {activeTab === 'formation' && (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={titleStyle}>🎓 Formations</h3>
-                <button
-                  onClick={() => setFormations(fs => [...fs, { id: Date.now(), diplome: '', ecole: '', annee: '' }])}
-                  style={{
-                    padding: '8px 16px', borderRadius: '10px', border: 'none',
-                    background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                    fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
-                  }}
-                >
-                  ➕ Ajouter
-                </button>
+              <h3 style={titleStyle}>🎓 Formation</h3>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>Formation(s)</label>
+                <textarea
+                  placeholder="Ex: Licence Informatique — FST Tunis (2020-2023)&#10;Master Génie Logiciel — ENSI (2023-2025)"
+                  value={formation}
+                  onChange={e => setFormation(e.target.value)}
+                  rows={5}
+                  style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'vertical' }}
+                />
               </div>
-
-              {formations.map(f => (
-                <div key={f.id} style={{
-                  border: '1px solid #E2E8F0', borderRadius: '12px',
-                  padding: '20px', marginBottom: '16px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-                    <button
-                      onClick={() => setFormations(fs => fs.filter(x => x.id !== f.id))}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: '13px' }}
-                    >
-                      🗑 Supprimer
-                    </button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                    {[
-                      { label: 'Diplôme', key: 'diplome', placeholder: 'Ex: Licence Informatique' },
-                      { label: 'École',   key: 'ecole',   placeholder: 'Ex: FST Tunis' },
-                      { label: 'Année',   key: 'annee',   placeholder: '2022' },
-                    ].map(field => (
-                      <div key={field.key}>
-                        <label style={labelStyle}>{field.label}</label>
-                        <input
-                          type="text" placeholder={field.placeholder}
-                          value={f[field.key]}
-                          onChange={e => setFormations(fs => fs.map(x => x.id === f.id ? { ...x, [field.key]: e.target.value } : x))}
-                          style={inputStyle}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}>Langues</label>
+                <input
+                  placeholder="Ex: Arabe (natif), Français (courant), Anglais (intermédiaire)"
+                  value={langues}
+                  onChange={e => setLangues(e.target.value)}
+                  style={inputStyle}
+                />
+              </div>
             </div>
           )}
 
-          {/* ---- CV ---- */}
+          {/* CV */}
           {activeTab === 'cv' && (
             <div>
               <h3 style={titleStyle}>📄 Mon CV</h3>
 
+              {/* Upload zone */}
               <div style={{
                 border: '2px dashed #CBD5E1', borderRadius: '12px',
                 padding: '40px', textAlign: 'center', marginBottom: '24px',
@@ -340,73 +375,97 @@ export default function ProfilCandidat() {
               }}>
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>📤</div>
                 <div style={{ fontSize: '16px', fontWeight: '600', color: '#1E293B', marginBottom: '8px' }}>
-                  Télécharger votre CV
+                  {cvFile ? `✅ ${cvFile.name}` : 'Télécharger votre CV'}
                 </div>
                 <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '16px' }}>
                   PDF, DOC ou DOCX — Max 5 MB
                 </p>
-                <button style={{
+                <label style={{
                   padding: '10px 24px', borderRadius: '50px', border: 'none',
                   background: '#1E3A8A', color: '#fff', cursor: 'pointer',
                   fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: '500',
+                  display: 'inline-block',
                 }}>
-                  Choisir un fichier
-                </button>
+                  📁 Choisir un fichier
+                  <input type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }}
+                    onChange={e => setCvFile(e.target.files[0])} />
+                </label>
+
+                {cvFile && (
+                  <button onClick={handleUploadCV} disabled={uploadingCV} style={{
+                    marginLeft: '12px', padding: '10px 24px', borderRadius: '50px', border: 'none',
+                    background: '#059669', color: '#fff', cursor: 'pointer',
+                    fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: '500',
+                  }}>
+                    {uploadingCV ? 'Upload...' : '⬆️ Envoyer'}
+                  </button>
+                )}
               </div>
 
               {/* CV actuel */}
-              <div style={{
-                background: '#F8FAFC', borderRadius: '12px', padding: '16px 20px',
-                border: '1px solid #E2E8F0', display: 'flex',
-                justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '24px' }}>📄</span>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: '500', color: '#1E293B' }}>CV_MonNom_2026.pdf</div>
-                    <div style={{ fontSize: '12px', color: '#94A3B8' }}>Ajouté le 15/01/2026 • 1.2 MB</div>
+              {profil?.cv && (
+                <div style={{
+                  background: '#F8FAFC', borderRadius: '12px', padding: '16px 20px',
+                  border: '1px solid #E2E8F0', display: 'flex',
+                  justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '24px' }}>📄</span>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#1E293B' }}>
+                        {profil.cvNom || 'Mon CV'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#94A3B8' }}>CV uploadé</div>
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button style={{
-                    padding: '6px 14px', borderRadius: '8px', border: '1px solid #E2E8F0',
-                    background: '#fff', cursor: 'pointer', fontSize: '13px',
-                    fontFamily: 'DM Sans, sans-serif', color: '#475569',
-                  }}>
+                  
+                    href={`http://localhost:5000/${profil.cv}`}
+                    target="_blank" rel="noreferrer"
+                    style={{
+                      padding: '6px 14px', borderRadius: '8px',
+                      border: '1px solid #E2E8F0', background: '#fff',
+                      fontSize: '13px', fontFamily: 'DM Sans, sans-serif',
+                      color: '#475569', textDecoration: 'none',
+                    }}
+                  <a>
                     👁 Voir
-                  </button>
-                  <button style={{
-                    padding: '6px 14px', borderRadius: '8px', border: 'none',
-                    background: '#FEF2F2', color: '#EF4444', cursor: 'pointer',
-                    fontSize: '13px', fontFamily: 'DM Sans, sans-serif',
-                  }}>
-                    🗑
-                  </button>
+                  </a>
                 </div>
-              </div>
+              )}
+
+              {!profil?.cv && (
+                <div style={{
+                  background: '#FEF3C7', borderRadius: '10px', padding: '14px 20px',
+                  fontSize: '13px', color: '#92400E',
+                }}>
+                  ⚠️ Aucun CV uploadé — les recruteurs ne pourront pas voir votre CV
+                </div>
+              )}
             </div>
           )}
 
-          {/* Bouton sauvegarder */}
-          <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-            <button style={{
-              height: '44px', padding: '0 24px', borderRadius: '50px',
-              border: '1.5px solid #E2E8F0', background: '#fff',
-              cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-              fontSize: '14px', color: '#475569',
-            }}>
-              Annuler
-            </button>
-            <button onClick={handleSave} style={{
-              height: '44px', padding: '0 32px', borderRadius: '50px',
-              background: '#1E3A8A', color: '#fff', border: 'none',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-              fontWeight: '500', cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(30,58,138,.25)',
-            }}>
-              💾 Enregistrer
-            </button>
-          </div>
+          {/* Bouton sauvegarder (pas pour CV) */}
+          {activeTab !== 'cv' && (
+            <div style={{ marginTop: '32px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={fetchProfil} style={{
+                height: '44px', padding: '0 24px', borderRadius: '50px',
+                border: '1.5px solid #E2E8F0', background: '#fff',
+                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                fontSize: '14px', color: '#475569',
+              }}>
+                Annuler
+              </button>
+              <button onClick={handleSave} disabled={saving} style={{
+                height: '44px', padding: '0 32px', borderRadius: '50px',
+                background: '#1E3A8A', color: '#fff', border: 'none',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+                fontWeight: '500', cursor: 'pointer',
+                opacity: saving ? 0.7 : 1,
+              }}>
+                {saving ? 'Enregistrement...' : '💾 Enregistrer'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </CandidatLayout>

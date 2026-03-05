@@ -8,18 +8,19 @@ const menus = {
     { label: 'Candidats',    icon: '👤', path: '/admin/candidats' },
     { label: 'Offres',       icon: '📋', path: '/admin/offres' },
     { label: 'Paramètres',   icon: '⚙️', path: '/admin/parametres' },
+
   ],
   recruteur: [
     { label: 'Dashboard',    icon: '📊', path: '/recruteur/dashboard' },
     { label: 'Mes Offres',   icon: '📋', path: '/recruteur/offres' },
     { label: 'Candidatures', icon: '📨', path: '/recruteur/candidatures' },
-    { label: 'Entretiens',   icon: '🎯', path: '/recruteur/entretiens' },
+    { label: 'Entretiens',  icon: '🎯', path: '/recruteur/entretiens' },
+    { label: 'Planifier',   icon: '📅', path: '/recruteur/planifier' },
     { label: 'Profil',       icon: '👤', path: '/recruteur/profil' },
   ],
   candidat: [
     { label: "Offres d'emploi",  icon: '🔍', path: '/candidat/offres' },
     { label: 'Mes Candidatures', icon: '📨', path: '/candidat/candidatures' },
-    { label: 'Mon CV',           icon: '📄', path: '/candidat/cv' },
     { label: 'Profil',           icon: '👤', path: '/candidat/profil' },
     { label: 'Paramètres',       icon: '⚙️', path: '/candidat/parametres' },
   ],
