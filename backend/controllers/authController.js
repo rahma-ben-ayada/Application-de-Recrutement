@@ -136,3 +136,27 @@ exports.getProfil = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// ===== UPDATE PROFIL =====
+exports.updateProfil = async (req, res) => {
+  try {
+    const { nom, telephone, experience, competences, formation, langues, objectif } = req.body;
+    
+    const updateData = {
+      nom, telephone,
+      experience: experience ? Number(experience) : 0,
+      competences: Array.isArray(competences) ? competences : [],
+      formation: formation || '',
+      langues: langues || '',
+      objectif: objectif || '',
+    };
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({ success: true, message: 'Profil mis à jour ✅', user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

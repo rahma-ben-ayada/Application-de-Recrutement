@@ -22,11 +22,14 @@ const userSchema = new mongoose.Schema({
   entreprise: { type: String, default: '' },
   secteur:    { type: String, default: '' },
   siteWeb:    { type: String, default: '' },
-
-  // ===== CANDIDAT =====
+// ===== CANDIDAT =====
   cv:          { type: String, default: '' },
+  cvNom:       { type: String, default: '' },
   competences: [{ type: String }],
   experience:  { type: Number, default: 0 },
+  formation:   { type: String, default: '' },
+  langues:     { type: String, default: '' },
+  objectif:    { type: String, default: '' },
 
   // ===== GENERAL =====
   telephone:  { type: String, default: '' },
