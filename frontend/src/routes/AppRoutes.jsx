@@ -50,11 +50,11 @@ export default function AppRoutes() {
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute role="admin" />}>
-            <Route path="dashboard"  element={<DashboardAdmin />} />
-            <Route path="recruteurs" element={<GestionRecruteurs />} />
-            <Route path="candidats"  element={<ConsultationCandidats />} />
-            <Route path="offres"     element={<GestionOffres />} />
-            <Route path="parametres" element={<Parametres />} />
+          <Route path="dashboard"  element={<DashboardAdmin />} />
+          <Route path="recruteurs" element={<GestionRecruteurs />} />
+          <Route path="candidats"  element={<ConsultationCandidats />} />
+          <Route path="offres"     element={<GestionOffres />} />
+          <Route path="parametres" element={<Parametres />} />
           </Route>
 
           {/* Recruteur */}

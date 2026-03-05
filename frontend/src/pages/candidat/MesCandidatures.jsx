@@ -6,7 +6,7 @@ const statutColors = {
   en_attente: { bg: '#FFF7ED', color: '#FB923C', icon: '⏳', label: 'En attente' },
   accepte:    { bg: '#F0FDF4', color: '#059669', icon: '✅', label: 'Accepté' },
   refuse:     { bg: '#FEF2F2', color: '#EF4444', icon: '❌', label: 'Refusé' },
-  entretien:  { bg: '#EDE9FE', color: '#7C3AED', icon: '🎯', label: 'Entretien' },
+  entretien:  { bg: '#EDE9FE', color: '#7C3AED', icon: '🎯', label: 'Entretien planifié' },
 };
 
 export default function MesCandidatures() {
@@ -14,21 +14,65 @@ export default function MesCandidatures() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('tous');
   const [selected, setSelected] = useState(null);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     fetchMesCandidatures();
-  }, []);
+  }, 
+);
 
   const fetchMesCandidatures = async () => {
     try {
       const data = await api('/candidatures/mes');
-      setCandidatures(data.candidatures);
+      const cands = data.candidatures || [];
+      setCandidatures(cands);
+      genererNotifications(cands);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+  const genererNotifications = (cands) => {
+    const notifs = [];
+    const vues = JSON.parse(localStorage.getItem('notifs_vues') || '[]');
+
+    cands.forEach(c => {
+      const key = `${c._id}_${c.statut}`;
+      if (vues.includes(key)) return;
+
+      if (c.statut === 'accepte') {
+        notifs.push({
+          key, type: 'success',
+          msg: `🎉 Félicitations ! Votre candidature pour "${c.offre?.titre}" a été acceptée !`,
+        });
+      } else if (c.statut === 'refuse') {
+        notifs.push({
+          key, type: 'error',
+          msg: `❌ Votre candidature pour "${c.offre?.titre}" a été refusée.`,
+        });
+      } else if (c.statut === 'entretien') {
+        notifs.push({
+          key, type: 'entretien',
+          msg: `🎯 Vous êtes convoqué en entretien pour "${c.offre?.titre}" !`,
+        });
+      }
+    });
+    setNotifications(notifs);
+  };
+
+  const dismissNotif = (key) => {
+    const vues = JSON.parse(localStorage.getItem('notifs_vues') || '[]');
+    localStorage.setItem('notifs_vues', JSON.stringify([...vues, key]));
+    setNotifications(n => n.filter(x => x.key !== key));
+  };
+
+  const notifStyle = (type) => ({
+    success:   { bg: '#D1FAE5', color: '#059669', border: '#A7F3D0' },
+    error:     { bg: '#FEE2E2', color: '#EF4444', border: '#FECACA' },
+    entretien: { bg: '#EDE9FE', color: '#7C3AED', border: '#DDD6FE' },
+  }[type] || { bg: '#F1F5F9', color: '#475569', border: '#E2E8F0' });
 
   const statuts = [
     { key: 'tous',       label: 'Tous' },
@@ -45,13 +89,36 @@ export default function MesCandidatures() {
   return (
     <CandidatLayout title="Mes Candidatures">
 
+      {/* Notifications */}
+      {notifications.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+          {notifications.map(n => {
+            const s = notifStyle(n.type);
+            return (
+              <div key={n.key} style={{
+                background: s.bg, border: `1px solid ${s.border}`,
+                borderRadius: '12px', padding: '14px 20px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                color: s.color, fontSize: '14px', fontWeight: '500',
+              }}>
+                <span>{n.msg}</span>
+                <button onClick={() => dismissNotif(n.key)} style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: s.color, fontSize: '18px', marginLeft: '12px',
+                }}>✕</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
         {[
-          { label: 'Total',      value: candidatures.length,                                              color: '#1E3A8A', bg: '#DBEAFE', icon: '📋' },
-          { label: 'En attente', value: candidatures.filter(c => c.statut === 'en_attente').length,       color: '#FB923C', bg: '#FFF7ED', icon: '⏳' },
-          { label: 'Acceptées',  value: candidatures.filter(c => c.statut === 'accepte').length,          color: '#059669', bg: '#D1FAE5', icon: '✅' },
-          { label: 'Refusées',   value: candidatures.filter(c => c.statut === 'refuse').length,           color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
+          { label: 'Total',      value: candidatures.length,                                        color: '#1E3A8A', bg: '#DBEAFE', icon: '📋' },
+          { label: 'En attente', value: candidatures.filter(c => c.statut === 'en_attente').length, color: '#FB923C', bg: '#FFF7ED', icon: '⏳' },
+          { label: 'Acceptées',  value: candidatures.filter(c => c.statut === 'accepte').length,    color: '#059669', bg: '#D1FAE5', icon: '✅' },
+          { label: 'Refusées',   value: candidatures.filter(c => c.statut === 'refuse').length,     color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
         ].map((s, i) => (
           <div key={i} style={{
             background: '#fff', borderRadius: '14px', padding: '20px',
@@ -125,10 +192,10 @@ export default function MesCandidatures() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '10px',
-                      background: '#DBEAFE', display: 'flex', alignItems: 'center',
+                      background: s.bg, display: 'flex', alignItems: 'center',
                       justifyContent: 'center', fontSize: '20px', flexShrink: 0,
                     }}>
-                      🏢
+                      {s.icon}
                     </div>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: '700', color: '#1E293B', fontFamily: 'Syne, sans-serif' }}>
@@ -176,6 +243,7 @@ export default function MesCandidatures() {
             <div style={{
               background: (statutColors[selected.statut] || statutColors.en_attente).bg,
               borderRadius: '12px', padding: '20px', textAlign: 'center', marginBottom: '20px',
+              border: `1px solid ${selected.statut === 'refuse' ? '#FECACA' : selected.statut === 'accepte' ? '#A7F3D0' : selected.statut === 'entretien' ? '#DDD6FE' : '#FED7AA'}`,
             }}>
               <div style={{ fontSize: '36px', marginBottom: '6px' }}>
                 {(statutColors[selected.statut] || statutColors.en_attente).icon}
@@ -189,14 +257,31 @@ export default function MesCandidatures() {
               <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '4px' }}>
                 Statut de votre candidature
               </div>
+
+              {/* Message personnalisé selon statut */}
+              {selected.statut === 'refuse' && (
+                <div style={{ marginTop: '10px', fontSize: '12px', color: '#EF4444', background: '#FEE2E2', borderRadius: '8px', padding: '8px' }}>
+                  Votre candidature n'a pas été retenue. Continuez à postuler !
+                </div>
+              )}
+              {selected.statut === 'accepte' && (
+                <div style={{ marginTop: '10px', fontSize: '12px', color: '#059669', background: '#D1FAE5', borderRadius: '8px', padding: '8px' }}>
+                  🎉 Félicitations ! Le recruteur va vous contacter prochainement.
+                </div>
+              )}
+              {selected.statut === 'entretien' && (
+                <div style={{ marginTop: '10px', fontSize: '12px', color: '#7C3AED', background: '#EDE9FE', borderRadius: '8px', padding: '8px' }}>
+                  📅 Préparez-vous ! Un entretien a été planifié pour vous.
+                </div>
+              )}
             </div>
 
             {[
-              { label: 'Poste',        value: selected.offre?.titre || '—' },
-              { label: 'Entreprise',   value: selected.offre?.recruteur?.entreprise || '—' },
-              { label: 'Lieu',         value: selected.offre?.lieu || '—' },
-              { label: 'Type',         value: selected.offre?.type || '—' },
-              { label: 'Postulé le',   value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
+              { label: 'Poste',      value: selected.offre?.titre || '—' },
+              { label: 'Entreprise', value: selected.offre?.recruteur?.entreprise || '—' },
+              { label: 'Lieu',       value: selected.offre?.lieu || '—' },
+              { label: 'Type',       value: selected.offre?.type || '—' },
+              { label: 'Postulé le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
             ].map((f, i) => (
               <div key={i} style={{
                 display: 'flex', justifyContent: 'space-between',
@@ -225,15 +310,16 @@ export default function MesCandidatures() {
                 Suivi
               </div>
               {[
-                { label: 'Candidature envoyée', done: true },
-                { label: "En cours d'examen",   done: true },
-                { label: 'Entretien',            done: selected.statut === 'entretien' || selected.statut === 'accepte' },
-                { label: 'Décision finale',      done: selected.statut === 'accepte' || selected.statut === 'refuse' },
+                { label: 'Candidature envoyée', done: true,  color: '#059669' },
+                { label: "En cours d'examen",   done: true,  color: '#059669' },
+                { label: 'Entretien',            done: selected.statut === 'entretien' || selected.statut === 'accepte', color: '#7C3AED' },
+                { label: 'Décision finale',      done: selected.statut === 'accepte' || selected.statut === 'refuse',
+                  color: selected.statut === 'refuse' ? '#EF4444' : '#059669' },
               ].map((step, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                   <div style={{
                     width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
-                    background: step.done ? '#059669' : '#E2E8F0',
+                    background: step.done ? step.color : '#E2E8F0',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '11px', color: '#fff', fontWeight: '700',
                   }}>

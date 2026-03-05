@@ -19,20 +19,18 @@ export default function Candidatures() {
 
   useEffect(() => {
     fetchMesOffres();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (selectedOffre) {
-      fetchCandidatures(selectedOffre);
-    } else {
-      setCandidatures([]);
-    }
+    if (selectedOffre) fetchCandidatures(selectedOffre);
+    else setCandidatures([]);
   }, [selectedOffre]);
 
   const fetchMesOffres = async () => {
     try {
       const data = await api('/offres/mes');
-      setMesOffres(data.offres);
+      setMesOffres(data.offres || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -44,7 +42,7 @@ export default function Candidatures() {
     try {
       setLoading(true);
       const data = await api(`/candidatures/offre/${offreId}`);
-      setCandidatures(data.candidatures);
+      setCandidatures(data.candidatures || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -60,7 +58,7 @@ export default function Candidatures() {
   const changeStatut = async (id, statut) => {
     try {
       await api(`/candidatures/${id}`, 'PUT', { statut });
-      showMessage('success', `✅ Statut mis à jour !`);
+      showMessage('success', '✅ Statut mis à jour !');
       if (selectedOffre) fetchCandidatures(selectedOffre);
       if (selected?._id === id) setSelected(s => ({ ...s, statut }));
     } catch (err) {
@@ -130,10 +128,10 @@ export default function Candidatures() {
       {selectedOffre && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
           {[
-            { label: 'Total',      value: candidatures.length,                                              color: '#1E3A8A', bg: '#DBEAFE', icon: '📋' },
-            { label: 'En attente', value: candidatures.filter(c => c.statut === 'en_attente').length,       color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
-            { label: 'Acceptés',   value: candidatures.filter(c => c.statut === 'accepte').length,          color: '#059669', bg: '#D1FAE5', icon: '✅' },
-            { label: 'Refusés',    value: candidatures.filter(c => c.statut === 'refuse').length,           color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
+            { label: 'Total',      value: candidatures.length,                                        color: '#1E3A8A', bg: '#DBEAFE', icon: '📋' },
+            { label: 'En attente', value: candidatures.filter(c => c.statut === 'en_attente').length, color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
+            { label: 'Acceptés',   value: candidatures.filter(c => c.statut === 'accepte').length,    color: '#059669', bg: '#D1FAE5', icon: '✅' },
+            { label: 'Refusés',    value: candidatures.filter(c => c.statut === 'refuse').length,     color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
           ].map((s, i) => (
             <div key={i} style={{
               background: '#fff', borderRadius: '14px', padding: '20px',
@@ -159,7 +157,7 @@ export default function Candidatures() {
 
       {/* Table + Panel */}
       {selectedOffre && (
-        <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 360px' : '1fr', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: '20px' }}>
 
           {/* Table */}
           <div style={{
@@ -167,22 +165,19 @@ export default function Candidatures() {
             border: '1px solid #E2E8F0', overflow: 'hidden',
           }}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
-                Chargement...
-              </div>
+              <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>Chargement...</div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: '#1E3A8A' }}>
-                      {['Candidat', 'Expérience', 'Compétences', 'Score IA', 'Statut', 'Actions'].map(h => (
+                      {['Candidat', 'Expérience', 'Compétences', 'CV', 'Statut', 'Actions'].map(h => (
                         <th key={h} style={{
                           padding: '14px 16px', textAlign: 'left',
-                          color: h === 'Score IA' ? '#93C5FD' : '#fff',
-                          fontSize: '13px', fontWeight: '600',
+                          color: '#fff', fontSize: '13px', fontWeight: '600',
                           fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
                         }}>
-                          {h === 'Score IA' ? '🤖 ' + h : h}
+                          {h}
                         </th>
                       ))}
                     </tr>
@@ -236,12 +231,19 @@ export default function Candidatures() {
                             )}
                           </div>
                         </td>
-                        {/* Score IA placeholder */}
-                        <td style={{ ...tdStyle, minWidth: '100px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <div style={{ flex: 1, height: '5px', background: '#F1F5F9', borderRadius: '99px' }} />
-                            <span style={{ fontSize: '12px', color: '#CBD5E1', fontWeight: '600' }}>--</span>
-                          </div>
+                        <td style={tdStyle}>
+                          {c.cv ? (
+                            <a href={`http://localhost:5000/${c.cv}`} target="_blank" rel="noreferrer" style={{
+                              background: '#DBEAFE', color: '#1E3A8A',
+                              padding: '4px 10px', borderRadius: '6px',
+                              fontSize: '12px', fontWeight: '500',
+                              textDecoration: 'none',
+                            }}>
+                              📄 CV
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#CBD5E1' }}>—</span>
+                          )}
                         </td>
                         <td style={tdStyle}>
                           <span style={{
@@ -254,7 +256,8 @@ export default function Candidatures() {
                           </span>
                         </td>
                         <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
-                          <button onClick={() => setSelected(selected?._id === c._id ? null : c)} style={btnStyle('#EDE9FE', '#7C3AED')}>
+                          <button onClick={() => setSelected(selected?._id === c._id ? null : c)}
+                            style={btnStyle('#EDE9FE', '#7C3AED')}>
                             👁 Voir
                           </button>
                         </td>
@@ -281,6 +284,7 @@ export default function Candidatures() {
             <div style={{
               background: '#fff', borderRadius: '16px', padding: '24px',
               border: '1px solid #E2E8F0', height: 'fit-content',
+              maxHeight: '90vh', overflowY: 'auto',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>
@@ -306,49 +310,28 @@ export default function Candidatures() {
                   {selected.candidat?.nom}
                 </div>
                 <div style={{ fontSize: '13px', color: '#94A3B8' }}>{selected.candidat?.email}</div>
-              </div>
-
-              {/* Score IA placeholder */}
-              <div style={{
-                background: '#F8FAFC', border: '2px dashed #E2E8F0',
-                borderRadius: '12px', padding: '16px',
-                textAlign: 'center', marginBottom: '16px',
-              }}>
-                <div style={{ fontSize: '24px', marginBottom: '4px' }}>🤖</div>
-                <div style={{ fontSize: '28px', fontWeight: '800', color: '#CBD5E1', fontFamily: 'Syne, sans-serif' }}>
-                  -- / 100
-                </div>
-                <div style={{ fontSize: '11px', color: '#CBD5E1' }}>
-                  Score IA — disponible après intégration ML
-                </div>
+                {selected.candidat?.telephone && (
+                  <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px' }}>
+                    📞 {selected.candidat.telephone}
+                  </div>
+                )}
               </div>
 
               {/* Infos */}
               {[
-                { label: 'Expérience',  value: selected.candidat?.experience ? `${selected.candidat.experience} ans` : '—' },
-                { label: 'Téléphone',   value: selected.candidat?.telephone || '—' },
-                { label: 'Postulé le',  value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
+                { label: 'Expérience', value: selected.candidat?.experience ? `${selected.candidat.experience} ans` : '—' },
+                { label: 'Formation',  value: selected.candidat?.formation || '—' },
+                { label: 'Langues',    value: selected.candidat?.langues || '—' },
+                { label: 'Postulé le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
               ].map((f, i) => (
                 <div key={i} style={{
                   display: 'flex', justifyContent: 'space-between',
                   padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px',
                 }}>
                   <span style={{ color: '#94A3B8' }}>{f.label}</span>
-                  <span style={{ color: '#1E293B', fontWeight: '500' }}>{f.value}</span>
+                  <span style={{ color: '#1E293B', fontWeight: '500', textAlign: 'right', maxWidth: '200px' }}>{f.value}</span>
                 </div>
               ))}
-
-              {/* Lettre */}
-              {selected.lettre && (
-                <div style={{ marginTop: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-                    Lettre de motivation
-                  </div>
-                  <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.7', background: '#F8FAFC', borderRadius: '8px', padding: '12px' }}>
-                    {selected.lettre}
-                  </p>
-                </div>
-              )}
 
               {/* Compétences */}
               {(selected.candidat?.competences || []).length > 0 && (
@@ -359,7 +342,7 @@ export default function Candidatures() {
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {selected.candidat.competences.map((k, i) => (
                       <span key={i} style={{
-                        background: '#F1F5F9', color: '#475569',
+                        background: '#DBEAFE', color: '#1E3A8A',
                         padding: '4px 12px', borderRadius: '6px',
                         fontSize: '12px', fontWeight: '500',
                       }}>
@@ -367,6 +350,54 @@ export default function Candidatures() {
                       </span>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* CV */}
+              {selected.cv && (
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    CV
+                  </div>
+                  <a href={`http://localhost:5000/${selected.cv}`} target="_blank" rel="noreferrer" style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    background: '#F8FAFC', borderRadius: '10px', padding: '12px 16px',
+                    border: '1px solid #E2E8F0', textDecoration: 'none',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>📄</span>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B' }}>
+                        {selected.cvNom || 'CV du candidat'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>Cliquer pour télécharger</div>
+                    </div>
+                  </a>
+                </div>
+              )}
+
+              {/* Vidéo */}
+              {selected.video && (
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Vidéo de présentation
+                  </div>
+                  <video
+                    controls
+                    style={{ width: '100%', borderRadius: '10px', border: '1px solid #E2E8F0' }}
+                    src={`http://localhost:5000/${selected.video}`}
+                  />
+                </div>
+              )}
+
+              {/* Lettre */}
+              {selected.lettre && (
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+                    Lettre de motivation
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.7', background: '#F8FAFC', borderRadius: '8px', padding: '12px' }}>
+                    {selected.lettre}
+                  </p>
                 </div>
               )}
 
