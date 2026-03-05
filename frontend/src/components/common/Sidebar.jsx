@@ -3,11 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const menus = {
   admin: [
-    { label: 'Dashboard',    icon: '📊', path: '/admin/dashboard' },
-    { label: 'Recruteurs',   icon: '🏢', path: '/admin/recruteurs' },
-    { label: 'Candidats',    icon: '👤', path: '/admin/candidats' },
-    { label: 'Offres',       icon: '📋', path: '/admin/offres' },
-    { label: 'Paramètres',   icon: '⚙️', path: '/admin/parametres' },
+  { label: 'Dashboard',  icon: '📊', path: '/admin/dashboard' },
+{ label: 'Recruteurs', icon: '🏢', path: '/admin/recruteurs' },
+{ label: 'Candidats',  icon: '👤', path: '/admin/candidats' },
+{ label: 'Offres',     icon: '📋', path: '/admin/offres' },
+{ label: 'Paramètres', icon: '⚙️', path: '/admin/parametres' },
 
   ],
   recruteur: [
