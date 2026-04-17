@@ -9,6 +9,12 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import LandingPage    from '../pages/LandingPage';
 import LoginAdmin     from '../pages/auth/LoginAdmin';
 
+// Public Pages
+import Fonctionnalités from '../pages/Fonctionnalités';
+import Offres          from '../pages/Offres';
+import Entreprises     from '../pages/Entreprises';
+import Ressources      from '../pages/Ressources';
+
 // Admin
 import DashboardAdmin        from '../pages/admin/DashboardAdmin';
 import GestionRecruteurs     from '../pages/admin/GestionRecruteurs';
@@ -44,6 +50,12 @@ export default function AppRoutes() {
           {/* Landing */}
           <Route path="/"     element={<LandingPage />} />
           <Route path="/home" element={<LandingPage />} />
+
+          {/* Public Pages */}
+          <Route path="/fonctionnalites" element={<Fonctionnalités />} />
+          <Route path="/offres"           element={<Offres />} />
+          <Route path="/entreprises"      element={<Entreprises />} />
+          <Route path="/ressources"       element={<Ressources />} />
 
           {/* Auth */}
           <Route path="/login"           element={<Login />} />

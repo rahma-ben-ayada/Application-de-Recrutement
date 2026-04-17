@@ -11,7 +11,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://0.0.0.0:3000', process.env.FRONTEND_URL],
   credentials: true,
 }));
 app.use(express.json());
@@ -49,6 +49,10 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+const HOST = '0.0.0.0'; // Écouter sur toutes les interfaces réseau
+
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Serveur démarré sur http://${HOST}:${PORT}`);
+  console.log(`🌐 Accès local: http://localhost:${PORT}`);
+  console.log(`📡 Accès réseau: http://votre_ip_locale:${PORT}`);
 });
