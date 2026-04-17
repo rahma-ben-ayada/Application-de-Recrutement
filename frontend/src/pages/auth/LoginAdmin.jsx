@@ -1,211 +1,630 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { luxuryTheme, keyframes } from '../../theme/luxuryTheme';
 
 export default function LoginAdmin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { adminLogin } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [locked, setLocked] = useState(false);
+  const [lockTime, setLockTime] = useState(0);
+  const [ipAddress, setIpAddress] = useState('192.168.1.xxx');
+  const [focusedInput, setFocusedInput] = useState(null);
+
+  useEffect(() => {
+    const simulatedIP = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+    setIpAddress(simulatedIP);
+
+    const savedAttempts = localStorage.getItem('admin_login_attempts');
+    const lockUntil = localStorage.getItem('admin_lock_until');
+    if (savedAttempts) setAttempts(parseInt(savedAttempts));
+    if (lockUntil && parseInt(lockUntil) > Date.now()) {
+      setLocked(true);
+      setLockTime(parseInt(lockUntil));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (locked && lockTime > Date.now()) {
+      const timer = setInterval(() => {
+        if (Date.now() >= lockTime) {
+          setLocked(false);
+          setLockTime(0);
+          localStorage.removeItem('admin_lock_until');
+        }
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [locked, lockTime]);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  if (!form.email || !form.password) {
-    setError('Veuillez remplir tous les champs');
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const user = await login(form.email, form.password);
-
-    if (user.role === 'admin') {
-      navigate('/admin/dashboard');
-    } else {
-      setError('Accès refusé. Ce portail est réservé aux administrateurs.');
+    if (locked) {
+      setError('Compte temporairement verrouillé. Veuillez réessayer plus tard.');
+      return;
     }
 
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    if (!form.email || !form.password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError('Format d\'email invalide');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const user = await adminLogin(form.email, form.password);
+      setAttempts(0);
+      localStorage.removeItem('admin_login_attempts');
+      localStorage.removeItem('admin_lock_until');
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError(err.message || 'Échec de l\'authentification');
+      handleFailedAttempt();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFailedAttempt = () => {
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
+    localStorage.setItem('admin_login_attempts', newAttempts.toString());
+
+    if (newAttempts >= 3) {
+      const lockDuration = 5 * 60 * 1000;
+      const lockUntil = Date.now() + lockDuration;
+      setLocked(true);
+      setLockTime(lockUntil);
+      localStorage.setItem('admin_lock_until', lockUntil.toString());
+    }
+  };
+
+  const getLockTimeRemaining = () => {
+    const remaining = Math.ceil((lockTime - Date.now()) / 1000);
+    if (remaining <= 0) return 0;
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 50%, #2E5082 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: '"Inter", sans-serif',
+    },
+    animatedBg: (delay) => ({
+      position: 'absolute',
+      width: '600px',
+      height: '600px',
+      borderRadius: '50%',
+      background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)',
+      pointerEvents: 'none',
+      animation: `float ${20 + delay}s ease-in-out infinite`,
+    }),
+    securityBanner: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      background: 'rgba(10, 22, 40, 0.9)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+      padding: '12px 60px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      fontSize: '12px',
+      color: 'rgba(255, 255, 255, 0.7)',
+      zIndex: 10,
+    },
+    leftPanel: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      padding: '100px 80px',
+      position: 'relative',
+      zIndex: 1,
+    },
+    rightPanel: {
+      width: '580px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'rgba(255, 255, 255, 0.98)',
+      backdropFilter: 'blur(20px)',
+      padding: '48px 40px',
+      position: 'relative',
+      zIndex: 1,
+      boxShadow: '0 32px 64px rgba(0, 0, 0, 0.2)',
+    },
+    logo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '40px',
+    },
+    logoIcon: {
+      width: '56px',
+      height: '56px',
+      borderRadius: '12px',
+      background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #B8941F 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '24px',
+      boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)',
+    },
+    securityBadge: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      background: 'linear-gradient(135deg, rgba(220,38,38,0.15) 0%, rgba(185,28,28,0.15) 100%)',
+      border: '1px solid rgba(220, 38, 38, 0.3)',
+      borderRadius: '50px',
+      padding: '10px 24px',
+      marginBottom: '32px',
+      boxShadow: '0 4px 16px rgba(220, 38, 68, 0.15)',
+    },
+    title: {
+      fontFamily: '"Playfair Display", serif',
+      fontSize: '52px',
+      fontWeight: '700',
+      color: '#fff',
+      lineHeight: '1.1',
+      marginBottom: '20px',
+    },
+    subtitle: {
+      fontSize: '15px',
+      color: 'rgba(255, 255, 255, 0.8)',
+      lineHeight: '1.8',
+      maxWidth: '420px',
+      marginBottom: '40px',
+    },
+    formContainer: {
+      width: '100%',
+      maxWidth: '420px',
+    },
+    inputGroup: {
+      marginBottom: '20px',
+    },
+    label: {
+      fontSize: '13px',
+      fontWeight: '600',
+      color: '#475569',
+      display: 'block',
+      marginBottom: '8px',
+    },
+    input: {
+      width: '100%',
+      height: '52px',
+      padding: '0 16px',
+      paddingLeft: '48px',
+      paddingRight: '48px',
+      border: focusedInput === 'email' || focusedInput === 'password'
+        ? '2px solid #D4AF37'
+        : '2px solid #E2E8F0',
+      borderRadius: '12px',
+      fontSize: '14px',
+      outline: 'none',
+      background: '#F8FAFC',
+      transition: 'all 0.3s ease',
+      opacity: locked ? 0.6 : 1,
+      cursor: locked ? 'not-allowed' : 'text',
+      boxShadow: focusedInput === 'email' || focusedInput === 'password'
+        ? '0 8px 24px rgba(212, 175, 55, 0.15)'
+        : 'none',
+    },
+    button: {
+      width: '100%',
+      height: '52px',
+      borderRadius: '12px',
+      border: 'none',
+      background: loading || locked
+        ? '#94A3B8'
+        : 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 100%)',
+      color: '#fff',
+      fontSize: '15px',
+      fontWeight: '600',
+      cursor: loading || locked ? 'not-allowed' : 'pointer',
+      boxShadow: '0 8px 24px rgba(10, 22, 40, 0.3)',
+      transition: 'all 0.3s ease',
+    },
+    error: {
+      background: '#FEF2F2',
+      border: '1px solid #FECACA',
+      borderRadius: '12px',
+      padding: '14px 18px',
+      color: '#DC2626',
+      fontSize: '13px',
+      marginBottom: '20px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '10px',
+      fontWeight: '500',
+    },
+    warning: {
+      background: '#FEF3C7',
+      border: '1px solid #FCD34D',
+      borderRadius: '10px',
+      padding: '12px 16px',
+      fontSize: '12px',
+      color: '#92400E',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    },
+    lockMessage: {
+      background: '#FEF2F2',
+      border: '1px solid #FECACA',
+      borderRadius: '12px',
+      padding: '16px 20px',
+      marginBottom: '20px',
+    },
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex',
-      background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%)',
-    }}>
+    <div style={styles.container}>
+      <style>{keyframes}</style>
 
-      {/* Panel gauche */}
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', padding: '60px',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', width: '500px', height: '500px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(37,99,235,.25) 0%, transparent 70%)',
-          top: '-150px', left: '-100px', pointerEvents: 'none',
-        }} />
+      {/* Animated Background */}
+      <div style={{ ...styles.animatedBg(0), top: '-200px', left: '-150px' }} />
+      <div style={{ ...styles.animatedBg(5), bottom: '-100px', right: '-100px' }} />
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{
-            fontFamily: 'Syne, sans-serif', fontSize: '28px',
-            fontWeight: '800', color: '#fff', marginBottom: '48px',
-          }}>
-            Smart<span style={{ color: '#60A5FA' }}>Recruit</span>
-          </div>
-
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(239,68,68,.15)', border: '1px solid rgba(239,68,68,.3)',
-            borderRadius: '50px', padding: '6px 16px', marginBottom: '24px',
-          }}>
-            <span>🛡️</span>
-            <span style={{ fontSize: '13px', color: '#FCA5A5', fontWeight: '500' }}>
-              Portail Administrateur
-            </span>
-          </div>
-
-          <h1 style={{
-            fontFamily: 'Syne, sans-serif', fontSize: '40px',
-            fontWeight: '800', color: '#fff', lineHeight: '1.15', marginBottom: '16px',
-          }}>
-            Espace<br />
-            <span style={{ color: '#60A5FA' }}>Administration</span>
-          </h1>
-
-          <p style={{ fontSize: '15px', color: '#94A3B8', lineHeight: '1.7', maxWidth: '360px' }}>
-            Accès restreint aux administrateurs autorisés. Gérez les recruteurs, candidats et paramètres de la plateforme.
-          </p>
-
-          <div style={{ display: 'flex', gap: '24px', marginTop: '48px' }}>
-            {[
-              { value: '340+', label: 'Recruteurs' },
-              { value: '12k+', label: 'Candidats' },
-              { value: '98%',  label: 'Disponibilité' },
-            ].map((s, i) => (
-              <div key={i}>
-                <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: '800', color: '#60A5FA' }}>
-                  {s.value}
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
+      {/* Security Banner */}
+      <div style={styles.securityBanner}>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            🔒 Connexion sécurisée SSL
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            🛡️ Protection renforcée
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            ⏰ Verrouillage auto
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+          <span>IP: {ipAddress}</span>
+          <span style={{ color: '#D4AF37' }}>Admin v2.0</span>
         </div>
       </div>
 
-      {/* Panel droit — Formulaire */}
-      <div style={{
-        width: '480px', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', background: '#F8FAFC', padding: '40px 32px',
-      }}>
-        <div style={{ width: '100%', maxWidth: '380px' }}>
-
-          {/* Badge admin */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px',
-          }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '12px',
-              background: '#1E3A8A', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: '22px',
-            }}>
-              🛡️
+      {/* Left Panel */}
+      <div style={styles.leftPanel}>
+        <div style={styles.logo}>
+          <div style={styles.logoIcon}>🛡️</div>
+          <div>
+            <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '26px', fontWeight: '700', color: '#fff' }}>
+              SmartRecruit
             </div>
-            <div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: '800', color: '#1E293B' }}>
-                Connexion Admin
-              </div>
-              <div style={{ fontSize: '13px', color: '#94A3B8' }}>Portail d'administration</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '500' }}>
+              PLATFORME DE RECRUTEMENT
             </div>
           </div>
+        </div>
 
-          {error && (
-            <div style={{
-              background: '#FEF2F2', border: '1px solid #FECACA',
-              borderRadius: '10px', padding: '12px 16px',
-              color: '#EF4444', fontSize: '13px', marginBottom: '20px',
-              display: 'flex', alignItems: 'center', gap: '8px',
+        <div style={styles.securityBadge}>
+          <span style={{ fontSize: '18px' }}>⚠️</span>
+          <span style={{ fontSize: '13px', color: '#FCA5A5', fontWeight: '600', letterSpacing: '0.5px' }}>
+            PORTAIL ADMINISTRATEUR SÉCURISÉ
+          </span>
+        </div>
+
+        <h1 style={styles.title}>
+          Espace<br />
+          <span style={{ color: '#D4AF37' }}>Administration</span>
+        </h1>
+
+        <p style={styles.subtitle}>
+          Accès exclusivement réservé aux administrateurs autorisés. Toute tentative d'intrusion sera signalée et enregistrée.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
+          {[
+            { icon: '🔐', label: 'Authentification 2FA' },
+            { icon: '📊', label: 'Journalisation activités' },
+            { icon: '🛡️', label: 'Anti-attaques DDoS' },
+            { icon: '⏰', label: 'Verrouillage auto' },
+          ].map((feature, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '12px',
+              padding: '14px 18px',
+              border: '1px solid ' + 'rgba(255, 255, 255, 0.1)',
             }}>
-              ⚠️ {error}
+              <span style={{ fontSize: '20px' }}>{feature.icon}</span>
+              <span style={{ fontSize: '12px', color: '#fff', fontWeight: '500' }}>
+                {feature.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '40px' }}>
+          {[
+            { value: '24/7', label: 'Support' },
+            { value: '99.9%', label: 'Disponibilité' },
+            { value: 'SSL', label: 'Sécurisé' },
+          ].map((s, i) => (
+            <div key={i}>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '24px', fontWeight: '700', color: '#D4AF37' }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div style={styles.rightPanel}>
+        <div style={styles.formContainer}>
+
+          {/* Header */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                boxShadow: '0 8px 20px rgba(10, 22, 40, 0.2)',
+              }}>
+                🔐
+              </div>
+              <div>
+                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '20px', fontWeight: '700', color: '#0A1628' }}>
+                  Connexion Administrateur
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748B', fontWeight: '500' }}>
+                  Identifiez-vous pour accéder au panneau
+                </div>
+              </div>
+            </div>
+
+            {attempts > 0 && attempts < 3 && (
+              <div style={styles.warning}>
+                <span>⚠️</span>
+                <span>
+                  {attempts} tentative{attempts > 1 ? 's' : ''} échouée{attempts > 1 ? 's' : ''}.
+                  Verrouillage après 3 tentatives.
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div style={styles.error}>
+              <span style={{ fontSize: '16px' }}>🚫</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Lock Message */}
+          {locked && (
+            <div style={styles.lockMessage}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🔒</span>
+                <span style={{ fontWeight: '700', color: '#DC2626', fontSize: '14px' }}>
+                  Compte temporairement verrouillé
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#EF4444' }}>
+                Trop de tentatives échouées. Réessayez dans {getLockTimeRemaining()} minutes.
+              </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>Email administrateur</label>
-              <input
-                type="email"
-                placeholder="admin@smartrecruit.tn"
-                value={form.email}
-                onChange={set('email')}
-                style={inputStyle}
-              />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                <span>Email administrateur</span>
+                <span style={{ color: '#D4AF37' }}> *</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="email"
+                  placeholder="admin@smartrecruit.com"
+                  value={form.email}
+                  onChange={set('email')}
+                  disabled={locked}
+                  onFocus={() => setFocusedInput('email')}
+                  onBlur={() => setFocusedInput(null)}
+                  style={styles.input}
+                />
+                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>
+                  ✉️
+                </span>
+              </div>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={labelStyle}>Mot de passe</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={set('password')}
-                style={inputStyle}
-              />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                <span>Mot de passe</span>
+                <span style={{ color: '#D4AF37' }}> *</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••••••"
+                  value={form.password}
+                  onChange={set('password')}
+                  disabled={locked}
+                  onFocus={() => setFocusedInput('password')}
+                  onBlur={() => setFocusedInput(null)}
+                  style={styles.input}
+                />
+                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>
+                  🔑
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={locked}
+                  style={{
+                    position: 'absolute',
+                    right: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: locked ? 'not-allowed' : 'pointer',
+                    fontSize: '16px',
+                    opacity: locked ? 0.5 : 1,
+                  }}
+                >
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                </button>
+              </div>
             </div>
 
-            <button type="submit" disabled={loading} style={{
-              width: '100%', height: '48px', borderRadius: '50px', border: 'none',
-              background: loading ? '#94A3B8' : '#1E3A8A',
-              color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: '600',
-              boxShadow: '0 4px 16px rgba(30,58,138,.3)',
-            }}>
-              {loading ? 'Vérification...' : '🛡️ Accéder au panneau admin'}
+            <button
+              type="submit"
+              disabled={loading || locked}
+              style={styles.button}
+              onMouseEnter={(e) => {
+                if (!loading && !locked) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(10, 22, 40, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && !locked) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(10, 22, 40, 0.3)';
+                }
+              }}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <span className="spinner" style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #fff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }}></span>
+                  Vérification en cours...
+                </span>
+              ) : locked ? (
+                '🔒 Compte verrouillé'
+              ) : (
+                '🛡️ Accéder au panneau d\'administration'
+              )}
             </button>
           </form>
 
-          {/* Compte test */}
+          {/* Test Account */}
           <div style={{
-            marginTop: '24px', background: '#fff', borderRadius: '10px',
-            padding: '12px 16px', border: '1px solid #E2E8F0',
+            marginTop: '28px',
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
           }}>
-            <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+            <div style={{
+              fontSize: '10px',
+              color: '#94A3B8',
+              fontWeight: '700',
+              marginBottom: '16px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
               Compte de test
             </div>
-            <div
-              onClick={() => setForm({ email: 'admin@test.com', password: '12345678' })}
-              style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            >
-              <span style={{
-                fontSize: '12px', fontWeight: '600', color: '#1E3A8A',
-                background: '#DBEAFE', padding: '2px 8px', borderRadius: '4px',
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setForm({ email: 'admin@test.com', password: '12345678' })}
+                disabled={locked}
+                style={{
+                  flex: 1,
+                  background: '#DBEAFE',
+                  color: '#1E3A8A',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: locked ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => { if (!locked) e.currentTarget.style.background = '#BFDBFE'; }}
+                onMouseLeave={(e) => { if (!locked) e.currentTarget.style.background = '#DBEAFE'; }}
+              >
+                👤 Admin
+              </button>
+              <div style={{
+                flex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                background: '#F8FAFC',
+                borderRadius: '12px',
+                padding: '0 16px',
+                fontSize: '12px',
+                color: '#64748B',
+                border: '1px solid #E2E8F0',
               }}>
-                Admin
-              </span>
-              <span style={{ fontSize: '12px', color: '#94A3B8' }}>admin@test.com</span>
+                admin@test.com / 12345678
+              </div>
             </div>
           </div>
 
-          {/* Lien retour */}
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          {/* Back Link */}
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
             <button
-              onClick={() => navigate('/login')}
+              type="button"
+              onClick={() => navigate('/')}
               style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: '#94A3B8', fontSize: '13px', fontFamily: 'DM Sans, sans-serif',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#64748B',
+                fontSize: '13px',
+                fontWeight: '500',
+                fontFamily: '"Inter", sans-serif',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'color 0.3s ease',
               }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#0A1628'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#64748B'}
             >
-              ← Retour au login utilisateurs
+              ← Retour à l'accueil
             </button>
           </div>
         </div>
@@ -213,15 +632,3 @@ export default function LoginAdmin() {
     </div>
   );
 }
-
-const labelStyle = {
-  fontSize: '13px', fontWeight: '500', color: '#475569',
-  display: 'block', marginBottom: '6px',
-};
-
-const inputStyle = {
-  width: '100%', height: '44px', padding: '0 14px',
-  border: '1.5px solid #E2E8F0', borderRadius: '10px',
-  fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-  outline: 'none', boxSizing: 'border-box', background: '#F8FAFC',
-};

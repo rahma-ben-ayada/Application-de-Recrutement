@@ -8,6 +8,7 @@ const {
   getCandidaturesOffre,
   updateStatut,
   getAllCandidatures,
+  getStatsCandidat,
 } = require('../controllers/candidatureController');
 
 router.post('/',
@@ -21,6 +22,7 @@ router.post('/',
 );
 
 router.get('/mes', protect, authorize('candidat'), getMesCandidatures);
+router.get('/stats', protect, authorize('candidat'), getStatsCandidat);
 router.get('/offre/:offreId', protect, authorize('recruteur'), getCandidaturesOffre);
 router.put('/:id', protect, authorize('recruteur'), updateStatut);
 router.get('/', protect, authorize('admin'), getAllCandidatures);

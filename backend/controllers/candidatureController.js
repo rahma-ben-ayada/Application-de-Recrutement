@@ -1,5 +1,6 @@
 const Candidature = require('../models/Candidature');
 const Offre = require('../models/Offre');
+const Entretien = require('../models/Entretien');
 
 // ===== CANDIDAT — Postuler =====
 exports.postuler = async (req, res) => {
@@ -91,6 +92,47 @@ exports.getAllCandidatures = async (req, res) => {
       .populate('candidat', 'nom email')
       .populate('offre', 'titre');
     res.status(200).json({ success: true, candidatures });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ===== CANDIDAT — Statistiques =====
+exports.getStatsCandidat = async (req, res) => {
+  try {
+    const candidatures = await Candidature.find({
+      candidat: req.user._id,
+      isDeleted: false,
+    });
+    const candidatureIds = candidatures.map(c => c._id);
+
+    const entretiens = await Entretien.find({
+      candidature: { $in: candidatureIds },
+      isDeleted: false,
+    });
+
+    const statuts = {
+      en_attente: candidatures.filter(c => c.statut === 'en_attente').length,
+      entretien: candidatures.filter(c => c.statut === 'entretien').length,
+      accepte: candidatures.filter(c => c.statut === 'accepte').length,
+      refuse: candidatures.filter(c => c.statut === 'refuse').length,
+    };
+
+    const entretiensStatuts = {
+      planifie: entretiens.filter(e => e.statut === 'planifié').length,
+      accepte: entretiens.filter(e => e.statut === 'accepté').length,
+      refuse: entretiens.filter(e => e.statut === 'refusé').length,
+    };
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalCandidatures: candidatures.length,
+        totalEntretiens: entretiens.length,
+        candidaturesParStatut: statuts,
+        entretiensParStatut: entretiensStatuts,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -3,42 +3,17 @@ import RecruteurLayout from '../../layouts/RecruteurLayout';
 import api from '../../utils/api';
 
 export default function DashboardRecruteur() {
-  const [stats, setStats] = useState({
-    totalOffres: 0,
-    offresActives: 0,
-    totalCandidatures: 0,
-    enAttente: 0,
-  });
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchStats = async () => {
     try {
-      const offresData = await api('/offres/mes');
-      const offres = offresData.offres || [];
-
-      let totalCandidatures = 0;
-      let enAttente = 0;
-
-      for (const offre of offres) {
-        try {
-          const candData = await api(`/candidatures/offre/${offre._id}`);
-          const cands = candData.candidatures || [];
-          totalCandidatures += cands.length;
-          enAttente += cands.filter(c => c.statut === 'en_attente').length;
-        } catch (e) {}
-      }
-
-      setStats({
-        totalOffres: offres.length,
-        offresActives: offres.filter(o => o.status === 'active').length,
-        totalCandidatures,
-        enAttente,
-      });
+      const data = await api('/offres/stats');
+      setStats(data.stats);
     } catch (err) {
       console.error(err);
     } finally {
@@ -47,10 +22,23 @@ export default function DashboardRecruteur() {
   };
 
   const cards = [
-    { label: 'Offres publiées',       value: stats.totalOffres,       icon: '📋', color: '#1E3A8A', bg: '#DBEAFE' },
-    { label: 'Candidatures reçues',   value: stats.totalCandidatures, icon: '📨', color: '#2563EB', bg: '#EFF6FF' },
-    { label: 'En attente de réponse', value: stats.enAttente,         icon: '⏳', color: '#D97706', bg: '#FEF3C7' },
-    { label: 'Offres actives',        value: stats.offresActives,     icon: '✅', color: '#059669', bg: '#D1FAE5' },
+    { label: 'Offres publiées',       value: stats?.totalOffres || 0,       icon: '📋', color: '#1E3A8A', bg: '#DBEAFE' },
+    { label: 'Candidatures reçues',   value: stats?.totalCandidatures || 0, icon: '📨', color: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Entretiens planifiés',  value: stats?.totalEntretiens || 0,   icon: '🎯', color: '#D97706', bg: '#FEF3C7' },
+    { label: 'Offres actives',        value: stats?.offresActives || 0,     icon: '✅', color: '#059669', bg: '#D1FAE5' },
+  ];
+
+  const candidatureStats = [
+    { label: 'En attente',  value: stats?.candidaturesParStatut?.en_attente || 0, color: '#F59E0B', bg: '#FEF3C7' },
+    { label: 'Entretien',   value: stats?.candidaturesParStatut?.entretien || 0, color: '#3B82F6', bg: '#DBEAFE' },
+    { label: 'Acceptées',   value: stats?.candidaturesParStatut?.accepte || 0,   color: '#10B981', bg: '#D1FAE5' },
+    { label: 'Refusées',    value: stats?.candidaturesParStatut?.refuse || 0,    color: '#EF4444', bg: '#FEE2E2' },
+  ];
+
+  const entretienStats = [
+    { label: 'Planifiés', value: stats?.entretiensParStatut?.planifie || 0, color: '#F59E0B', bg: '#FEF3C7' },
+    { label: 'Acceptés',  value: stats?.entretiensParStatut?.accepte || 0,  color: '#10B981', bg: '#D1FAE5' },
+    { label: 'Refusés',   value: stats?.entretiensParStatut?.refuse || 0,   color: '#EF4444', bg: '#FEE2E2' },
   ];
 
   return (
@@ -89,29 +77,90 @@ export default function DashboardRecruteur() {
         ))}
       </div>
 
-      {/* Power BI — À venir */}
-      <div style={{
-        background: '#fff', borderRadius: '16px', padding: '60px',
-        border: '2px dashed #E2E8F0', textAlign: 'center',
-        boxShadow: '0 4px 16px rgba(15,23,42,.04)',
-      }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>📊</div>
+      {/* Candidatures & Entretiens Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+        {/* Candidatures */}
         <div style={{
-          fontFamily: 'Syne, sans-serif', fontSize: '20px',
-          fontWeight: '700', color: '#1E293B', marginBottom: '8px',
+          background: '#fff',
+          borderRadius: '16px',
+          padding: '24px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(15,23,42,.04)',
         }}>
-          Dashboard Power BI
+          <h3 style={{
+            fontFamily: 'Syne, sans-serif',
+            fontSize: '18px',
+            fontWeight: '700',
+            color: '#1E293B',
+            marginBottom: '20px',
+          }}>
+            Candidatures par statut
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {candidatureStats.map((s, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 16px',
+                background: s.bg,
+                borderRadius: '10px',
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#475569' }}>
+                  {s.label}
+                </span>
+                <span style={{
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: s.color,
+                }}>
+                  {s.value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '24px' }}>
-          Le tableau de bord analytique Power BI sera intégré ici
-        </div>
+
+        {/* Entretiens */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-          background: '#DBEAFE', color: '#1E3A8A',
-          padding: '10px 24px', borderRadius: '50px',
-          fontSize: '13px', fontWeight: '600',
+          background: '#fff',
+          borderRadius: '16px',
+          padding: '24px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(15,23,42,.04)',
         }}>
-          🔜 Intégration en cours
+          <h3 style={{
+            fontFamily: 'Syne, sans-serif',
+            fontSize: '18px',
+            fontWeight: '700',
+            color: '#1E293B',
+            marginBottom: '20px',
+          }}>
+            Entretiens par statut
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {entretienStats.map((s, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 16px',
+                background: s.bg,
+                borderRadius: '10px',
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#475569' }}>
+                  {s.label}
+                </span>
+                <span style={{
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: s.color,
+                }}>
+                  {s.value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

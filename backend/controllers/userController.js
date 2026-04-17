@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Offre = require('../models/Offre');
+const Candidature = require('../models/Candidature');
+const Entretien = require('../models/Entretien');
 const generateToken = require('../utils/generateToken');
 
 // ===== ADMIN — Voir tous les users =====
@@ -187,6 +190,20 @@ exports.getStats = async (req, res) => {
     const pending         = await User.countDocuments({ status: 'pending', isDeleted: false });
     const suspended       = await User.countDocuments({ status: 'suspended', isDeleted: false });
     const verified        = await User.countDocuments({ isVerified: true, isDeleted: false });
+    const totalOffres     = await Offre.countDocuments({ isDeleted: false });
+    const totalCandidatures = await Candidature.countDocuments({ isDeleted: false });
+    const totalEntretiens   = await Entretien.countDocuments({ isDeleted: false });
+
+    // Candidatures par statut
+    const candidaturesEnAttente = await Candidature.countDocuments({ statut: 'en_attente', isDeleted: false });
+    const candidaturesEntretien = await Candidature.countDocuments({ statut: 'entretien', isDeleted: false });
+    const candidaturesAcceptees = await Candidature.countDocuments({ statut: 'accepte', isDeleted: false });
+    const candidaturesRefusees  = await Candidature.countDocuments({ statut: 'refuse', isDeleted: false });
+
+    // Entretiens par statut
+    const entretiensPlanifies = await Entretien.countDocuments({ statut: 'planifié', isDeleted: false });
+    const entretiensAcceptes  = await Entretien.countDocuments({ statut: 'accepté', isDeleted: false });
+    const entretiensRefuses   = await Entretien.countDocuments({ statut: 'refusé', isDeleted: false });
 
     res.status(200).json({
       success: true,
@@ -197,6 +214,20 @@ exports.getStats = async (req, res) => {
         pending,
         suspended,
         verified,
+        totalOffres,
+        totalCandidatures,
+        totalEntretiens,
+        candidaturesParStatut: {
+          en_attente: candidaturesEnAttente,
+          entretien: candidaturesEntretien,
+          accepte: candidaturesAcceptees,
+          refuse: candidaturesRefusees,
+        },
+        entretiensParStatut: {
+          planifie: entretiensPlanifies,
+          accepte: entretiensAcceptes,
+          refuse: entretiensRefuses,
+        },
       },
     });
   } catch (error) {

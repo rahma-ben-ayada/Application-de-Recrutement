@@ -1,61 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { luxuryTheme, keyframes } from '../theme/luxuryTheme';
 
 const offresRecentes = [
-  { id: 1, titre: 'Développeur React Senior', entreprise: 'Tech Corp',   lieu: 'Tunis',  type: 'CDI',   salaire: '2500 - 3500 TND' },
-  { id: 2, titre: 'Data Scientist',           entreprise: 'StartUp RH', lieu: 'Remote', type: 'CDD',   salaire: '3000 - 4000 TND' },
-  { id: 3, titre: 'UX/UI Designer',           entreprise: 'Big Finance', lieu: 'Sfax',   type: 'Stage', salaire: '800 - 1200 TND'  },
-  { id: 4, titre: 'Chef de projet IT',        entreprise: 'Dev Studio',  lieu: 'Tunis',  type: 'CDI',   salaire: '3500 - 4500 TND' },
-  { id: 5, titre: 'Développeur Java',         entreprise: 'Big Finance', lieu: 'Sousse', type: 'CDI',   salaire: '2800 - 3800 TND' },
-  { id: 6, titre: 'DevOps Engineer',          entreprise: 'Cloud Corp',  lieu: 'Remote', type: 'CDI',   salaire: '4000 - 5000 TND' },
-];
-
-const entreprises = [
-  { nom: 'Tech Corp',   secteur: 'Technologie',  offres: 12, logo: '💻' },
-  { nom: 'StartUp RH',  secteur: 'RH & Conseil', offres: 8,  logo: '🚀' },
-  { nom: 'Big Finance',  secteur: 'Finance',      offres: 15, logo: '💰' },
-  { nom: 'Dev Studio',   secteur: 'Développement',offres: 6,  logo: '🎨' },
-  { nom: 'Cloud Corp',   secteur: 'Cloud & DevOps',offres: 9, logo: '☁️' },
-  { nom: 'Data Insights',secteur: 'Data Science', offres: 11, logo: '📊' },
+  { id: 1, titre: 'Développeur React Senior', entreprise: 'Tech Corp',   lieu: 'Tunis',  type: 'CDI',   salaire: '2500 - 3500 TND', logo: '💻' },
+  { id: 2, titre: 'Data Scientist',           entreprise: 'StartUp RH', lieu: 'Remote', type: 'CDD',   salaire: '3000 - 4000 TND', logo: '📊' },
+  { id: 3, titre: 'UX/UI Designer',           entreprise: 'Big Finance', lieu: 'Sfax',   type: 'Stage', salaire: '800 - 1200 TND',  logo: '🎨' },
+  { id: 4, titre: 'Chef de projet IT',        entreprise: 'Dev Studio',  lieu: 'Tunis',  type: 'CDI',   salaire: '3500 - 4500 TND', logo: '⚡' },
+  { id: 5, titre: 'Développeur Java',         entreprise: 'Big Finance', lieu: 'Sousse', type: 'CDI',   salaire: '2800 - 3800 TND', logo: '☕' },
+  { id: 6, titre: 'DevOps Engineer',          entreprise: 'Cloud Corp',  lieu: 'Remote', type: 'CDI',   salaire: '4000 - 5000 TND', logo: '☁️' },
 ];
 
 const stats = [
-  { value: '12k+', label: 'Candidats actifs',  icon: '👤' },
-  { value: '340+', label: 'Entreprises',        icon: '🏢' },
-  { value: '1.2k+',label: 'Offres publiées',   icon: '📋' },
-  { value: '98%',  label: 'Taux satisfaction', icon: '⭐' },
+  { value: '12K+', label: 'Candidats Actifs',   icon: '👤', color: '#D4AF37' },
+  { value: '340+', label: 'Entreprises',        icon: '🏢', color: '#0066FF' },
+  { value: '1.2K',label: 'Offres Publiées',    icon: '📋', color: '#00CC7A' },
+  { value: '98%',  label: 'Satisfaction',       icon: '⭐', color: '#C27DFF' },
 ];
 
 const features = [
-  { icon: '🤖', title: 'Score IA Intelligent',   desc: 'Notre IA analyse et score chaque candidat automatiquement selon des critères pondérés.' },
-  { icon: '📊', title: 'Dashboard Power BI',      desc: 'Visualisez vos données RH en temps réel grâce à des tableaux de bord interactifs.' },
-  { icon: '🎯', title: 'Matching Automatique',    desc: 'Trouvez les meilleurs candidats pour chaque offre grâce au matching intelligent.' },
-  { icon: '📅', title: 'Gestion des entretiens', desc: 'Planifiez vos entretiens avec intégration Google Meet et Zoom.' },
-  { icon: '📄', title: 'CV & Profil complet',     desc: 'Les candidats créent un profil complet avec CV, compétences et expériences.' },
-  { icon: '🔒', title: 'Sécurisé & Fiable',      desc: 'Vos données sont protégées avec les dernières technologies de sécurité.' },
+  { icon: '🤖', title: 'IA Scoring Intelligent',   desc: 'Algorithmes avancés pour évaluer et classer les candidats automatiquement.', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { icon: '🎯', title: 'Matching Précis',         desc: 'Trouvez la perle rare grâce à notre moteur de matching intelligent.', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+  { icon: '📊', title: 'Analytics Temps Réel',    desc: 'Tableaux de bord interactifs pour suivre vos KPIs RH en direct.', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { icon: '📅', title: 'Entretiens Vidéo',        desc: 'Planifiez et organisez vos entretiens avec intégration vidéo.', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
+  { icon: '🔒', title: 'Sécurité Maximale',       desc: 'Vos données sont protégées par chiffrement bout-en-bout.', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+  { icon: '🌍', title: 'International',           desc: 'Plateforme multilingue avec support 24/7 dans le monde entier.', gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)' },
 ];
 
 const temoignages = [
-  { nom: 'Sarah Ben Ali',  poste: 'DRH, Tech Corp',   avatar: 'S', texte: 'SmartRecruit a révolutionné notre processus de recrutement. Le score IA nous fait gagner un temps précieux.' },
-  { nom: 'Karim Mansouri', poste: 'CEO, StartUp RH',  avatar: 'K', texte: 'Interface intuitive et fonctionnalités puissantes. Nous avons réduit notre temps de recrutement de 60%.' },
-  { nom: 'Lina Cherif',    poste: 'Candidat recruté', avatar: 'L', texte: 'J\'ai trouvé mon poste en 2 semaines ! La plateforme est simple et efficace.' },
-];
-
-const equipe = [
-  { nom: 'Ahmed Trabelsi', poste: 'CEO & Fondateur',      avatar: 'A', desc: 'Expert en RH avec 10 ans d\'expérience' },
-  { nom: 'Sonia Belhaj',   poste: 'CTO',                  avatar: 'S', desc: 'Ingénieure IA et Machine Learning' },
-  { nom: 'Mohamed Slim',   poste: 'Head of Product',      avatar: 'M', desc: 'Designer UX avec vision produit' },
+  { nom: 'Sarah Ben Ali',  poste: 'DRH, Tech Corp',   avatar: 'S', texte: 'SmartRecruit a transformé notre processus. Le score IA nous fait gagner 50% de temps.', color: '#D4AF37' },
+  { nom: 'Karim Mansouri', poste: 'CEO, StartUp RH',  avatar: 'K', texte: 'Interface exceptionnelle et fonctionnalités puissantes. Recrutement facilité !', color: '#0066FF' },
+  { nom: 'Lina Cherif',    poste: 'Candidat Recruté', avatar: 'L', texte: 'J\'ai décroché mon emploi idéal en 2 semaines. Plateforme intuitive.', color: '#00CC7A' },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [contactForm, setContactForm] = useState({ nom: '', email: '', sujet: '', message: '' });
-  const [contactSent, setContactSent] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [animatedStats, setAnimatedStats] = useState(false);
 
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimatedStats(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredOffres = offresRecentes.filter(o =>
     o.titre.toLowerCase().includes(search.toLowerCase()) ||
@@ -63,857 +57,821 @@ export default function LandingPage() {
     o.lieu.toLowerCase().includes(search.toLowerCase())
   );
 
-  const setContact = (k) => (e) => setContactForm(f => ({ ...f, [k]: e.target.value }));
-
-  const handleContact = () => {
-    if (!contactForm.nom || !contactForm.email || !contactForm.message) {
-      alert('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-    setContactSent(true);
-    setContactForm({ nom: '', email: '', sujet: '', message: '' });
-    setTimeout(() => setContactSent(false), 5000);
+  const styles = {
+    page: {
+      fontFamily: '"Inter", "DM Sans", sans-serif',
+      background: '#FAFBFC',
+      overflowX: 'hidden',
+    },
+    navbar: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1000,
+      background: scrolled ? 'rgba(10, 22, 40, 0.95)' : 'transparent',
+      backdropFilter: 'blur(20px)',
+      padding: '0 80px',
+      height: '80px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      transition: 'all 0.4s ease',
+      boxShadow: scrolled ? '0 8px 32px rgba(0, 0, 0, 0.1)' : 'none',
+    },
+    logo: {
+      fontFamily: '"Playfair Display", serif',
+      fontSize: '28px',
+      fontWeight: '700',
+      color: '#fff',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+    },
+    logoIcon: {
+      width: '48px',
+      height: '48px',
+      borderRadius: '12px',
+      background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #B8941F 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '24px',
+      boxShadow: '0 8px 24px rgba(212, 175, 55, 0.4)',
+    },
+    navLinks: {
+      display: 'flex',
+      gap: '40px',
+      alignItems: 'center',
+    },
+    navLink: {
+      color: '#fff',
+      textDecoration: 'none',
+      fontSize: '15px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      position: 'relative',
+    },
+    navLinkAfter: {
+      content: '""',
+      position: 'absolute',
+      bottom: '-4px',
+      left: 0,
+      width: 0,
+      height: '2px',
+      background: '#D4AF37',
+      transition: 'width 0.3s ease',
+    },
+    btn: {
+      padding: '12px 28px',
+      borderRadius: '50px',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: '600',
+      transition: 'all 0.3s ease',
+      fontFamily: '"Inter", sans-serif',
+    },
+    btnPrimary: {
+      background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
+      color: '#0A1628',
+      boxShadow: '0 8px 24px rgba(212, 175, 55, 0.4)',
+    },
+    btnSecondary: {
+      background: 'transparent',
+      color: '#fff',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
+    },
+    hero: {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 50%, #2E5082 100%)',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      overflow: 'hidden',
+    },
+    heroContent: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '0 80px',
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '80px',
+      alignItems: 'center',
+      zIndex: 2,
+    },
+    heroText: {
+      color: '#fff',
+    },
+    heroBadge: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      background: 'rgba(212, 175, 55, 0.15)',
+      border: '1px solid rgba(212, 175, 55, 0.3)',
+      borderRadius: '50px',
+      padding: '8px 20px',
+      marginBottom: '24px',
+      fontSize: '13px',
+      fontWeight: '600',
+      color: '#D4AF37',
+    },
+    heroTitle: {
+      fontFamily: '"Playfair Display", serif',
+      fontSize: '64px',
+      fontWeight: '700',
+      lineHeight: '1.1',
+      marginBottom: '24px',
+      background: 'linear-gradient(135deg, #fff 0%, #D4AF37 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+    },
+    heroSubtitle: {
+      fontSize: '18px',
+      lineHeight: '1.7',
+      color: 'rgba(255, 255, 255, 0.8)',
+      marginBottom: '40px',
+      maxWidth: '500px',
+    },
+    heroButtons: {
+      display: 'flex',
+      gap: '16px',
+    },
+    heroImage: {
+      position: 'relative',
+    },
+    heroCard: {
+      background: 'rgba(255, 255, 255, 0.1)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      borderRadius: '24px',
+      padding: '40px',
+      boxShadow: '0 32px 64px rgba(0, 0, 0, 0.2)',
+    },
+    floatingElement: (delay) => ({
+      position: 'absolute',
+      animation: `float 6s ease-in-out ${delay}s infinite`,
+    }),
+    section: {
+      padding: '120px 80px',
+      maxWidth: '1400px',
+      margin: '0 auto',
+    },
+    sectionTitle: {
+      fontFamily: '"Playfair Display", serif',
+      fontSize: '48px',
+      fontWeight: '700',
+      color: '#0A1628',
+      textAlign: 'center',
+      marginBottom: '16px',
+    },
+    sectionSubtitle: {
+      fontSize: '18px',
+      color: '#64748B',
+      textAlign: 'center',
+      marginBottom: '60px',
+      maxWidth: '600px',
+      margin: '0 auto 60px',
+    },
+    statsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '32px',
+      marginBottom: '80px',
+    },
+    statCard: {
+      background: '#fff',
+      borderRadius: '20px',
+      padding: '40px 32px',
+      textAlign: 'center',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      transition: 'all 0.4s ease',
+    },
+    statValue: {
+      fontFamily: '"Playfair Display", serif',
+      fontSize: '48px',
+      fontWeight: '700',
+      marginBottom: '8px',
+      background: 'linear-gradient(135deg, #0A1628 0%, #2E5082 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+    },
+    statLabel: {
+      fontSize: '14px',
+      color: '#64748B',
+      fontWeight: '500',
+    },
+    featureCard: {
+      background: '#fff',
+      borderRadius: '24px',
+      padding: '40px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      transition: 'all 0.4s ease',
+      cursor: 'pointer',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    featureIcon: {
+      width: '64px',
+      height: '64px',
+      borderRadius: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '28px',
+      marginBottom: '24px',
+    },
+    offreCard: {
+      background: '#fff',
+      borderRadius: '20px',
+      padding: '32px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+      transition: 'all 0.4s ease',
+      cursor: 'pointer',
+    },
+    testimonialCard: {
+      background: '#fff',
+      borderRadius: '24px',
+      padding: '40px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
+      border: '1px solid rgba(0, 0, 0, 0.05)',
+    },
+    ctaSection: {
+      background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 100%)',
+      borderRadius: '32px',
+      padding: '80px',
+      textAlign: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    footer: {
+      background: '#0A1628',
+      padding: '80px',
+      color: '#fff',
+    },
+    footerGrid: {
+      display: 'grid',
+      gridTemplateColumns: '2fr 1fr 1fr 1fr',
+      gap: '60px',
+      maxWidth: '1200px',
+      margin: '0 auto',
+    },
+    footerLink: {
+      color: 'rgba(255, 255, 255, 0.7)',
+      textDecoration: 'none',
+      fontSize: '14px',
+      display: 'block',
+      marginBottom: '12px',
+      transition: 'color 0.3s ease',
+    },
   };
 
   return (
-    <div style={{ fontFamily: 'DM Sans, sans-serif', background: '#fff', overflowX: 'hidden' }}>
+    <div style={styles.page}>
+      <style>{keyframes}</style>
 
       {/* ===== NAVBAR ===== */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: 'rgba(15,23,42,.97)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,.08)',
-        padding: '0 60px', height: '68px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{
-          fontFamily: 'Syne, sans-serif', fontSize: '22px',
-          fontWeight: '800', color: '#fff', cursor: 'pointer',
-        }} onClick={() => scrollTo('hero')}>
-          Smart<span style={{ color: '#60A5FA' }}>Recruit</span>
+      <nav style={styles.navbar}>
+        <div style={styles.logo} onClick={() => navigate('/')}>
+          <div style={styles.logoIcon}>💼</div>
+          <div>
+            <div>SmartRecruit</div>
+            <style>{`
+              div { font-family: 'Inter', sans-serif !important; }
+            `}</style>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          {[
-            { label: 'Offres',      id: 'offres' },
-            { label: 'Entreprises', id: 'entreprises' },
-            { label: 'À propos',    id: 'apropos' },
-            { label: 'Contact',     id: 'contact' },
-          ].map(l => (
-            <button
-              key={l.id}
-              onClick={() => scrollTo(l.id)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: '#94A3B8', fontSize: '14px', fontWeight: '500',
-                fontFamily: 'DM Sans, sans-serif', transition: '150ms',
-                padding: '0',
+        <div style={styles.navLinks}>
+          {['Fonctionnalités', 'Offres', 'Témoignages', 'Contact'].map((link) => (
+            <a
+              key={link}
+              style={styles.navLink}
+              onMouseEnter={(e) => {
+                e.target.style.color = '#D4AF37';
               }}
-              onMouseEnter={e => e.target.style.color = '#fff'}
-              onMouseLeave={e => e.target.style.color = '#94A3B8'}
+              onMouseLeave={(e) => {
+                e.target.style.color = '#fff';
+              }}
             >
-              {l.label}
-            </button>
+              {link}
+            </a>
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-
-          {/* 🛡️ Bouton Admin discret */}
+        <div style={{ display: 'flex', gap: '16px' }}>
           <button
-            onClick={() => navigate('/login-admin')}
-            style={{
-              height: '36px', padding: '0 14px', borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,.15)',
-              background: 'rgba(255,255,255,.06)',
-              color: '#64748B', cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '12px',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              transition: '150ms',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,.12)';
-              e.currentTarget.style.color = '#94A3B8';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,.06)';
-              e.currentTarget.style.color = '#64748B';
-            }}
+            style={{ ...styles.btn, ...styles.btnSecondary }}
+            onClick={() => navigate('/login')}
           >
-            🛡️ Admin
+            Connexion
           </button>
-
-          <button onClick={() => navigate('/login')} style={{
-            height: '40px', padding: '0 20px', borderRadius: '50px',
-            border: '1.5px solid rgba(255,255,255,.2)', background: 'transparent',
-            color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '14px', fontWeight: '500',
-          }}>
-            Se connecter
-          </button>
-
-          <button onClick={() => navigate('/register')} style={{
-            height: '40px', padding: '0 20px', borderRadius: '50px',
-            border: 'none', background: '#2563EB',
-            color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '14px', fontWeight: '500',
-            boxShadow: '0 4px 12px rgba(37,99,235,.4)',
-          }}>
-            S'inscrire gratuitement
+          <button
+            style={{ ...styles.btn, ...styles.btnPrimary }}
+            onClick={() => navigate('/register')}
+          >
+            S'inscrire →
           </button>
         </div>
-
       </nav>
 
-      {/* ===== HERO ===== */}
-      <section id="hero" style={{
-        background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #0F172A 100%)',
-        minHeight: '100vh',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: '100px 60px 80px',
-        position: 'relative', overflow: 'hidden',
-        textAlign: 'center',
-      }}>
-        {[
-          { size: 600, top: '-200px', left: '-150px', opacity: .15 },
-          { size: 400, bottom: '-100px', right: '-100px', opacity: .1 },
-          { size: 200, top: '30%', right: '15%', opacity: .08 },
-        ].map((c, i) => (
-          <div key={i} style={{
-            position: 'absolute', width: c.size, height: c.size, borderRadius: '50%',
-            background: 'radial-gradient(circle, #60A5FA, transparent)',
-            top: c.top, bottom: c.bottom, left: c.left, right: c.right,
-            opacity: c.opacity, pointerEvents: 'none',
-          }} />
-        ))}
-
+      {/* ===== HERO SECTION ===== */}
+      <section style={styles.hero}>
+        {/* Animated Background Elements */}
         <div style={{
-          background: 'rgba(96,165,250,.15)', border: '1px solid rgba(96,165,250,.3)',
-          borderRadius: '50px', padding: '6px 18px', marginBottom: '24px',
-          display: 'inline-flex', alignItems: 'center', gap: '8px',
-        }}>
-          <span style={{ fontSize: '14px' }}>🤖</span>
-          <span style={{ fontSize: '13px', color: '#60A5FA', fontWeight: '500' }}>
-            Propulsé par l'Intelligence Artificielle
-          </span>
-        </div>
-
-        <h1 style={{
-          fontFamily: 'Syne, sans-serif',
-          fontSize: '64px', fontWeight: '800', color: '#fff',
-          lineHeight: '1.1', marginBottom: '24px', maxWidth: '800px',
-        }}>
-          Trouvez les{' '}
-          <span style={{
-            background: 'linear-gradient(135deg, #60A5FA, #A78BFA)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            meilleurs talents
-          </span>
-          {' '}en Tunisie
-        </h1>
-
-        <p style={{
-          fontSize: '18px', color: '#94A3B8', lineHeight: '1.7',
-          maxWidth: '560px', marginBottom: '40px',
-        }}>
-          SmartRecruit connecte les entreprises aux meilleurs candidats grâce à l'IA. Recrutez plus vite, mieux et plus intelligemment.
-        </p>
-
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '56px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <button onClick={() => navigate('/register')} style={{
-            height: '52px', padding: '0 32px', borderRadius: '50px', border: 'none',
-            background: 'linear-gradient(135deg, #2563EB, #7C3AED)',
-            color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '16px', fontWeight: '600',
-            boxShadow: '0 8px 24px rgba(37,99,235,.4)',
-          }}>
-            Je cherche un emploi →
-          </button>
-          <button onClick={() => navigate('/register')} style={{
-            height: '52px', padding: '0 32px', borderRadius: '50px',
-            border: '1.5px solid rgba(255,255,255,.2)', background: 'transparent',
-            color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '16px', fontWeight: '500',
-          }}>
-            Je recrute des talents
-          </button>
-        </div>
-
+          position: 'absolute',
+          width: '600px',
+          height: '600px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
+          top: '-200px',
+          right: '-100px',
+          animation: 'float 8s ease-in-out infinite',
+        }} />
         <div style={{
-          background: '#fff', borderRadius: '16px', padding: '8px',
-          display: 'flex', gap: '8px', width: '100%', maxWidth: '640px',
-          boxShadow: '0 20px 48px rgba(0,0,0,.3)',
-        }}>
-          <input
-            placeholder="🔍 Rechercher un poste, une entreprise..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              flex: 1, height: '48px', padding: '0 16px',
-              border: 'none', outline: 'none', borderRadius: '12px',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
-              background: '#F8FAFC', color: '#1E293B',
-            }}
-          />
-          <button
-            onClick={() => scrollTo('offres')}
-            style={{
-              height: '48px', padding: '0 24px', borderRadius: '12px', border: 'none',
-              background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: '500',
-            }}
-          >
-            Rechercher
-          </button>
-        </div>
+          position: 'absolute',
+          width: '400px',
+          height: '400px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0,102,255,0.1) 0%, transparent 70%)',
+          bottom: '-100px',
+          left: '-100px',
+          animation: 'float 6s ease-in-out infinite reverse',
+        }} />
 
-        <div style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <span style={{ fontSize: '13px', color: '#64748B' }}>Populaire :</span>
-          {['React', 'Python', 'Data Science', 'DevOps', 'UI/UX'].map(t => (
-            <button key={t} onClick={() => { setSearch(t); scrollTo('offres'); }} style={{
-              padding: '4px 12px', borderRadius: '50px',
-              border: '1px solid rgba(255,255,255,.15)',
-              background: 'rgba(255,255,255,.08)', color: '#94A3B8',
-              cursor: 'pointer', fontSize: '13px', fontFamily: 'DM Sans, sans-serif',
-            }}>
-              {t}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ===== STATS ===== */}
-      <section style={{
-        background: '#1E3A8A', padding: '60px',
-        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px',
-      }}>
-        {stats.map((s, i) => (
-          <div key={i} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '36px', marginBottom: '8px' }}>{s.icon}</div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '36px', fontWeight: '800', color: '#fff', marginBottom: '4px' }}>
-              {s.value}
+        <div style={styles.heroContent}>
+          <div style={styles.heroText}>
+            <div style={styles.heroBadge}>
+              <span>🚀</span>
+              <span>#1 Plateforme de Recrutement en Tunisie</span>
             </div>
-            <div style={{ fontSize: '14px', color: '#93C5FD' }}>{s.label}</div>
-          </div>
-        ))}
-      </section>
 
-      {/* ===== OFFRES ===== */}
-      <section id="offres" style={{ padding: '80px 60px', background: '#F8FAFC' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{
-            display: 'inline-block', background: '#DBEAFE', color: '#1E3A8A',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
-          }}>
-            🔥 Offres récentes
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
-            Les dernières opportunités
-          </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '480px', margin: '0 auto' }}>
-            Découvrez les offres publiées par les meilleures entreprises de Tunisie
-          </p>
-        </div>
+            <h1 style={styles.heroTitle}>
+              Transformez Votre<br />
+              <span style={{ color: '#D4AF37' }}>Processus de Recrutement</span>
+            </h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '1100px', margin: '0 auto 40px' }}>
-          {filteredOffres.map(offre => (
-            <div key={offre.id} style={{
-              background: '#fff', borderRadius: '16px', padding: '24px',
-              border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
-              cursor: 'pointer', transition: '200ms',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(15,23,42,.12)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(15,23,42,.06)'; }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '48px', height: '48px', borderRadius: '12px',
-                  background: '#DBEAFE', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '22px', flexShrink: 0,
-                }}>
-                  🏢
-                </div>
-                <div>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#1E293B', fontFamily: 'Syne, sans-serif' }}>
-                    {offre.titre}
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#94A3B8' }}>{offre.entreprise}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                <span style={tagStyle('#DBEAFE', '#1E3A8A')}>{offre.type}</span>
-                <span style={tagStyle('#F1F5F9', '#475569')}>📍 {offre.lieu}</span>
-                <span style={tagStyle('#F0FDF4', '#059669')}>💰 {offre.salaire}</span>
-              </div>
-              <button onClick={() => navigate('/login')} style={{
-                width: '100%', height: '40px', borderRadius: '50px', border: 'none',
-                background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: '500',
-              }}>
-                Postuler →
+            <p style={styles.heroSubtitle}>
+              Connectez les meilleurs talents aux opportunités idéales grâce à notre technologie IA de pointe et une expérience utilisateur premium.
+            </p>
+
+            <div style={styles.heroButtons}>
+              <button
+                style={{
+                  ...styles.btn,
+                  ...styles.btnPrimary,
+                  padding: '16px 40px',
+                  fontSize: '16px',
+                }}
+                onClick={() => navigate('/register')}
+              >
+                Commencer Gratuitement →
+              </button>
+              <button
+                style={{
+                  ...styles.btn,
+                  ...styles.btnSecondary,
+                  padding: '16px 40px',
+                  fontSize: '16px',
+                }}
+              >
+                Voir Démo
               </button>
             </div>
-          ))}
-        </div>
 
-        {filteredOffres.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#94A3B8', padding: '40px' }}>
-            Aucune offre trouvée pour "{search}"
-          </div>
-        )}
-
-        <div style={{ textAlign: 'center' }}>
-          <button onClick={() => navigate('/login')} style={{
-            height: '48px', padding: '0 32px', borderRadius: '50px',
-            border: '2px solid #1E3A8A', background: 'transparent',
-            color: '#1E3A8A', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '15px', fontWeight: '600',
-          }}>
-            Voir toutes les offres →
-          </button>
-        </div>
-      </section>
-
-      {/* ===== ENTREPRISES ===== */}
-      <section id="entreprises" style={{ padding: '80px 60px', background: '#fff' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{
-            display: 'inline-block', background: '#F0FDF4', color: '#059669',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
-          }}>
-            🏢 Entreprises partenaires
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
-            Ils recrutent avec SmartRecruit
-          </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '480px', margin: '0 auto' }}>
-            Des entreprises de tous secteurs font confiance à SmartRecruit pour leurs recrutements
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '1100px', margin: '0 auto 40px' }}>
-          {entreprises.map((e, i) => (
-            <div key={i} style={{
-              background: '#F8FAFC', borderRadius: '16px', padding: '28px',
-              border: '1px solid #E2E8F0', textAlign: 'center',
-              cursor: 'pointer', transition: '200ms',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,23,42,.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#F8FAFC'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              <div style={{
-                width: '64px', height: '64px', borderRadius: '16px',
-                background: '#DBEAFE', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '28px', margin: '0 auto 16px',
-              }}>
-                {e.logo}
-              </div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '17px', fontWeight: '700', color: '#1E293B', marginBottom: '6px' }}>
-                {e.nom}
-              </div>
-              <div style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '12px' }}>{e.secteur}</div>
-              <span style={tagStyle('#DBEAFE', '#1E3A8A')}>
-                {e.offres} offres actives
-              </span>
+            <div style={{ display: 'flex', gap: '40px', marginTop: '48px' }}>
+              {stats.map((stat, i) => (
+                <div key={i}>
+                  <div style={{ fontSize: '32px', fontWeight: '700', color: '#D4AF37' }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div style={{ textAlign: 'center' }}>
-          <button onClick={() => navigate('/register')} style={{
-            height: '48px', padding: '0 32px', borderRadius: '50px', border: 'none',
-            background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: '600',
-          }}>
-            Publier une offre →
-          </button>
+          <div style={styles.heroImage}>
+            <div style={styles.heroCard}>
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
+                <div style={{ fontSize: '20px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
+                  Dashboard Analytics
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+                  Suivez vos candidatures en temps réel
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px' }}>
+                {[
+                  { label: 'Candidats', value: '2,847', color: '#D4AF37' },
+                  { label: 'Entretiens', value: '156', color: '#00CC7A' },
+                  { label: 'Recrutés', value: '43', color: '#0066FF' },
+                ].map((item, i) => (
+                  <div key={i} style={{ flex: 1 }}>
+                    <div style={{ fontSize: '24px', fontWeight: '700', color: item.value === '43' ? '#fff' : item.color }}>
+                      {item.value}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>
+                      {item.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ===== FEATURES ===== */}
-      <section style={{ padding: '80px 60px', background: '#F8FAFC' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div style={{
-            display: 'inline-block', background: '#EDE9FE', color: '#7C3AED',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
-          }}>
-            ✨ Fonctionnalités
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
-            Pourquoi choisir SmartRecruit ?
-          </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '480px', margin: '0 auto' }}>
-            Des outils puissants pour moderniser votre processus de recrutement
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', maxWidth: '1100px', margin: '0 auto' }}>
-          {features.map((f, i) => (
-            <div key={i} style={{
-              padding: '32px', borderRadius: '16px',
-              border: '1px solid #E2E8F0', background: '#fff', transition: '200ms',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,23,42,.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+      {/* ===== STATS SECTION ===== */}
+      <section style={styles.section}>
+        <div style={styles.statsGrid}>
+          {stats.map((stat, i) => (
+            <div
+              key={i}
+              style={styles.statCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = `0 16px 48px ${stat.color}40`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+              }}
             >
-              <div style={{
-                width: '56px', height: '56px', borderRadius: '14px',
-                background: '#EFF6FF', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontSize: '26px', marginBottom: '16px',
-              }}>
-                {f.icon}
+              <div style={{ fontSize: '40px', marginBottom: '16px' }}>{stat.icon}</div>
+              <div style={{ ...styles.statValue, color: stat.color }}>
+                {animatedStats ? stat.value : '0'}
               </div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '17px', fontWeight: '700', color: '#1E293B', marginBottom: '10px' }}>
-                {f.title}
-              </h3>
-              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.7' }}>{f.desc}</p>
+              <div style={styles.statLabel}>{stat.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ===== COMMENT ÇA MARCHE ===== */}
-      <section style={{ padding: '80px 60px', background: 'linear-gradient(135deg, #0F172A, #1E3A8A)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#fff', marginBottom: '12px' }}>
-            Comment ça marche ?
-          </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8' }}>3 étapes simples pour commencer</p>
+      {/* ===== FEATURES SECTION ===== */}
+      <section style={{ ...styles.section, background: '#F8FAFC' }}>
+        <h2 style={styles.sectionTitle}>
+          Fonctionnalités <span style={{ color: '#D4AF37' }}>Premium</span>
+        </h2>
+        <p style={styles.sectionSubtitle}>
+          Découvrez notre suite complète d'outils pour transformer votre recrutement
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+          {features.map((feature, i) => (
+            <div
+              key={i}
+              style={styles.featureCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 24px 64px rgba(0, 0, 0, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06)';
+              }}
+            >
+              <div style={{ ...styles.featureIcon, background: feature.gradient }}>
+                {feature.icon}
+              </div>
+              <h3 style={{
+                fontFamily: '"Playfair Display", serif',
+                fontSize: '22px',
+                fontWeight: '700',
+                color: '#0A1628',
+                marginBottom: '12px',
+              }}>
+                {feature.title}
+              </h3>
+              <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.7' }}>
+                {feature.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== OFFRES SECTION ===== */}
+      <section style={styles.section}>
+        <h2 style={styles.sectionTitle}>
+          Offres <span style={{ color: '#D4AF37' }}>Récentes</span>
+        </h2>
+        <p style={styles.sectionSubtitle}>
+          Découvrez les dernières opportunités de carrière
+        </p>
+
+        <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'center' }}>
+          <input
+            type="text"
+            placeholder="🔍 Rechercher une offre..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: '100%',
+              maxWidth: '500px',
+              padding: '16px 24px',
+              borderRadius: '50px',
+              border: '2px solid #E2E8F0',
+              fontSize: '15px',
+              outline: 'none',
+              transition: 'all 0.3s ease',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#D4AF37';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(212, 175, 55, 0.15)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#E2E8F0';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', maxWidth: '900px', margin: '0 auto' }}>
-          {[
-            { step: '01', icon: '📝', title: 'Créez votre profil',   desc: 'Inscrivez-vous en quelques minutes et complétez votre profil candidat ou recruteur.' },
-            { step: '02', icon: '🔍', title: 'Trouvez des offres',   desc: 'Parcourez les offres filtrées selon vos critères ou publiez votre propre offre.' },
-            { step: '03', icon: '🚀', title: 'Postulez ou recrutez', desc: 'Envoyez votre candidature ou recevez les meilleures candidatures scorées par l\'IA.' },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '72px', height: '72px', borderRadius: '50%',
-                background: 'rgba(96,165,250,.15)', border: '2px solid rgba(96,165,250,.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '28px', margin: '0 auto 16px',
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          {filteredOffres.slice(0, 6).map((offre) => (
+            <div
+              key={offre.id}
+              style={styles.offreCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = '0 16px 48px rgba(0, 0, 0, 0.12)';
+                e.currentTarget.style.borderColor = '#D4AF37';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.06)';
+                e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '24px',
+                }}>
+                  {offre.logo}
+                </div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#0A1628', marginBottom: '4px' }}>
+                    {offre.entreprise}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#64748B' }}>
+                    📍 {offre.lieu}
+                  </div>
+                </div>
+              </div>
+
+              <h3 style={{
+                fontFamily: '"Playfair Display", serif',
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#0A1628',
+                marginBottom: '12px',
               }}>
-                {s.icon}
-              </div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '13px', color: '#60A5FA', fontWeight: '700', marginBottom: '8px', letterSpacing: '.1em' }}>
-                ÉTAPE {s.step}
-              </div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '10px' }}>
-                {s.title}
+                {offre.titre}
               </h3>
-              <p style={{ fontSize: '14px', color: '#94A3B8', lineHeight: '1.7' }}>{s.desc}</p>
+
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <span style={{
+                  background: '#DBEAFE',
+                  color: '#1E40AF',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}>
+                  {offre.type}
+                </span>
+                <span style={{
+                  background: '#D1FAE5',
+                  color: '#059669',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}>
+                  💰 {offre.salaire}
+                </span>
+              </div>
+
+              <button
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)',
+                  color: '#0A1628',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+                onClick={() => navigate('/login')}
+              >
+                Postuler →
+              </button>
             </div>
           ))}
         </div>
       </section>
 
       {/* ===== TÉMOIGNAGES ===== */}
-      <section style={{ padding: '80px 60px', background: '#F8FAFC' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{
-            display: 'inline-block', background: '#FEF3C7', color: '#D97706',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
-          }}>
-            ⭐ Témoignages
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B' }}>
-            Ils nous font confiance
-          </h2>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', maxWidth: '1100px', margin: '0 auto' }}>
-          {temoignages.map((t, i) => (
-            <div key={i} style={{
-              background: '#fff', borderRadius: '16px', padding: '28px',
-              border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
-            }}>
-              <div style={{ fontSize: '40px', color: '#DBEAFE', marginBottom: '12px', lineHeight: 1 }}>"</div>
-              <p style={{ fontSize: '15px', color: '#475569', lineHeight: '1.7', marginBottom: '20px' }}>{t.texte}</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '44px', height: '44px', borderRadius: '50%',
-                  background: '#1E3A8A', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', color: '#fff',
-                  fontWeight: '800', fontSize: '18px', fontFamily: 'Syne, sans-serif',
-                }}>
-                  {t.avatar}
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#1E293B' }}>{t.nom}</div>
-                  <div style={{ fontSize: '12px', color: '#94A3B8' }}>{t.poste}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ===== À PROPOS ===== */}
-      <section id="apropos" style={{ padding: '80px 60px', background: '#fff' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div style={{
-            display: 'inline-block', background: '#DBEAFE', color: '#1E3A8A',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
-          }}>
-            🏢 À propos
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
-            Notre mission
-          </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '600px', margin: '0 auto', lineHeight: '1.7' }}>
-            SmartRecruit est né d'une vision simple : rendre le recrutement plus intelligent, plus rapide et plus humain grâce à la technologie et l'intelligence artificielle.
-          </p>
-        </div>
-
-        {/* Mission + Vision */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', maxWidth: '900px', margin: '0 auto 60px' }}>
-          {[
-            {
-              icon: '🎯', title: 'Notre Mission',
-              desc: 'Connecter les meilleurs talents aux meilleures entreprises de Tunisie en utilisant l\'intelligence artificielle pour optimiser chaque étape du recrutement.',
-              bg: '#EFF6FF', color: '#1E3A8A',
-            },
-            {
-              icon: '🌟', title: 'Notre Vision',
-              desc: 'Devenir la plateforme de référence du recrutement en Afrique du Nord, en proposant des outils innovants qui transforment l\'expérience RH.',
-              bg: '#EDE9FE', color: '#7C3AED',
-            },
-          ].map((v, i) => (
-            <div key={i} style={{
-              background: v.bg, borderRadius: '16px', padding: '32px',
-              border: `1px solid ${v.color}20`,
-            }}>
-              <div style={{ fontSize: '36px', marginBottom: '16px' }}>{v.icon}</div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: '700', color: v.color, marginBottom: '12px' }}>
-                {v.title}
-              </h3>
-              <p style={{ fontSize: '15px', color: '#475569', lineHeight: '1.7' }}>{v.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Valeurs */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: '700', color: '#1E293B' }}>
-            Nos valeurs
-          </h3>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', maxWidth: '1100px', margin: '0 auto 60px' }}>
-          {[
-            { icon: '🤝', title: 'Confiance',     desc: 'Transparence totale avec nos utilisateurs' },
-            { icon: '💡', title: 'Innovation',    desc: 'Toujours à la pointe de la technologie' },
-            { icon: '⚡', title: 'Efficacité',    desc: 'Des résultats rapides et de qualité' },
-            { icon: '❤️', title: 'Humanité',      desc: 'Le facteur humain au centre de tout' },
-          ].map((v, i) => (
-            <div key={i} style={{
-              background: '#F8FAFC', borderRadius: '14px', padding: '24px',
-              border: '1px solid #E2E8F0', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>{v.icon}</div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B', marginBottom: '8px' }}>
-                {v.title}
-              </div>
-              <div style={{ fontSize: '13px', color: '#94A3B8', lineHeight: '1.6' }}>{v.desc}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Équipe */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '28px', fontWeight: '700', color: '#1E293B' }}>
-            Notre équipe
-          </h3>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', maxWidth: '700px', margin: '0 auto' }}>
-          {equipe.map((m, i) => (
-            <div key={i} style={{
-              background: '#F8FAFC', borderRadius: '16px', padding: '28px',
-              border: '1px solid #E2E8F0', textAlign: 'center',
-            }}>
-              <div style={{
-                width: '64px', height: '64px', borderRadius: '50%',
-                background: '#1E3A8A', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', color: '#fff',
-                fontWeight: '800', fontSize: '24px', fontFamily: 'Syne, sans-serif',
-                margin: '0 auto 16px',
-              }}>
-                {m.avatar}
-              </div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B', marginBottom: '4px' }}>
-                {m.nom}
-              </div>
-              <div style={{ fontSize: '13px', color: '#2563EB', fontWeight: '500', marginBottom: '8px' }}>{m.poste}</div>
-              <div style={{ fontSize: '12px', color: '#94A3B8' }}>{m.desc}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ===== CTA ===== */}
-      <section style={{
-        padding: '80px 60px', textAlign: 'center',
-        background: 'linear-gradient(135deg, #1E3A8A, #7C3AED)',
-      }}>
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '44px', fontWeight: '800', color: '#fff', marginBottom: '16px' }}>
-          Prêt à transformer votre recrutement ?
+      <section style={{ ...styles.section, background: '#0A1628' }}>
+        <h2 style={{ ...styles.sectionTitle, color: '#fff' }}>
+          Ce que disent nos <span style={{ color: '#D4AF37' }}>Clients</span>
         </h2>
-        <p style={{ fontSize: '18px', color: 'rgba(255,255,255,.7)', marginBottom: '40px' }}>
-          Rejoignez des centaines d'entreprises qui font confiance à SmartRecruit
+        <p style={{ ...styles.sectionSubtitle, color: 'rgba(255,255,255,0.7)' }}>
+          Des milliers d'entreprises nous font confiance
         </p>
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/register')} style={{
-            height: '54px', padding: '0 36px', borderRadius: '50px', border: 'none',
-            background: '#fff', color: '#1E3A8A', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: '16px', fontWeight: '700',
-            boxShadow: '0 8px 24px rgba(0,0,0,.2)',
-          }}>
-            Commencer gratuitement →
-          </button>
-          <button onClick={() => scrollTo('contact')} style={{
-            height: '54px', padding: '0 36px', borderRadius: '50px',
-            border: '2px solid rgba(255,255,255,.4)', background: 'transparent',
-            color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '16px', fontWeight: '500',
-          }}>
-            Nous contacter
-          </button>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
+          {temoignages.map((temoignage, i) => (
+            <div key={i} style={styles.testimonialCard}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                marginBottom: '24px',
+              }}>
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${temoignage.color} 0%, ${temoignage.color}99 100%)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '20px',
+                  fontWeight: '700',
+                }}>
+                  {temoignage.avatar}
+                </div>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#0A1628' }}>
+                    {temoignage.nom}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#64748B' }}>
+                    {temoignage.poste}
+                  </div>
+                </div>
+              </div>
+              <p style={{ fontSize: '15px', color: '#475569', lineHeight: '1.8', fontStyle: 'italic' }}>
+                "{temoignage.texte}"
+              </p>
+              <div style={{ marginTop: '20px', color: '#D4AF37', fontSize: '20px' }}>
+                {'★'.repeat(5)}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ===== CONTACT ===== */}
-      <section id="contact" style={{ padding: '80px 60px', background: '#F8FAFC' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+      {/* ===== CTA SECTION ===== */}
+      <section style={styles.section}>
+        <div style={styles.ctaSection}>
           <div style={{
-            display: 'inline-block', background: '#F0FDF4', color: '#059669',
-            padding: '6px 16px', borderRadius: '50px', fontSize: '13px',
-            fontWeight: '600', marginBottom: '16px',
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)',
+            top: '-200px',
+            right: '-100px',
+          }} />
+
+          <h2 style={{
+            fontFamily: '"Playfair Display", serif',
+            fontSize: '42px',
+            fontWeight: '700',
+            color: '#fff',
+            marginBottom: '16px',
           }}>
-            📬 Contact
-          </div>
-          <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: '40px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
-            Contactez-nous
+            Prêt à Transformer Votre Recrutement ?
           </h2>
-          <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '480px', margin: '0 auto' }}>
-            Une question ? Une suggestion ? Notre équipe est là pour vous répondre
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '40px', maxWidth: '1000px', margin: '0 auto' }}>
-
-          {/* Infos contact */}
-          <div>
-            <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: '700', color: '#1E293B', marginBottom: '24px' }}>
-              Nos coordonnées
-            </h3>
-
-            {[
-              { icon: '📧', label: 'Email',      value: 'contact@smartrecruit.tn',    sub: 'Réponse sous 24h' },
-              { icon: '📞', label: 'Téléphone',  value: '+216 71 XXX XXX',            sub: 'Lun-Ven 8h-17h' },
-              { icon: '📍', label: 'Adresse',    value: 'Tunis, Tunisie',             sub: 'Centre ville' },
-              { icon: '🕐', label: 'Horaires',   value: 'Lundi - Vendredi',           sub: '8h00 - 17h00' },
-            ].map((c, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'flex-start', gap: '16px',
-                padding: '16px', borderRadius: '12px', marginBottom: '12px',
-                background: '#fff', border: '1px solid #E2E8F0',
-              }}>
-                <div style={{
-                  width: '44px', height: '44px', borderRadius: '10px',
-                  background: '#EFF6FF', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '20px', flexShrink: 0,
-                }}>
-                  {c.icon}
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '2px' }}>{c.label}</div>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>{c.value}</div>
-                  <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{c.sub}</div>
-                </div>
-              </div>
-            ))}
-
-            {/* Réseaux */}
-            <div style={{ marginTop: '20px' }}>
-              <div style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '12px', fontWeight: '500' }}>
-                Suivez-nous
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {[
-                  { label: 'LinkedIn', icon: '💼', color: '#0A66C2' },
-                  { label: 'Twitter',  icon: '🐦', color: '#1DA1F2' },
-                  { label: 'Facebook', icon: '📘', color: '#1877F2' },
-                ].map(s => (
-                  <div key={s.label} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '8px 14px', borderRadius: '8px',
-                    background: '#fff', border: '1px solid #E2E8F0',
-                    cursor: 'pointer', fontSize: '13px', color: '#475569',
-                  }}>
-                    {s.icon} {s.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Formulaire */}
-          <div style={{
-            background: '#fff', borderRadius: '16px', padding: '32px',
-            border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(15,23,42,.06)',
+          <p style={{
+            fontSize: '18px',
+            color: 'rgba(255,255,255,0.8)',
+            marginBottom: '40px',
+            maxWidth: '600px',
+            margin: '0 auto 40px',
           }}>
-            {contactSent ? (
-              <div style={{
-                textAlign: 'center', padding: '40px 20px',
-              }}>
-                <div style={{ fontSize: '56px', marginBottom: '16px' }}>✅</div>
-                <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: '700', color: '#059669', marginBottom: '10px' }}>
-                  Message envoyé !
-                </h3>
-                <p style={{ fontSize: '15px', color: '#94A3B8' }}>
-                  Merci pour votre message. Notre équipe vous répondra sous 24h.
-                </p>
-              </div>
-            ) : (
-              <>
-                <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: '700', color: '#1E293B', marginBottom: '24px' }}>
-                  Envoyez-nous un message
-                </h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                  <div>
-                    <label style={labelStyle}>Nom complet *</label>
-                    <input
-                      type="text" placeholder="Votre nom"
-                      value={contactForm.nom} onChange={setContact('nom')}
-                      style={inputStyle}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Email *</label>
-                    <input
-                      type="email" placeholder="email@mail.com"
-                      value={contactForm.email} onChange={setContact('email')}
-                      style={inputStyle}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={labelStyle}>Sujet</label>
-                  <select value={contactForm.sujet} onChange={setContact('sujet')} style={inputStyle}>
-                    <option value="">Sélectionner un sujet</option>
-                    <option>Support technique</option>
-                    <option>Partenariat entreprise</option>
-                    <option>Information générale</option>
-                    <option>Signalement d'un problème</option>
-                    <option>Autre</option>
-                  </select>
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={labelStyle}>Message *</label>
-                  <textarea
-                    placeholder="Décrivez votre demande..."
-                    value={contactForm.message} onChange={setContact('message')}
-                    rows={5}
-                    style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'vertical' }}
-                  />
-                </div>
-
-                <button onClick={handleContact} style={{
-                  width: '100%', height: '48px', borderRadius: '50px', border: 'none',
-                  background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: '500',
-                  boxShadow: '0 4px 16px rgba(30,58,138,.25)',
-                }}>
-                  Envoyer le message →
-                </button>
-              </>
-            )}
+            Rejoignez des milliers d'entreprises qui font confiance à SmartRecruit
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <button
+              style={{
+                ...styles.btn,
+                ...styles.btnPrimary,
+                padding: '16px 48px',
+                fontSize: '16px',
+              }}
+              onClick={() => navigate('/register')}
+            >
+              Démarrer Gratuitement →
+            </button>
+            <button
+              style={{
+                ...styles.btn,
+                ...styles.btnSecondary,
+                padding: '16px 48px',
+                fontSize: '16px',
+              }}
+            >
+              Contacter Sales
+            </button>
           </div>
         </div>
       </section>
 
       {/* ===== FOOTER ===== */}
-      <footer style={{ background: '#0F172A', padding: '60px', borderTop: '1px solid rgba(255,255,255,.06)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '40px', marginBottom: '48px' }}>
+      <footer style={styles.footer}>
+        <div style={styles.footerGrid}>
           <div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '22px', fontWeight: '800', color: '#fff', marginBottom: '16px' }}>
-              Smart<span style={{ color: '#60A5FA' }}>Recruit</span>
+            <div style={{ ...styles.logo, marginBottom: '24px' }}>
+              <div style={styles.logoIcon}>💼</div>
+              <div>SmartRecruit</div>
             </div>
-            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.7', maxWidth: '280px' }}>
-              La plateforme de recrutement intelligente qui connecte les talents aux meilleures entreprises de Tunisie.
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255,255,255,0.7)',
+              lineHeight: '1.7',
+              maxWidth: '300px',
+            }}>
+              La plateforme de recrutement premium qui connecte les meilleurs talents aux opportunités idéales.
             </p>
           </div>
 
-          {[
-            { title: 'Candidats',    links: ['Rechercher un emploi', 'Créer un profil', 'Mes candidatures'] },
-            { title: 'Recruteurs',   links: ['Publier une offre', 'Rechercher des talents', 'Dashboard RH'] },
-            { title: 'SmartRecruit', links: ['À propos', 'Contact', 'CGU', 'Confidentialité'] },
-          ].map((col, i) => (
-            <div key={i}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: '700', color: '#fff', marginBottom: '16px' }}>
-                {col.title}
-              </div>
-              {col.links.map(l => (
-                <div key={l} style={{
-                  fontSize: '13px', color: '#64748B', marginBottom: '10px',
-                  cursor: 'pointer',
-                }}
-                  onClick={() => {
-                    if (l === 'À propos') scrollTo('apropos');
-                    if (l === 'Contact') scrollTo('contact');
-                    if (l === 'Rechercher un emploi') scrollTo('offres');
-                  }}
-                >
-                  {l}
-                </div>
-              ))}
-            </div>
-          ))}
+          <div>
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              color: '#D4AF37',
+            }}>
+              Produit
+            </h4>
+            {['Fonctionnalités', 'Tarifs', 'Entreprises', 'API'].map((link) => (
+              <a key={link} href="#" style={styles.footerLink}>{link}</a>
+            ))}
+          </div>
+
+          <div>
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              color: '#D4AF37',
+            }}>
+              Entreprise
+            </h4>
+            {['À Propos', 'Carrières', 'Blog', 'Contact'].map((link) => (
+              <a key={link} href="#" style={styles.footerLink}>{link}</a>
+            ))}
+          </div>
+
+          <div>
+            <h4 style={{
+              fontSize: '16px',
+              fontWeight: '700',
+              marginBottom: '24px',
+              color: '#D4AF37',
+            }}>
+              Légal
+            </h4>
+            {['Confidentialité', 'CGU', 'Cookies', 'Mentions'].map((link) => (
+              <a key={link} href="#" style={styles.footerLink}>{link}</a>
+            ))}
+          </div>
         </div>
 
         <div style={{
-          borderTop: '1px solid rgba(255,255,255,.06)',
-          paddingTop: '24px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          marginTop: '60px',
+          paddingTop: '32px',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: 'rgba(255,255,255,0.6)',
         }}>
-          <span style={{ fontSize: '13px', color: '#475569' }}>
-            © 2026 SmartRecruit. Tous droits réservés.
-          </span>
-          <span style={{ fontSize: '13px', color: '#475569' }}>
-            Fait avec ❤️ en Tunisie 🇹🇳
-          </span>
+          © 2024 SmartRecruit. Tous droits réservés. Fait avec ❤️ en Tunisie
         </div>
       </footer>
     </div>
   );
 }
-
-const tagStyle = (bg, color) => ({
-  background: bg, color,
-  padding: '4px 10px', borderRadius: '50px',
-  fontSize: '12px', fontWeight: '500',
-  display: 'inline-block',
-});
-
-const labelStyle = {
-  fontSize: '13px', fontWeight: '500', color: '#475569',
-  display: 'block', marginBottom: '6px',
-};
-
-const inputStyle = {
-  width: '100%', height: '42px', padding: '0 14px',
-  border: '1.5px solid #E2E8F0', borderRadius: '10px',
-  fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-  outline: 'none', boxSizing: 'border-box', background: '#F8FAFC',
-};

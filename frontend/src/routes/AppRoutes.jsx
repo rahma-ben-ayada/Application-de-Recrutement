@@ -26,7 +26,10 @@ import ProfilRecruteur    from '../pages/recruteur/Profil';
 
 // Candidat
 import OffresEmploi       from '../pages/candidat/OffresEmploi';
+import MesFavoris         from '../pages/candidat/Favoris';
+import Alertes            from '../pages/candidat/Alertes';
 import MesCandidatures    from '../pages/candidat/MesCandidatures';
+import MesEntretiens      from '../pages/candidat/MesEntretiens';
 import ProfilCandidat     from '../pages/candidat/Profil';
 import ParametresCandidat from '../pages/candidat/Parametres';
 
@@ -46,7 +49,7 @@ export default function AppRoutes() {
           <Route path="/login"           element={<Login />} />
           <Route path="/register"        element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/login-admin"     element={<LoginAdmin />} />
+          <Route path="/admin-portal"    element={<LoginAdmin />} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute role="admin" />}>
@@ -70,7 +73,10 @@ export default function AppRoutes() {
           {/* Candidat */}
           <Route path="/candidat" element={<ProtectedRoute role="candidat" />}>
             <Route path="offres"       element={<OffresEmploi />} />
+            <Route path="favoris"      element={<MesFavoris />} />
+            <Route path="alertes"      element={<Alertes />} />
             <Route path="candidatures" element={<MesCandidatures />} />
+            <Route path="entretiens"   element={<MesEntretiens />} />
             <Route path="profil"       element={<ProfilCandidat />} />
             <Route path="parametres"   element={<ParametresCandidat />} />
           </Route>

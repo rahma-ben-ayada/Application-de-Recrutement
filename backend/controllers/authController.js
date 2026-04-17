@@ -1,6 +1,103 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
+// ===== ADMIN LOGIN (Enhanced Security) =====
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email et mot de passe requis',
+      });
+    }
+
+    // Find user
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Email ou mot de passe incorrect',
+      });
+    }
+
+    // Verify role is admin
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé. Ce portail est réservé aux administrateurs.',
+      });
+    }
+
+    // Verify soft delete
+    if (user.isDeleted) {
+      return res.status(401).json({
+        success: false,
+        message: 'Ce compte a été supprimé',
+      });
+    }
+
+    // Verify status
+    if (user.status === 'pending') {
+      return res.status(401).json({
+        success: false,
+        message: 'Votre compte est en attente de validation',
+      });
+    }
+
+    if (user.status === 'rejected') {
+      return res.status(401).json({
+        success: false,
+        message: 'Votre compte a été refusé',
+      });
+    }
+
+    if (user.status === 'suspended') {
+      return res.status(401).json({
+        success: false,
+        message: 'Votre compte est suspendu. Contactez le super administrateur',
+      });
+    }
+
+    // Verify password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Email ou mot de passe incorrect',
+      });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Log admin access
+    console.log(`[ADMIN LOGIN] ${user.email} logged in at ${new Date().toISOString()} from IP: ${req.ip}`);
+
+    // Generate token with admin flag
+    const token = generateToken(user._id, user.role);
+
+    res.status(200).json({
+      success: true,
+      message: 'Connexion administrateur réussie',
+      token,
+      user: {
+        id: user._id,
+        nom: user.nom,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        isAdmin: true,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ===== REGISTER =====
 exports.register = async (req, res) => {
   try {

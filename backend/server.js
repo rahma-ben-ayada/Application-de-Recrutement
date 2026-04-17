@@ -23,6 +23,16 @@ app.use('/api/auth',          require('./routes/authRoutes'));
 app.use('/api/users',         require('./routes/userRoutes'));
 app.use('/api/offres',        require('./routes/offreRoutes'));
 app.use('/api/candidatures',  require('./routes/candidatureRoutes'));
+app.use('/api/entretiens',    require('./routes/entretienRoutes'));
+app.use('/api/alertes',       require('./routes/alerteRoutes'));
+app.use('/api/favoris',       require('./routes/favoriRoutes'));
+app.use('/api/reviews',       require('./routes/reviewRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/documents',     require('./routes/documentRoutes'));
+app.use('/api/activity-logs', require('./routes/activityLogRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/settings',     require('./routes/settingRoutes'));
+app.use('/api/reports',       require('./routes/reportRoutes'));
 
 // Route test
 app.get('/', (req, res) => {

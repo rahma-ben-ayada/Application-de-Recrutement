@@ -1,4 +1,6 @@
 const Offre = require('../models/Offre');
+const Candidature = require('../models/Candidature');
+const Entretien = require('../models/Entretien');
 
 // ===== PUBLIC — Voir toutes les offres actives =====
 exports.getOffres = async (req, res) => {
@@ -80,6 +82,57 @@ exports.getAllOffres = async (req, res) => {
     const offres = await Offre.find({ isDeleted: false })
       .populate('recruteur', 'nom entreprise');
     res.status(200).json({ success: true, offres });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ===== RECRUTEUR — Statistiques dashboard =====
+exports.getStatsRecruteur = async (req, res) => {
+  try {
+    // Offres du recruteur
+    const mesOffres = await Offre.find({ recruteur: req.user._id, isDeleted: false });
+    const offreIds = mesOffres.map(o => o._id);
+
+    // Candidatures pour ces offres
+    const candidatures = await Candidature.find({
+      offre: { $in: offreIds },
+      isDeleted: false,
+    });
+    const candidatureIds = candidatures.map(c => c._id);
+
+    // Entretiens pour ces candidatures
+    const entretiens = await Entretien.find({
+      candidature: { $in: candidatureIds },
+      isDeleted: false,
+    });
+
+    // Stats par statut
+    const statuts = {
+      en_attente: candidatures.filter(c => c.statut === 'en_attente').length,
+      entretien: candidatures.filter(c => c.statut === 'entretien').length,
+      accepte: candidatures.filter(c => c.statut === 'accepte').length,
+      refuse: candidatures.filter(c => c.statut === 'refuse').length,
+    };
+
+    const entretiensStatuts = {
+      planifie: entretiens.filter(e => e.statut === 'planifié').length,
+      accepte: entretiens.filter(e => e.statut === 'accepté').length,
+      refuse: entretiens.filter(e => e.statut === 'refusé').length,
+    };
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalOffres: mesOffres.length,
+        totalCandidatures: candidatures.length,
+        totalEntretiens: entretiens.length,
+        candidaturesParStatut: statuts,
+        entretiensParStatut: entretiensStatuts,
+        offresActives: mesOffres.filter(o => o.status === 'active').length,
+        offresFermees: mesOffres.filter(o => o.status === 'closed').length,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

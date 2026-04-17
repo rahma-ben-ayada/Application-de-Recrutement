@@ -1,24 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import RecruteurLayout from '../../layouts/RecruteurLayout';
+import api from '../../utils/api';
 
 const statutColors = {
-  'Planifié': { bg: '#FFF7ED', color: '#FB923C', icon: '⏳' },
-  'Accepté':  { bg: '#D1FAE5', color: '#059669', icon: '✅' },
-  'Refusé':   { bg: '#FEE2E2', color: '#EF4444', icon: '❌' },
+  'planifié': { bg: '#FFF7ED', color: '#FB923C', icon: '⏳' },
+  'accepté':  { bg: '#D1FAE5', color: '#059669', icon: '✅' },
+  'refusé':   { bg: '#FEE2E2', color: '#EF4444', icon: '❌' },
 };
 
 export default function EntretiensRH() {
   const [entretiens, setEntretiens] = useState([]);
   const [filter, setFilter] = useState('tous');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('entretiens_recruteur');
-    if (saved) setEntretiens(JSON.parse(saved));
+    fetchEntretiens();
   }, []);
+
+  const fetchEntretiens = async () => {
+    try {
+      const data = await api('/entretiens/mes');
+      setEntretiens(data.entretiens || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = filter === 'tous'
     ? entretiens
-    : entretiens.filter(e => e.statut.toLowerCase() === filter);
+    : entretiens.filter(e => e.statut === filter);
 
   return (
     <RecruteurLayout title="Entretiens RH">
@@ -26,10 +38,10 @@ export default function EntretiensRH() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
         {[
-          { label: 'Total',     value: entretiens.length,                                      color: '#1E3A8A', bg: '#DBEAFE', icon: '🎯' },
-          { label: 'Planifiés', value: entretiens.filter(e => e.statut === 'Planifié').length,  color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
-          { label: 'Acceptés',  value: entretiens.filter(e => e.statut === 'Accepté').length,   color: '#059669', bg: '#D1FAE5', icon: '✅' },
-          { label: 'Refusés',   value: entretiens.filter(e => e.statut === 'Refusé').length,    color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
+          { label: 'Total',     value: entretiens.length,                                    color: '#1E3A8A', bg: '#DBEAFE', icon: '🎯' },
+          { label: 'Planifiés', value: entretiens.filter(e => e.statut === 'planifié').length, color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
+          { label: 'Acceptés',  value: entretiens.filter(e => e.statut === 'accepté').length,  color: '#059669', bg: '#D1FAE5', icon: '✅' },
+          { label: 'Refusés',   value: entretiens.filter(e => e.statut === 'refusé').length,   color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
         ].map((s, i) => (
           <div key={i} style={{
             background: '#fff', borderRadius: '14px', padding: '20px',
@@ -90,9 +102,9 @@ export default function EntretiensRH() {
           </div>
         ) : (
           filtered.map(e => {
-            const s = statutColors[e.statut] || statutColors['Planifié'];
+            const s = statutColors[e.statut] || statutColors['planifié'];
             return (
-              <div key={e.id} style={{
+              <div key={e._id} style={{
                 background: '#fff', borderRadius: '14px', padding: '20px 24px',
                 border: '1px solid #E2E8F0', display: 'flex',
                 justifyContent: 'space-between', alignItems: 'center',
@@ -105,17 +117,17 @@ export default function EntretiensRH() {
                     justifyContent: 'center', color: '#1E3A8A',
                     fontWeight: '700', fontSize: '18px', flexShrink: 0,
                   }}>
-                    {(e.candidature?.candidat?.nom || '?')[0]}
+                    {(e.candidat?.nom || '?')[0]}
                   </div>
                   <div>
                     <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '15px', fontWeight: '700', color: '#1E293B' }}>
-                      {e.candidature?.candidat?.nom || '—'}
+                      {e.candidat?.nom || '—'}
                     </div>
                     <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '2px' }}>
-                      {e.candidature?.offre?.titre || '—'}
+                      {e.offre?.titre || '—'}
                     </div>
                     <div style={{ fontSize: '12px', color: '#CBD5E1', marginTop: '4px' }}>
-                      📅 {e.date} à 🕐 {e.heure}
+                      📅 {e.date ? new Date(e.date).toLocaleDateString('fr-FR') : '—'} à 🕐 {e.heure || '—'}
                     </div>
                     {e.notes && (
                       <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '4px' }}>
@@ -141,7 +153,7 @@ export default function EntretiensRH() {
                     padding: '6px 14px', borderRadius: '50px',
                     fontSize: '12px', fontWeight: '600',
                   }}>
-                    {s.icon} {e.statut}
+                    {s.icon} {e.statut.charAt(0).toUpperCase() + e.statut.slice(1)}
                   </span>
                 </div>
               </div>

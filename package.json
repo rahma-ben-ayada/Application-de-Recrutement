@@ -1,0 +1,29 @@
+{
+  "name": "smartrecruit",
+  "version": "1.0.0",
+  "description": "SmartRecruit - Plateforme de Recrutement Premium",
+  "scripts": {
+    "start": "./start.sh",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "test": "echo \"Tests à implémenter\" && exit 0"
+  },
+  "keywords": [
+    "recrutement",
+    "emploi",
+    "tunisie",
+    "candidat",
+    "recruteur",
+    "plateforme",
+    "premium"
+  ],
+  "author": "SmartRecruit Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

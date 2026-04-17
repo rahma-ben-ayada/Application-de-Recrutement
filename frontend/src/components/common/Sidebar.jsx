@@ -20,7 +20,11 @@ const menus = {
   ],
   candidat: [
     { label: "Offres d'emploi",  icon: '🔍', path: '/candidat/offres' },
+    { label: 'Mes Favoris',      icon: '⭐', path: '/candidat/favoris' },
+    { label: 'Alertes',          icon: '🔔', path: '/candidat/alertes' },
     { label: 'Mes Candidatures', icon: '📨', path: '/candidat/candidatures' },
+    { label: 'Mes Entretiens',   icon: '🎯', path: '/candidat/entretiens' },
+    { label: 'Reviews',          icon: '⭐', path: '/candidat/reviews' },
     { label: 'Profil',           icon: '👤', path: '/candidat/profil' },
     { label: 'Paramètres',       icon: '⚙️', path: '/candidat/parametres' },
   ],

@@ -3,12 +3,12 @@ import RecruteurLayout from '../../layouts/RecruteurLayout';
 import api from '../../utils/api';
 
 const statutColors = {
-  'Planifié': { bg: '#FFF7ED', color: '#FB923C' },
-  'Accepté':  { bg: '#F0FDF4', color: '#059669' },
-  'Refusé':   { bg: '#FEF2F2', color: '#EF4444' },
+  'planifié': { bg: '#FFF7ED', color: '#FB923C' },
+  'accepté':  { bg: '#F0FDF4', color: '#059669' },
+  'refusé':   { bg: '#FEF2F2', color: '#EF4444' },
 };
 
-const emptyForm = { candidatureId: '', date: '', heure: '', lien: '', statut: 'Planifié', notes: '' };
+const emptyForm = { candidatureId: '', date: '', heure: '', lien: '', notes: '' };
 
 export default function PlanifierEntretien() {
   const [entretiens, setEntretiens] = useState([]);
@@ -20,12 +20,11 @@ export default function PlanifierEntretien() {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    fetchCandidaturesAcceptees();
-    loadEntretiens();
+    fetchCandidatures();
+    fetchEntretiens();
   }, []);
 
-  // Charger candidatures avec statut "entretien" ou "accepte"
-  const fetchCandidaturesAcceptees = async () => {
+  const fetchCandidatures = async () => {
     try {
       const offresData = await api('/offres/mes');
       const offres = offresData.offres || [];
@@ -47,15 +46,13 @@ export default function PlanifierEntretien() {
     }
   };
 
-  // Stocker entretiens dans localStorage (pas de modèle backend pour l'instant)
-  const loadEntretiens = () => {
-    const saved = localStorage.getItem('entretiens_recruteur');
-    if (saved) setEntretiens(JSON.parse(saved));
-  };
-
-  const saveEntretiens = (data) => {
-    setEntretiens(data);
-    localStorage.setItem('entretiens_recruteur', JSON.stringify(data));
+  const fetchEntretiens = async () => {
+    try {
+      const data = await api('/entretiens/mes');
+      setEntretiens(data.entretiens || []);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const showMessage = (type, text) => {
@@ -72,43 +69,59 @@ export default function PlanifierEntretien() {
   };
 
   const openEdit = (e) => {
-    setEditId(e.id);
-    setForm({ ...e });
+    setEditId(e._id);
+    setForm({
+      candidatureId: e.candidature?._id || '',
+      date: e.date ? new Date(e.date).toISOString().split('T')[0] : '',
+      heure: e.heure || '',
+      lien: e.lien || '',
+      notes: e.notes || '',
+    });
     setShowModal(true);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!form.candidatureId || !form.date || !form.heure)
       return alert('Remplissez tous les champs obligatoires !');
 
-    const candidature = candidatures.find(c => c._id === form.candidatureId);
-
-    if (editId) {
-      const updated = entretiens.map(e => e.id === editId ? { ...e, ...form, candidature } : e);
-      saveEntretiens(updated);
-      showMessage('success', '✅ Entretien modifié !');
-    } else {
-      const newEntretien = {
-        ...form,
-        id: Date.now(),
-        candidature,
-      };
-      saveEntretiens([...entretiens, newEntretien]);
-      showMessage('success', '✅ Entretien planifié !');
+    try {
+      if (editId) {
+        await api(`/entretiens/${editId}`, 'PUT', {
+          date: form.date,
+          heure: form.heure,
+          lien: form.lien,
+          notes: form.notes,
+        });
+        showMessage('success', '✅ Entretien modifié !');
+      } else {
+        await api('/entretiens', 'POST', form);
+        showMessage('success', '✅ Entretien planifié !');
+      }
+      setShowModal(false);
+      fetchEntretiens();
+    } catch (err) {
+      showMessage('error', err.message || 'Erreur lors de la sauvegarde');
     }
-    setShowModal(false);
   };
 
-  const deleteEntretien = (id) => {
+  const deleteEntretien = async (id) => {
     if (!window.confirm('Supprimer cet entretien ?')) return;
-    const updated = entretiens.filter(e => e.id !== id);
-    saveEntretiens(updated);
-    showMessage('success', '🗑️ Entretien supprimé');
+    try {
+      await api(`/entretiens/${id}`, 'DELETE');
+      showMessage('success', '🗑️ Entretien supprimé');
+      fetchEntretiens();
+    } catch (err) {
+      showMessage('error', err.message || 'Erreur lors de la suppression');
+    }
   };
 
-  const changeStatut = (id, statut) => {
-    const updated = entretiens.map(e => e.id === id ? { ...e, statut } : e);
-    saveEntretiens(updated);
+  const changeStatut = async (id, statut) => {
+    try {
+      await api(`/entretiens/${id}`, 'PUT', { statut });
+      fetchEntretiens();
+    } catch (err) {
+      showMessage('error', err.message || 'Erreur lors de la modification');
+    }
   };
 
   return (
@@ -132,9 +145,9 @@ export default function PlanifierEntretien() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: '16px', marginBottom: '24px' }}>
         {[
           { label: 'Total',     value: entretiens.length,                                      color: '#1E3A8A', bg: '#DBEAFE', icon: '🎯' },
-          { label: 'Planifiés', value: entretiens.filter(e => e.statut === 'Planifié').length,  color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
-          { label: 'Acceptés',  value: entretiens.filter(e => e.statut === 'Accepté').length,   color: '#059669', bg: '#D1FAE5', icon: '✅' },
-          { label: 'Refusés',   value: entretiens.filter(e => e.statut === 'Refusé').length,    color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
+          { label: 'Planifiés', value: entretiens.filter(e => e.statut === 'planifié').length,  color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
+          { label: 'Acceptés',  value: entretiens.filter(e => e.statut === 'accepté').length,   color: '#059669', bg: '#D1FAE5', icon: '✅' },
+          { label: 'Refusés',   value: entretiens.filter(e => e.statut === 'refusé').length,    color: '#EF4444', bg: '#FEE2E2', icon: '❌' },
         ].map((s, i) => (
           <div key={i} style={{
             background: '#fff', borderRadius: '14px', padding: '20px',
@@ -198,7 +211,7 @@ export default function PlanifierEntretien() {
             </thead>
             <tbody>
               {entretiens.map((e, i) => (
-                <tr key={e.id} style={{
+                <tr key={e._id} style={{
                   borderBottom: '1px solid #F1F5F9',
                   background: i % 2 === 0 ? '#fff' : '#FAFAFA',
                   transition: '150ms',
@@ -214,25 +227,25 @@ export default function PlanifierEntretien() {
                         justifyContent: 'center', color: '#1E3A8A',
                         fontWeight: '700', fontSize: '13px', flexShrink: 0,
                       }}>
-                        {(e.candidature?.candidat?.nom || e.nom || '?')[0]}
+                        {(e.candidat?.nom || '?')[0]}
                       </div>
                       <div>
                         <div style={{ fontSize: '13px', fontWeight: '600', color: '#1E293B' }}>
-                          {e.candidature?.candidat?.nom || e.nom || '—'}
+                          {e.candidat?.nom || '—'}
                         </div>
                         <div style={{ fontSize: '11px', color: '#94A3B8' }}>
-                          {e.candidature?.candidat?.email || ''}
+                          {e.candidat?.email || ''}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td style={tdStyle}>
                     <span style={{ fontSize: '12px', color: '#475569' }}>
-                      {e.candidature?.offre?.titre || '—'}
+                      {e.offre?.titre || '—'}
                     </span>
                   </td>
-                  <td style={tdStyle}>📅 {e.date}</td>
-                  <td style={tdStyle}>🕐 {e.heure}</td>
+                  <td style={tdStyle}>📅 {e.date ? new Date(e.date).toLocaleDateString('fr-FR') : '—'}</td>
+                  <td style={tdStyle}>🕐 {e.heure || '—'}</td>
                   <td style={tdStyle}>
                     {e.lien ? (
                       <a href={e.lien} target="_blank" rel="noreferrer" style={{
@@ -251,25 +264,25 @@ export default function PlanifierEntretien() {
                   <td style={tdStyle}>
                     <select
                       value={e.statut}
-                      onChange={ev => changeStatut(e.id, ev.target.value)}
+                      onChange={ev => changeStatut(e._id, ev.target.value)}
                       style={{
-                        background: statutColors[e.statut]?.bg,
-                        color: statutColors[e.statut]?.color,
+                        background: statutColors[e.statut]?.bg || '#F3F4F6',
+                        color: statutColors[e.statut]?.color || '#6B7280',
                         border: 'none', borderRadius: '50px',
                         padding: '4px 10px', fontSize: '12px',
                         fontWeight: '600', cursor: 'pointer',
                         fontFamily: 'DM Sans, sans-serif', outline: 'none',
                       }}
                     >
-                      <option>Planifié</option>
-                      <option>Accepté</option>
-                      <option>Refusé</option>
+                      <option value="planifié">Planifié</option>
+                      <option value="accepté">Accepté</option>
+                      <option value="refusé">Refusé</option>
                     </select>
                   </td>
                   <td style={tdStyle}>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button onClick={() => openEdit(e)} style={btnStyle('#D1FAE5', '#059669')}>✏️</button>
-                      <button onClick={() => deleteEntretien(e.id)} style={btnStyle('#FEE2E2', '#EF4444')}>🗑️</button>
+                      <button onClick={() => deleteEntretien(e._id)} style={btnStyle('#FEE2E2', '#EF4444')}>🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -364,16 +377,6 @@ export default function PlanifierEntretien() {
                 rows={3}
                 style={{ ...inputStyle, height: 'auto', padding: '10px 14px', resize: 'vertical' }}
               />
-            </div>
-
-            {/* Statut */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={labelStyle}>Statut</label>
-              <select value={form.statut} onChange={set('statut')} style={selectStyle}>
-                <option>Planifié</option>
-                <option>Accepté</option>
-                <option>Refusé</option>
-              </select>
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
