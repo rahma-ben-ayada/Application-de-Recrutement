@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { professionalTheme, professionalKeyframes, createInputStyle, createButtonStyle } from '../../theme/professionalTheme';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     nom: '',
@@ -21,6 +19,7 @@ export default function Register() {
 
   const updateForm = (field) => (e) => {
     setForm(f => ({ ...f, [field]: e.target.value }));
+    // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(e => ({ ...e, [field]: null }));
     }
@@ -67,15 +66,9 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register({
-        nom: form.nom,
-        email: form.email,
-        password: form.password,
-        role: form.role,
-        entreprise: form.entreprise,
-        secteur: form.secteur,
-      });
-      setStep(3);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setStep(3); // Success screen
     } catch (err) {
       setErrors({ api: err.message });
     } finally {
@@ -90,9 +83,6 @@ export default function Register() {
       gridTemplateColumns: '1fr 1.2fr',
       background: '#FFFFFF',
       fontFamily: professionalTheme.fonts.sans,
-      '@media (max-width: 1024px)': {
-        gridTemplateColumns: '1fr',
-      },
     },
     leftPanel: {
       background: professionalTheme.gradients.subtle,
@@ -101,9 +91,6 @@ export default function Register() {
       flexDirection: 'column',
       justifyContent: 'center',
       borderRight: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      '@media (max-width: 1024px)': {
-        display: 'none',
-      },
     },
     rightPanel: {
       padding: '3rem',
@@ -111,10 +98,8 @@ export default function Register() {
       alignItems: 'center',
       justifyContent: 'center',
       overflowY: 'auto',
-      '@media (max-width: 640px)': {
-        padding: '1.5rem',
-      },
     },
+    // Left Panel Styles
     leftContent: {
       maxWidth: '400px',
     },
@@ -174,12 +159,10 @@ export default function Register() {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[700],
     },
+    // Right Panel Styles
     formContainer: {
       width: '100%',
       maxWidth: '440px',
-      '@media (max-width: 640px)': {
-        maxWidth: '100%',
-      },
     },
     progressBar: {
       display: 'flex',
@@ -197,21 +180,15 @@ export default function Register() {
         ? professionalTheme.colors.primary[300]
         : professionalTheme.colors.neutral[200],
       transition: professionalTheme.transitions.default,
-    }),
+    })),
     formHeader: {
       marginBottom: '2rem',
-      '@media (max-width: 640px)': {
-        marginBottom: '1.5rem',
-      },
     },
     formTitle: {
       fontSize: professionalTheme.fontSizes['2xl'],
       fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
       marginBottom: '0.5rem',
-      '@media (max-width: 640px)': {
-        fontSize: professionalTheme.fontSizes.xl,
-      },
     },
     formSubtitle: {
       fontSize: professionalTheme.fontSizes.sm,
@@ -245,14 +222,12 @@ export default function Register() {
       alignItems: 'center',
       gap: '0.25rem',
     },
+    // Role Cards
     roleCards: {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       gap: '1rem',
       marginBottom: '1.5rem',
-      '@media (max-width: 480px)': {
-        gridTemplateColumns: '1fr',
-      },
     },
     roleCard: (isSelected) => ({
       padding: '1.5rem',
@@ -262,10 +237,7 @@ export default function Register() {
       cursor: 'pointer',
       transition: professionalTheme.transitions.default,
       textAlign: 'center',
-      '@media (max-width: 480px)': {
-        padding: '1.25rem',
-      },
-    }),
+    })),
     roleIcon: {
       fontSize: '2rem',
       marginBottom: '0.5rem',
@@ -280,13 +252,11 @@ export default function Register() {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
     },
+    // Button Styles
     buttonGroup: {
       display: 'flex',
       gap: '1rem',
       marginTop: '2rem',
-      '@media (max-width: 480px)': {
-        flexDirection: 'column',
-      },
     },
     buttonSecondary: {
       ...createButtonStyle('secondary', 'lg'),
@@ -296,6 +266,7 @@ export default function Register() {
       ...createButtonStyle('primary', 'lg'),
       flex: 1,
     },
+    // Login Link
     loginLink: {
       textAlign: 'center',
       marginTop: '1.5rem',
@@ -311,6 +282,7 @@ export default function Register() {
       fontSize: 'inherit',
       padding: 0,
     },
+    // Success Screen
     successContainer: {
       textAlign: 'center',
       padding: '3rem 2rem',
@@ -359,6 +331,7 @@ export default function Register() {
     },
   };
 
+  // Success Screen
   if (step === 3) {
     return (
       <div style={styles.page}>
@@ -401,6 +374,7 @@ export default function Register() {
     <div style={styles.page}>
       <style>{professionalKeyframes}</style>
 
+      {/* ===== LEFT PANEL ===== */}
       <div style={styles.leftPanel}>
         <div style={styles.leftContent}>
           <div style={styles.logo}>
@@ -438,13 +412,16 @@ export default function Register() {
         </div>
       </div>
 
+      {/* ===== RIGHT PANEL ===== */}
       <div style={styles.rightPanel}>
         <div style={styles.formContainer}>
+          {/* Progress Bar */}
           <div style={styles.progressBar}>
             <div style={styles.progressStep(step >= 1, step > 1)} />
             <div style={styles.progressStep(step >= 2, step > 2)} />
           </div>
 
+          {/* Form Header */}
           <div style={styles.formHeader}>
             <h2 style={styles.formTitle}>
               {step === 1 ? 'Informations personnelles' : 'Type de compte'}
@@ -456,6 +433,7 @@ export default function Register() {
             </p>
           </div>
 
+          {/* API Error */}
           {errors.api && (
             <div style={{
               ...styles.successCard,
@@ -470,8 +448,10 @@ export default function Register() {
           )}
 
           <form onSubmit={step === 1 ? (e) => { e.preventDefault(); handleNext(); } : handleSubmit}>
+            {/* STEP 1: Personal Information */}
             {step === 1 && (
               <>
+                {/* Name */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>
                     Nom complet <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
@@ -494,6 +474,7 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Email */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>
                     Adresse email <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
@@ -516,6 +497,7 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Password */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>
                     Mot de passe <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
@@ -538,6 +520,7 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Confirm Password */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>
                     Confirmer le mot de passe <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
@@ -574,8 +557,10 @@ export default function Register() {
               </>
             )}
 
+            {/* STEP 2: Role Selection */}
             {step === 2 && (
               <>
+                {/* Role Selection */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>
                     Je suis un(e) <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
@@ -619,6 +604,7 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Company Fields (if recruteur) */}
                 {form.role === 'recruteur' && (
                   <>
                     <div style={styles.formGroup}>

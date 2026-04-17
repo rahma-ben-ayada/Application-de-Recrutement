@@ -546,63 +546,6 @@ export default function LoginAdmin() {
             </button>
           </form>
 
-          {/* Test Account */}
-          <div style={{
-            marginTop: '28px',
-            background: '#fff',
-            borderRadius: '16px',
-            padding: '20px',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
-          }}>
-            <div style={{
-              fontSize: '10px',
-              color: '#94A3B8',
-              fontWeight: '700',
-              marginBottom: '16px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Compte de test
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => setForm({ email: 'admin@test.com', password: '12345678' })}
-                disabled={locked}
-                style={{
-                  flex: 1,
-                  background: '#DBEAFE',
-                  color: '#1E3A8A',
-                  border: 'none',
-                  borderRadius: '12px',
-                  padding: '12px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: locked ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => { if (!locked) e.currentTarget.style.background = '#BFDBFE'; }}
-                onMouseLeave={(e) => { if (!locked) e.currentTarget.style.background = '#DBEAFE'; }}
-              >
-                👤 Admin
-              </button>
-              <div style={{
-                flex: 2,
-                display: 'flex',
-                alignItems: 'center',
-                background: '#F8FAFC',
-                borderRadius: '12px',
-                padding: '0 16px',
-                fontSize: '12px',
-                color: '#64748B',
-                border: '1px solid #E2E8F0',
-              }}>
-                admin@test.com / 12345678
-              </div>
-            </div>
-          </div>
-
           {/* Back Link */}
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
             <button

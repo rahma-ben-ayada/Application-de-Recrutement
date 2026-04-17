@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { professionalTheme, professionalKeyframes, createInputStyle, createButtonStyle } from '../../theme/professionalTheme';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
 
+  // This would be replaced with actual auth logic
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -24,18 +23,19 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const user = await login(form.email, form.password);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (user.role === 'recruteur') {
+      // Mock login logic - replace with actual API
+      if (form.email === 'admin@test.com') {
+        navigate('/admin-portal');
+      } else if (form.email.includes('recruteur')) {
         navigate('/recruteur/dashboard');
-      } else if (user.role === 'candidat') {
-        navigate('/candidat/offres');
       } else {
-        setError('Accès refusé. Veuillez utiliser le portail administrateur.');
+        navigate('/candidat/offres');
       }
-
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Une erreur est survenue');
     } finally {
       setLoading(false);
     }
@@ -48,9 +48,6 @@ export default function Login() {
       gridTemplateColumns: '1fr 1fr',
       background: '#FFFFFF',
       fontFamily: professionalTheme.fonts.sans,
-      '@media (max-width: 1024px)': {
-        gridTemplateColumns: '1fr',
-      },
     },
     leftPanel: {
       background: professionalTheme.gradients.primary,
@@ -60,9 +57,6 @@ export default function Login() {
       justifyContent: 'center',
       padding: '3rem',
       overflow: 'hidden',
-      '@media (max-width: 1024px)': {
-        display: 'none',
-      },
     },
     rightPanel: {
       display: 'flex',
@@ -70,17 +64,12 @@ export default function Login() {
       justifyContent: 'center',
       padding: '2rem',
       background: '#FAFAFA',
-      '@media (max-width: 640px)': {
-        padding: '1.5rem',
-      },
     },
+    // Left Panel Styles
     leftContent: {
       position: 'relative',
       zIndex: 1,
       maxWidth: '480px',
-      '@media (max-width: 768px)': {
-        maxWidth: '100%',
-      },
     },
     logo: {
       display: 'flex',
@@ -113,18 +102,12 @@ export default function Login() {
       color: '#FFFFFF',
       marginBottom: '1rem',
       lineHeight: 1.2,
-      '@media (max-width: 768px)': {
-        fontSize: professionalTheme.fontSizes['3xl'],
-      },
     },
     leftSubtitle: {
       fontSize: professionalTheme.fontSizes.base,
       color: 'rgba(255, 255, 255, 0.8)',
       marginBottom: '2rem',
       lineHeight: 1.6,
-      '@media (max-width: 768px)': {
-        fontSize: professionalTheme.fontSizes.sm,
-      },
     },
     featureList: {
       display: 'flex',
@@ -164,33 +147,26 @@ export default function Login() {
       fontSize: professionalTheme.fontSizes.xs,
       color: 'rgba(255, 255, 255, 0.7)',
     },
+    // Right Panel Styles
     formContainer: {
       width: '100%',
       maxWidth: '400px',
-      '@media (max-width: 640px)': {
-        maxWidth: '100%',
-      },
     },
     formHeader: {
       marginBottom: '2rem',
       textAlign: 'center',
-      '@media (max-width: 640px)': {
-        marginBottom: '1.5rem',
-      },
     },
     formTitle: {
       fontSize: professionalTheme.fontSizes['3xl'],
       fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
       marginBottom: '0.5rem',
-      '@media (max-width: 640px)': {
-        fontSize: professionalTheme.fontSizes['2xl'],
-      },
     },
     formSubtitle: {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
     },
+    // Form Styles
     formGroup: {
       marginBottom: '1.5rem',
     },
@@ -248,6 +224,62 @@ export default function Login() {
       width: '100%',
       marginBottom: '1.5rem',
     },
+    divider: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      margin: '1.5rem 0',
+    },
+    dividerLine: {
+      flex: 1,
+      height: '1px',
+      background: professionalTheme.colors.neutral[200],
+    },
+    dividerText: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[400],
+      fontWeight: 500,
+    },
+    // Test Accounts
+    testAccounts: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius.xl,
+      padding: '1.25rem',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      marginBottom: '1.5rem',
+    },
+    testAccountsTitle: {
+      fontSize: professionalTheme.fontSizes.xs,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[500],
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+      marginBottom: '1rem',
+    },
+    testAccount: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '0.75rem 1rem',
+      borderRadius: professionalTheme.radius.lg,
+      background: professionalTheme.colors.neutral[50],
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      cursor: 'pointer',
+      marginBottom: '0.75rem',
+      transition: professionalTheme.transitions.fast,
+    },
+    testAccountRole: {
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      padding: '0.25rem 0.75rem',
+      borderRadius: professionalTheme.radius.full,
+    },
+    testAccountEmail: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      fontFamily: 'monospace',
+    },
+    // Error State
     errorAlert: {
       background: professionalTheme.colors.error.light,
       border: `1px solid ${professionalTheme.colors.error.DEFAULT}`,
@@ -260,6 +292,19 @@ export default function Login() {
       color: professionalTheme.colors.error.dark,
       fontSize: professionalTheme.fontSizes.sm,
     },
+    // Admin Portal Link
+    adminPortal: {
+      textAlign: 'center',
+      padding: '1rem',
+      borderRadius: professionalTheme.radius.xl,
+      background: professionalTheme.colors.neutral[100],
+    },
+    adminPortalText: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      marginBottom: '0.75rem',
+    },
+    // Decorative Elements
     decorativeCircle: (top, right, size, delay) => ({
       position: 'absolute',
       width: size,
@@ -279,6 +324,7 @@ export default function Login() {
 
       {/* ===== LEFT PANEL ===== */}
       <div style={styles.leftPanel}>
+        {/* Decorative Elements */}
         <div style={styles.decorativeCircle('-10%', '-10%', '300px', 8)} />
         <div style={styles.decorativeCircle('60%', '80%', '200px', 6)} />
         <div style={styles.decorativeCircle('80%', '20%', '150px', 10)} />
@@ -335,6 +381,7 @@ export default function Login() {
             <p style={styles.formSubtitle}>Connectez-vous pour continuer</p>
           </div>
 
+          {/* Error Alert */}
           {error && (
             <div style={styles.errorAlert}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -346,6 +393,7 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* Email Field */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Adresse email</label>
               <div style={styles.inputWrapper}>
@@ -367,6 +415,7 @@ export default function Login() {
               </div>
             </div>
 
+            {/* Password Field */}
             <div style={styles.formGroup}>
               <label style={styles.label}>Mot de passe</label>
               <div style={styles.inputWrapper}>
@@ -405,6 +454,7 @@ export default function Login() {
               </div>
             </div>
 
+            {/* Forgot Password */}
             <div style={styles.forgotPassword}>
               <button
                 type="button"
@@ -415,6 +465,7 @@ export default function Login() {
               </button>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -443,6 +494,66 @@ export default function Login() {
             </button>
           </form>
 
+          <div style={styles.divider}>
+            <div style={styles.dividerLine} />
+            <span style={styles.dividerText}>ou</span>
+            <div style={styles.dividerLine} />
+          </div>
+
+          {/* Test Accounts */}
+          <div style={styles.testAccounts}>
+            <div style={styles.testAccountsTitle}>Comptes de test</div>
+            {[
+              { role: 'Recruteur', email: 'recruteur@test.com', color: '#10B981', bg: '#D1FAE5' },
+              { role: 'Candidat', email: 'candidat@test.com', color: '#8B5CF6', bg: '#EDE9FE' },
+            ].map((account, index) => (
+              <div
+                key={index}
+                onClick={() => setForm({ email: account.email, password: '12345678' })}
+                style={styles.testAccount}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = account.bg;
+                  e.currentTarget.style.borderColor = account.color;
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = professionalTheme.colors.neutral[50];
+                  e.currentTarget.style.borderColor = professionalTheme.colors.neutral[200];
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }}
+              >
+                <span
+                  style={{
+                    ...styles.testAccountRole,
+                    color: account.color,
+                    background: account.bg,
+                  }}
+                >
+                  {account.role}
+                </span>
+                <span style={styles.testAccountEmail}>{account.email}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Admin Portal Link */}
+          <div style={styles.adminPortal}>
+            <div style={styles.adminPortalText}>
+              Vous êtes administrateur ?
+            </div>
+            <button
+              onClick={() => navigate('/admin-portal')}
+              style={{
+                ...createButtonStyle('primary', 'md'),
+                width: '100%',
+                fontSize: '0.875rem',
+              }}
+            >
+              Accéder au portail admin
+            </button>
+          </div>
+
+          {/* Sign Up Link */}
           <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.neutral[600] }}>
             Pas encore de compte ?{' '}
             <button
