@@ -3,6 +3,7 @@ const Offre = require('../models/Offre');
 const Candidature = require('../models/Candidature');
 const Entretien = require('../models/Entretien');
 const generateToken = require('../utils/generateToken');
+const { sendEmail, emailActivationCompte } = require('../utils/email');
 
 // ===== ADMIN — Voir tous les users =====
 exports.getAllUsers = async (req, res) => {
@@ -30,12 +31,32 @@ exports.getPendingUsers = async (req, res) => {
 // ===== ADMIN — Valider un compte =====
 exports.validateUser = async (req, res) => {
   try {
+    // Get the user before updating to check if status is changing from pending
+    const userBeforeUpdate = await User.findById(req.params.id);
+    if (!userBeforeUpdate) {
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+    }
+
+    const wasPending = userBeforeUpdate.status === 'pending';
+
+    // Update user status
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { status: 'active', isVerified: true },
       { new: true }
     );
-    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+
+    // Send email if status changed from pending to active
+    if (wasPending) {
+      try {
+        await sendEmail(emailActivationCompte(user.nom, user.email));
+        console.log(`✅ Email d'activation envoyé à ${user.email}`);
+      } catch (emailError) {
+        console.error(`❌ Erreur lors de l'envoi de l'email à ${user.email}:`, emailError);
+        // Continue with the response even if email fails
+      }
+    }
+
     res.status(200).json({ success: true, message: '✅ Compte validé', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -80,12 +101,32 @@ exports.suspendUser = async (req, res) => {
 // ===== ADMIN — Réactiver un compte =====
 exports.activateUser = async (req, res) => {
   try {
+    // Get the user before updating to check status
+    const userBeforeUpdate = await User.findById(req.params.id);
+    if (!userBeforeUpdate) {
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+    }
+
+    const wasSuspended = userBeforeUpdate.status === 'suspended';
+
+    // Update user status
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { status: 'active' },
       { new: true }
     );
-    if (!user) return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+
+    // Send email if account was suspended and is now being reactivated
+    if (wasSuspended) {
+      try {
+        await sendEmail(emailActivationCompte(user.nom, user.email));
+        console.log(`✅ Email de réactivation envoyé à ${user.email}`);
+      } catch (emailError) {
+        console.error(`❌ Erreur lors de l'envoi de l'email à ${user.email}:`, emailError);
+        // Continue with the response even if email fails
+      }
+    }
+
     res.status(200).json({ success: true, message: 'Compte réactivé ✅', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

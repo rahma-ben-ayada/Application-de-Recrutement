@@ -3,11 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 
 // Auth
-import Login          from '../pages/auth/Login';
-import Register       from '../pages/auth/Register';
-import ForgotPassword from '../pages/auth/ForgotPassword';
-import LandingPage    from '../pages/LandingPage';
-import LoginAdmin     from '../pages/auth/LoginAdmin';
+import Login            from '../pages/auth/Login';
+import Register         from '../pages/auth/Register';
+import ForgotPassword   from '../pages/auth/ForgotPassword';
+import Callback         from '../pages/auth/Callback';
+import PendingApproval  from '../pages/auth/PendingApproval';
+import LandingPage      from '../pages/LandingPage';
+import LoginAdmin       from '../pages/auth/LoginAdmin';
 
 // Public Pages
 import Fonctionnalités from '../pages/Fonctionnalités';
@@ -58,10 +60,12 @@ export default function AppRoutes() {
           <Route path="/ressources"       element={<Ressources />} />
 
           {/* Auth */}
-          <Route path="/login"           element={<Login />} />
-          <Route path="/register"        element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin-portal"    element={<LoginAdmin />} />
+          <Route path="/login"             element={<Login />} />
+          <Route path="/register"          element={<Register />} />
+          <Route path="/forgot-password"   element={<ForgotPassword />} />
+          <Route path="/auth/callback"     element={<Callback />} />
+          <Route path="/pending-approval"  element={<PendingApproval />} />
+          <Route path="/admin-portal"      element={<LoginAdmin />} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute role="admin" />}>

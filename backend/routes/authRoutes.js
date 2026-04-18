@@ -1,10 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getProfil, updateProfil, adminLogin } = require('../controllers/authController');
+const passport = require('../config/passport');
+const { register, login, getProfil, updateProfil, adminLogin, googleAuthCallback } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { adminLoginRateLimit, recordFailedAttempt } = require('../middleware/adminSecurityMiddleware');
 const upload = require('../middleware/upload');
 const User = require('../models/User');
+
+// ===== GOOGLE OAUTH ROUTES =====
+// @route   GET /api/auth/google
+// @desc    Initiate Google OAuth (for login)
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed` }),
+  googleAuthCallback
+);
 
 // Regular auth routes
 router.post('/register', register);

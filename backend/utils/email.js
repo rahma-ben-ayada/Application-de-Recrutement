@@ -287,6 +287,65 @@ const emailAlerteNouvelleOffre = (alerte, offres) => {
   };
 };
 
+// Template email d'activation de compte
+const emailActivationCompte = (nom, email) => {
+  const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+
+  return {
+    to: email,
+    subject: '✅ Votre compte SmartRecruit a été activé !',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; text-decoration: none; border-radius: 25px; font-weight: bold; margin: 20px 0; }
+          .info { background: #e0f2fe; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Compte activé !</h1>
+            <p>Bienvenue sur SmartRecruit</p>
+          </div>
+          <div class="content">
+            <p>Bonjour <strong>${nom}</strong>,</p>
+            <p>Nous avons le plaisir de vous informer que votre compte SmartRecruit a été <strong>activé avec succès</strong> !</p>
+            <p>Vous pouvez maintenant vous connecter et accéder à toutes les fonctionnalités de la plateforme.</p>
+
+            <div class="info">
+              <strong>🎉 Félicitations !</strong><br>
+              Votre compte a été validé par notre équipe et vous pouvez maintenant:<br>
+              • Accéder à votre espace personnel<br>
+              • Postuler aux offres d'emploi<br>
+              • Gérer vos candidatures<br>
+              • Recevoir des alertes personnalisées
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${loginUrl}" class="button">Se connecter maintenant</a>
+            </div>
+
+            <p style="font-size: 12px; color: #999;">
+              Ceci est un email automatique, merci de ne pas y répondre.<br>
+              Si vous avez des questions, n'hésitez pas à nous contacter via l'espace d'aide.
+            </p>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #999; margin-top: 20px;">
+            <p>© 2024 SmartRecruit. Tous droits réservés.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+};
+
 module.exports = {
   sendEmail,
   emailConfirmationInscription,
@@ -294,4 +353,5 @@ module.exports = {
   emailConfirmationCandidature,
   emailInvitationEntretien,
   emailAlerteNouvelleOffre,
+  emailActivationCompte,
 };

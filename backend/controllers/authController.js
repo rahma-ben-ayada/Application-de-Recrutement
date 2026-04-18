@@ -237,7 +237,7 @@ exports.getProfil = async (req, res) => {
 exports.updateProfil = async (req, res) => {
   try {
     const { nom, telephone, experience, competences, formation, langues, objectif } = req.body;
-    
+
     const updateData = {
       nom, telephone,
       experience: experience ? Number(experience) : 0,
@@ -255,5 +255,44 @@ exports.updateProfil = async (req, res) => {
     res.status(200).json({ success: true, message: 'Profil mis à jour ✅', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ===== GOOGLE OAUTH CALLBACK =====
+exports.googleAuthCallback = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      console.error('Google Auth: No user found in request');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
+    }
+
+    console.log(`Google Auth Success: ${user.email} (${user.role}) - Status: ${user.status}`);
+
+    // If user status is pending, redirect to pending page
+    if (user.status === 'pending') {
+      return res.redirect(`${process.env.FRONTEND_URL}/pending-approval?email=${user.email}`);
+    }
+
+    // Generate JWT token for active users
+    const token = generateToken(user._id, user.role);
+
+    // Redirect to frontend with token and user info
+    res.redirect(
+      `${process.env.FRONTEND_URL}/auth/callback?token=${token}&user=${encodeURIComponent(
+        JSON.stringify({
+          id: user._id,
+          nom: user.nom,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+          photo: user.photo,
+        })
+      )}`
+    );
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
   }
 };
