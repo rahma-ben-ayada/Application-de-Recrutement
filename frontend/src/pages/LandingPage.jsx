@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { professionalTheme, professionalKeyframes } from '../theme/professionalTheme';
 
 const offresRecentes = [
@@ -35,11 +36,28 @@ const temoignages = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [search, setSearch] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [animatedStats, setAnimatedStats] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleNavigateToDashboard = () => {
+    if (user?.role) {
+      // Candidates don't have a dashboard, they go to offres
+      const dashboardPath = user.role === 'candidat'
+        ? '/candidat/offres'
+        : `/${user.role}/dashboard`;
+      navigate(dashboardPath);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -612,20 +630,55 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem' }}>
-              <button
-                style={{ ...styles.button, background: 'transparent', color: professionalTheme.colors.neutral[700], border: `1px solid ${professionalTheme.colors.neutral[300]}` }}
-                onClick={() => navigate('/login')}
-              >
-                Connexion
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.buttonPrimary }}
-                onClick={() => navigate('/register')}
-              >
-                Démarrer gratuitement
-              </button>
-            </div>
+            {/* Authenticated user menu */}
+            {user ? (
+              <>
+                <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  {/* Role badge */}
+                  <div style={{
+                    padding: '0.375rem 0.875rem',
+                    borderRadius: professionalTheme.radius.full,
+                    fontSize: professionalTheme.fontSizes.sm,
+                    fontWeight: 500,
+                    background: professionalTheme.colors.primary[50],
+                    color: professionalTheme.colors.primary[700],
+                  }}>
+                    {user.role === 'admin' ? '🛡 Admin' : user.role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
+                  </div>
+
+                  {/* Dashboard button */}
+                  <button
+                    style={{ ...styles.button, background: 'transparent', color: professionalTheme.colors.neutral[700], border: `1px solid ${professionalTheme.colors.neutral[300]}` }}
+                    onClick={handleNavigateToDashboard}
+                  >
+                    Mon Dashboard
+                  </button>
+
+                  {/* Logout button */}
+                  <button
+                    style={{ ...styles.button, ...styles.buttonPrimary }}
+                    onClick={handleLogout}
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem' }}>
+                <button
+                  style={{ ...styles.button, background: 'transparent', color: professionalTheme.colors.neutral[700], border: `1px solid ${professionalTheme.colors.neutral[300]}` }}
+                  onClick={() => navigate('/login')}
+                >
+                  Connexion
+                </button>
+                <button
+                  style={{ ...styles.button, ...styles.buttonPrimary }}
+                  onClick={() => navigate('/register')}
+                >
+                  Démarrer gratuitement
+                </button>
+              </div>
+            )}
             <button
               style={styles.mobileMenuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -662,26 +715,68 @@ export default function LandingPage() {
                 {link}
               </a>
             ))}
-            <div style={styles.mobileMenuButtons}>
-              <button
-                style={{ ...styles.button, width: '100%', background: professionalTheme.colors.neutral[100], color: professionalTheme.colors.neutral[900] }}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate('/login');
-                }}
-              >
-                Connexion
-              </button>
-              <button
-                style={{ ...styles.button, width: '100%', ...styles.buttonPrimary }}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate('/register');
-                }}
-              >
-                Démarrer gratuitement
-              </button>
-            </div>
+
+            {/* Mobile menu: Authenticated vs Not authenticated */}
+            {user ? (
+              <div style={styles.mobileMenuButtons}>
+                {/* Role badge */}
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderRadius: professionalTheme.radius.full,
+                  fontSize: professionalTheme.fontSizes.sm,
+                  fontWeight: 500,
+                  background: professionalTheme.colors.primary[50],
+                  color: professionalTheme.colors.primary[700],
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}>
+                  {user.role === 'admin' ? '🛡 Admin' : user.role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
+                </div>
+
+                <button
+                  style={{ ...styles.button, width: '100%', background: professionalTheme.colors.neutral[100], color: professionalTheme.colors.neutral[900] }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleNavigateToDashboard();
+                  }}
+                >
+                  Mon Dashboard
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', ...styles.buttonPrimary }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                >
+                  Déconnexion
+                </button>
+              </div>
+            ) : (
+              <div style={styles.mobileMenuButtons}>
+                <button
+                  style={{ ...styles.button, width: '100%', background: professionalTheme.colors.neutral[100], color: professionalTheme.colors.neutral[900] }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate('/login');
+                  }}
+                >
+                  Connexion
+                </button>
+                <button
+                  style={{ ...styles.button, width: '100%', ...styles.buttonPrimary }}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate('/register');
+                  }}
+                >
+                  Démarrer gratuitement
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -691,29 +786,46 @@ export default function LandingPage() {
         <div style={styles.heroContainer}>
           <div style={styles.heroContent}>
             <h1 style={styles.heroTitle}>
-              Connectez les Meilleurs{' '}
-              <span style={{ color: professionalTheme.colors.primary[600] }}>Talents</span>
+              {user ? `Bienvenue, ${user.nom || user.name || 'Utilisateur'} !` : 'Connectez les Meilleurs '}
+              {!user && <span style={{ color: professionalTheme.colors.primary[600] }}>Talents</span>}
             </h1>
 
             <p style={styles.heroSubtitle}>
-              SmartRecruit utilise l'intelligence artificielle pour révolutionner votre processus de recrutement. Trouvez le candidat idéal en moins de temps.
+              {user
+                ? `Vous êtes connecté en tant que ${user.role === 'admin' ? 'administrateur' : user.role === 'recruteur' ? 'recruteur' : 'candidat'}. Continuez à explorer SmartRecruit ou accédez à votre dashboard.`
+                : 'SmartRecruit utilise l\'intelligence artificielle pour révolutionner votre processus de recrutement. Trouvez le candidat idéal en moins de temps.'
+              }
             </p>
 
             <div style={styles.heroButtons}>
-              <button
-                style={{ ...styles.button, ...styles.buttonPrimary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
-                onClick={() => navigate('/register')}
-              >
-                Commencer Gratuitement
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
-              >
-                Voir la Démo
-              </button>
+              {user ? (
+                <button
+                  style={{ ...styles.button, ...styles.buttonPrimary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
+                  onClick={handleNavigateToDashboard}
+                >
+                  Mon Dashboard
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </button>
+              ) : (
+                <>
+                  <button
+                    style={{ ...styles.button, ...styles.buttonPrimary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
+                    onClick={() => navigate('/register')}
+                  >
+                    Commencer Gratuitement
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </button>
+                  <button
+                    style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
+                  >
+                    Voir la Démo
+                  </button>
+                </>
+              )}
             </div>
 
             <div style={styles.heroStats}>
@@ -870,7 +982,7 @@ export default function LandingPage() {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
-                onClick={() => navigate('/login')}
+                onClick={() => user ? navigate('/candidat/offres') : navigate('/login')}
               >
                 <div style={styles.offreHeader}>
                   <div style={styles.offreLogo}>{offre.logo}</div>
@@ -903,8 +1015,12 @@ export default function LandingPage() {
                     padding: '0.625rem',
                     fontSize: professionalTheme.fontSizes.sm,
                   }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    user ? navigate('/candidat/offres') : navigate('/login');
+                  }}
                 >
-                  Postuler →
+                  {user ? 'Voir les offres' : 'Postuler →'}
                 </button>
               </div>
             ))}
@@ -956,23 +1072,37 @@ export default function LandingPage() {
           <div style={styles.ctaSection}>
             <div style={styles.ctaContent}>
               <h2 style={styles.ctaTitle}>
-                Prêt à Transformer Votre Recrutement ?
+                {user ? 'Bienvenue sur SmartRecruit !' : 'Prêt à Transformer Votre Recrutement ?'}
               </h2>
               <p style={styles.ctaSubtitle}>
-                Rejoignez des milliers d'entreprises qui font confiance à SmartRecruit pour trouver les meilleurs talents.
+                {user
+                  ? `Connecté en tant que ${user.role === 'admin' ? 'administrateur' : user.role === 'recruteur' ? 'recruteur' : 'candidat'}. Accédez à votre dashboard pour gérer vos activités.`
+                  : 'Rejoignez des milliers d\'entreprises qui font confiance à SmartRecruit pour trouver les meilleurs talents.'
+                }
               </p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button
-                  style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '0.875rem 2rem', fontSize: '1rem' }}
-                  onClick={() => navigate('/register')}
-                >
-                  Démarrer Gratuitement
-                </button>
-                <button
-                  style={{ ...styles.button, background: 'transparent', color: '#FFFFFF', border: '2px solid rgba(255, 255, 255, 0.3)', padding: '0.875rem 2rem', fontSize: '1rem' }}
-                >
-                  Contacter l'Équipe
-                </button>
+                {user ? (
+                  <button
+                    style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '0.875rem 2rem', fontSize: '1rem' }}
+                    onClick={handleNavigateToDashboard}
+                  >
+                    Aller au Dashboard
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '0.875rem 2rem', fontSize: '1rem' }}
+                      onClick={() => navigate('/register')}
+                    >
+                      Démarrer Gratuitement
+                    </button>
+                    <button
+                      style={{ ...styles.button, background: 'transparent', color: '#FFFFFF', border: '2px solid rgba(255, 255, 255, 0.3)', padding: '0.875rem 2rem', fontSize: '1rem' }}
+                    >
+                      Contacter l'Équipe
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

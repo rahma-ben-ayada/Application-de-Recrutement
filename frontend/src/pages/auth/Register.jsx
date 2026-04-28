@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { professionalTheme, professionalKeyframes, createInputStyle, createButtonStyle } from '../../theme/professionalTheme';
+import './Register.css';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -83,303 +83,39 @@ export default function Register() {
     }
   };
 
-  const styles = {
-    page: {
-      minHeight: '100vh',
-      display: 'grid',
-      gridTemplateColumns: '1fr 1.2fr',
-      background: '#FFFFFF',
-      fontFamily: professionalTheme.fonts.sans,
-      '@media (max-width: 1024px)': {
-        gridTemplateColumns: '1fr',
-      },
-    },
-    leftPanel: {
-      background: professionalTheme.gradients.subtle,
-      padding: '3rem',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      borderRight: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      '@media (max-width: 1024px)': {
-        display: 'none',
-      },
-    },
-    rightPanel: {
-      padding: '3rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflowY: 'auto',
-      '@media (max-width: 640px)': {
-        padding: '1.5rem',
-      },
-    },
-    leftContent: {
-      maxWidth: '400px',
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      marginBottom: '2rem',
-    },
-    logoIcon: {
-      width: '48px',
-      height: '48px',
-      borderRadius: professionalTheme.radius.xl,
-      background: professionalTheme.gradients.primary,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#FFFFFF',
-      fontWeight: 700,
-      fontSize: '1.125rem',
-    },
-    leftTitle: {
-      fontSize: professionalTheme.fontSizes['4xl'],
-      fontWeight: 700,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '1rem',
-      lineHeight: 1.2,
-    },
-    leftSubtitle: {
-      fontSize: professionalTheme.fontSizes.base,
-      color: professionalTheme.colors.neutral[600],
-      marginBottom: '2rem',
-      lineHeight: 1.6,
-    },
-    benefitList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-    },
-    benefitItem: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-    },
-    benefitIcon: {
-      width: '24px',
-      height: '24px',
-      borderRadius: '50%',
-      background: professionalTheme.colors.success.light,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: professionalTheme.colors.success.dark,
-      flexShrink: 0,
-    },
-    benefitText: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[700],
-    },
-    formContainer: {
-      width: '100%',
-      maxWidth: '440px',
-      '@media (max-width: 640px)': {
-        maxWidth: '100%',
-      },
-    },
-    progressBar: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      marginBottom: '2rem',
-    },
-    progressStep: (isActive, isCompleted) => ({
-      flex: 1,
-      height: '4px',
-      borderRadius: professionalTheme.radius.full,
-      background: isCompleted
-        ? professionalTheme.colors.primary[500]
-        : isActive
-        ? professionalTheme.colors.primary[300]
-        : professionalTheme.colors.neutral[200],
-      transition: professionalTheme.transitions.default,
-    }),
-    formHeader: {
-      marginBottom: '2rem',
-      '@media (max-width: 640px)': {
-        marginBottom: '1.5rem',
-      },
-    },
-    formTitle: {
-      fontSize: professionalTheme.fontSizes['2xl'],
-      fontWeight: 700,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.5rem',
-      '@media (max-width: 640px)': {
-        fontSize: professionalTheme.fontSizes.xl,
-      },
-    },
-    formSubtitle: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-    },
-    formGroup: {
-      marginBottom: '1.25rem',
-    },
-    label: {
-      display: 'block',
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 500,
-      color: professionalTheme.colors.neutral[700],
-      marginBottom: '0.5rem',
-    },
-    inputWrapper: {
-      position: 'relative',
-    },
-    input: (hasError) => ({
-      ...createInputStyle(),
-      ...(hasError ? {
-        border: `2px solid ${professionalTheme.colors.error.DEFAULT}`,
-        background: professionalTheme.colors.error.light,
-      } : {}),
-    }),
-    errorText: {
-      fontSize: professionalTheme.fontSizes.xs,
-      color: professionalTheme.colors.error.dark,
-      marginTop: '0.375rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.25rem',
-    },
-    roleCards: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '1rem',
-      marginBottom: '1.5rem',
-      '@media (max-width: 480px)': {
-        gridTemplateColumns: '1fr',
-      },
-    },
-    roleCard: (isSelected) => ({
-      padding: '1.5rem',
-      borderRadius: professionalTheme.radius.xl,
-      border: `2px solid ${isSelected ? professionalTheme.colors.primary[500] : professionalTheme.colors.neutral[200]}`,
-      background: isSelected ? professionalTheme.colors.primary[50] : '#FFFFFF',
-      cursor: 'pointer',
-      transition: professionalTheme.transitions.default,
-      textAlign: 'center',
-      '@media (max-width: 480px)': {
-        padding: '1.25rem',
-      },
-    }),
-    roleIcon: {
-      fontSize: '2rem',
-      marginBottom: '0.5rem',
-    },
-    roleTitle: {
-      fontSize: professionalTheme.fontSizes.base,
-      fontWeight: 600,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.25rem',
-    },
-    roleDescription: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-    },
-    buttonGroup: {
-      display: 'flex',
-      gap: '1rem',
-      marginTop: '2rem',
-      '@media (max-width: 480px)': {
-        flexDirection: 'column',
-      },
-    },
-    buttonSecondary: {
-      ...createButtonStyle('secondary', 'lg'),
-      flex: 1,
-    },
-    buttonPrimary: {
-      ...createButtonStyle('primary', 'lg'),
-      flex: 1,
-    },
-    loginLink: {
-      textAlign: 'center',
-      marginTop: '1.5rem',
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-    },
-    loginLinkButton: {
-      background: 'none',
-      border: 'none',
-      color: professionalTheme.colors.primary[600],
-      cursor: 'pointer',
-      fontWeight: 600,
-      fontSize: 'inherit',
-      padding: 0,
-    },
-    successContainer: {
-      textAlign: 'center',
-      padding: '3rem 2rem',
-    },
-    successIcon: {
-      width: '80px',
-      height: '80px',
-      borderRadius: '50%',
-      background: professionalTheme.colors.success.light,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 auto 2rem',
-      color: professionalTheme.colors.success.dark,
-    },
-    successTitle: {
-      fontSize: professionalTheme.fontSizes['2xl'],
-      fontWeight: 700,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '1rem',
-    },
-    successMessage: {
-      fontSize: professionalTheme.fontSizes.base,
-      color: professionalTheme.colors.neutral[600],
-      marginBottom: '2rem',
-      lineHeight: 1.6,
-    },
-    successCard: {
-      background: professionalTheme.colors.warning.light,
-      border: `1px solid ${professionalTheme.colors.warning.DEFAULT}`,
-      borderRadius: professionalTheme.radius.xl,
-      padding: '1rem 1.25rem',
-      marginBottom: '2rem',
-      display: 'flex',
-      gap: '0.75rem',
-      alignItems: 'flex-start',
-    },
-    successCardIcon: {
-      fontSize: '1.25rem',
-      flexShrink: 0,
-    },
-    successCardText: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.warning.dark,
-      textAlign: 'left',
-    },
-  };
-
   if (step === 3) {
     return (
-      <div style={styles.page}>
-        <style>{professionalKeyframes}</style>
-        <div style={{ ...styles.rightPanel, width: '100%', maxWidth: '600px', margin: '0 auto' }}>
-          <div style={styles.successContainer}>
-            <div style={styles.successIcon}>
+      <div className="register-page">
+        <div className="register-right-panel" style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+          <div className="register-success-content">
+            <div className="register-success-icon">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
             </div>
 
-            <h2 style={styles.successTitle}>Compte créé avec succès !</h2>
+            <h2 className="register-success-title">Compte créé avec succès !</h2>
 
-            <p style={styles.successMessage}>
+            <p className="register-success-text">
               Bienvenue sur SmartRecruit. Votre compte a été créé et est en attente de validation.
             </p>
 
-            <div style={styles.successCard}>
-              <div style={styles.successCardIcon}>⏳</div>
-              <div style={styles.successCardText}>
+            <div style={{
+              background: '#FEF3C7',
+              border: '1px solid #F59E0B',
+              borderRadius: '0.75rem',
+              padding: '1rem 1.25rem',
+              marginBottom: '2rem',
+              display: 'flex',
+              gap: '0.75rem',
+              alignItems: 'flex-start',
+            }}>
+              <div style={{ fontSize: '1.25rem', flexShrink: 0 }}>⏳</div>
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#92400E',
+                textAlign: 'left',
+              }}>
                 <strong>En attente de validation</strong><br />
                 Votre compte doit être validé par un administrateur avant que vous puissiez vous connecter. Vous recevrez un email de confirmation une fois votre compte activé.
               </div>
@@ -387,7 +123,8 @@ export default function Register() {
 
             <button
               onClick={() => navigate('/login')}
-              style={{ ...styles.buttonPrimary, width: 'auto', padding: '0.875rem 2rem' }}
+              className="register-button register-button-primary"
+              style={{ width: 'auto', padding: '0.875rem 2rem' }}
             >
               Retour à la connexion
             </button>
@@ -398,58 +135,57 @@ export default function Register() {
   }
 
   return (
-    <div style={styles.page}>
-      <style>{professionalKeyframes}</style>
-
-      <div style={styles.leftPanel}>
-        <div style={styles.leftContent}>
-          <div style={styles.logo}>
-            <div style={styles.logoIcon}>SR</div>
-            <div style={{ fontSize: professionalTheme.fontSizes.xl, fontWeight: 700, color: professionalTheme.colors.neutral[900] }}>
-              SmartRecruit
-            </div>
+    <div className="register-page">
+      {/* ===== LEFT PANEL ===== */}
+      <div className="register-left-panel">
+        <div className="register-left-content">
+          <div className="register-logo">
+            <div className="register-logo-icon">SR</div>
+            <div className="register-logo-text">SmartRecruit</div>
           </div>
 
-          <h1 style={styles.leftTitle}>
+          <h1 className="register-left-title">
             Créez Votre Compte
           </h1>
 
-          <p style={styles.leftSubtitle}>
+          <p className="register-left-subtitle">
             Rejoignez la plateforme de recrutement leader et connectez-vous aux meilleures opportunités.
           </p>
 
-          <div style={styles.benefitList}>
+          <div className="register-benefit-list">
             {[
               { text: 'Inscription gratuite et sans engagement' },
               { text: 'Accès aux offres de Premium' },
               { text: 'Outils de suivi avancés' },
               { text: 'Support client dédié 24/7' },
             ].map((benefit, index) => (
-              <div key={index} style={styles.benefitItem}>
-                <div style={styles.benefitIcon}>
+              <div key={index} className="register-benefit-item">
+                <div className="register-benefit-icon">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                     <path d="M20 6L9 17l-5-5"/>
                   </svg>
                 </div>
-                <span style={styles.benefitText}>{benefit.text}</span>
+                <span className="register-benefit-text">{benefit.text}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div style={styles.rightPanel}>
-        <div style={styles.formContainer}>
-          <div style={styles.progressBar}>
-            <div style={styles.progressStep(step >= 1, step > 1)} />
-            <div style={styles.progressStep(step >= 2, step > 2)} />
+      {/* ===== RIGHT PANEL ===== */}
+      <div className="register-right-panel">
+        <div className="register-form-container">
+          {/* Progress Bar */}
+          <div className="register-progress-bar">
+            <div className={`register-progress-step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`} />
+            <div className={`register-progress-step ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`} />
           </div>
 
-          <div style={styles.formHeader}>
-            <h2 style={styles.formTitle}>
+          <div className="register-form-header">
+            <h2 className="register-form-title">
               {step === 1 ? 'Informations personnelles' : 'Type de compte'}
             </h2>
-            <p style={styles.formSubtitle}>
+            <p className="register-form-subtitle">
               {step === 1
                 ? 'Entrez vos coordonnées pour créer votre compte'
                 : 'Choisissez le type de compte qui vous correspond'}
@@ -458,34 +194,42 @@ export default function Register() {
 
           {errors.api && (
             <div style={{
-              ...styles.successCard,
-              background: professionalTheme.colors.error.light,
-              borderColor: professionalTheme.colors.error.DEFAULT,
+              background: '#FEE2E2',
+              border: '1px solid #EF4444',
+              borderRadius: '0.75rem',
+              padding: '0.75rem 1rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              gap: '0.75rem',
+              color: '#991B1B',
+              fontSize: '0.875rem',
             }}>
-              <span style={styles.successCardIcon}>⚠️</span>
-              <span style={{ ...styles.successCardText, color: professionalTheme.colors.error.dark }}>
-                {errors.api}
-              </span>
+              <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+              <span>{errors.api}</span>
             </div>
           )}
 
           <form onSubmit={step === 1 ? (e) => { e.preventDefault(); handleNext(); } : handleSubmit}>
             {step === 1 && (
               <>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Nom complet <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                <div className="register-form-group">
+                  <label className="register-label">
+                    Nom complet <span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <input
                     type="text"
+                    className="register-input"
                     placeholder="Ahmed Trabelsi"
                     value={form.nom}
                     onChange={updateForm('nom')}
-                    style={styles.input(!!errors.nom)}
+                    style={errors.nom ? {
+                      border: '2px solid #EF4444',
+                      background: '#FEE2E2',
+                    } : {}}
                   />
                   {errors.nom && (
-                    <div style={styles.errorText}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <div className="register-error-text">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -494,20 +238,24 @@ export default function Register() {
                   )}
                 </div>
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Adresse email <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                <div className="register-form-group">
+                  <label className="register-label">
+                    Adresse email <span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <input
                     type="email"
+                    className="register-input"
                     placeholder="vous@exemple.com"
                     value={form.email}
                     onChange={updateForm('email')}
-                    style={styles.input(!!errors.email)}
+                    style={errors.email ? {
+                      border: '2px solid #EF4444',
+                      background: '#FEE2E2',
+                    } : {}}
                   />
                   {errors.email && (
-                    <div style={styles.errorText}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <div className="register-error-text">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -516,20 +264,24 @@ export default function Register() {
                   )}
                 </div>
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Mot de passe <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                <div className="register-form-group">
+                  <label className="register-label">
+                    Mot de passe <span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <input
                     type="password"
+                    className="register-input"
                     placeholder="Min. 8 caractères"
                     value={form.password}
                     onChange={updateForm('password')}
-                    style={styles.input(!!errors.password)}
+                    style={errors.password ? {
+                      border: '2px solid #EF4444',
+                      background: '#FEE2E2',
+                    } : {}}
                   />
                   {errors.password && (
-                    <div style={styles.errorText}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <div className="register-error-text">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -538,20 +290,24 @@ export default function Register() {
                   )}
                 </div>
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Confirmer le mot de passe <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                <div className="register-form-group">
+                  <label className="register-label">
+                    Confirmer le mot de passe <span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <input
                     type="password"
+                    className="register-input"
                     placeholder="••••••••"
                     value={form.confirmPassword}
                     onChange={updateForm('confirmPassword')}
-                    style={styles.input(!!errors.confirmPassword)}
+                    style={errors.confirmPassword ? {
+                      border: '2px solid #EF4444',
+                      background: '#FEE2E2',
+                    } : {}}
                   />
                   {errors.confirmPassword && (
-                    <div style={styles.errorText}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <div className="register-error-text">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -560,11 +316,8 @@ export default function Register() {
                   )}
                 </div>
 
-                <div style={styles.buttonGroup}>
-                  <button
-                    type="submit"
-                    style={styles.buttonPrimary}
-                  >
+                <div className="register-form-actions">
+                  <button type="submit" className="register-button register-button-primary">
                     Continuer
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -576,41 +329,29 @@ export default function Register() {
 
             {step === 2 && (
               <>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Je suis un(e) <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                <div className="register-form-group">
+                  <label className="register-label">
+                    Je suis un(e) <span style={{ color: '#EF4444' }}>*</span>
                   </label>
-                  <div style={styles.roleCards}>
+                  <div className="register-role-cards">
                     {[
                       { value: 'candidat', icon: '👤', title: 'Candidat', description: 'Je cherche un emploi' },
                       { value: 'recruteur', icon: '🏢', title: 'Recruteur', description: 'Je recrute des talents' },
                     ].map((role) => (
                       <div
                         key={role.value}
+                        className={`register-role-card ${form.role === role.value ? 'selected' : ''}`}
                         onClick={() => updateForm('role')({ target: { value: role.value } })}
-                        style={styles.roleCard(form.role === role.value)}
-                        onMouseEnter={(e) => {
-                          if (form.role !== role.value) {
-                            e.currentTarget.style.borderColor = professionalTheme.colors.primary[300];
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (form.role !== role.value) {
-                            e.currentTarget.style.borderColor = professionalTheme.colors.neutral[200];
-                            e.currentTarget.style.transform = 'translateY(0)';
-                          }
-                        }}
                       >
-                        <div style={styles.roleIcon}>{role.icon}</div>
-                        <div style={styles.roleTitle}>{role.title}</div>
-                        <div style={styles.roleDescription}>{role.description}</div>
+                        <div className="register-role-icon">{role.icon}</div>
+                        <div className="register-role-title">{role.title}</div>
+                        <div className="register-role-description">{role.description}</div>
                       </div>
                     ))}
                   </div>
                   {errors.role && (
-                    <div style={styles.errorText}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <div className="register-error-text">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -621,20 +362,24 @@ export default function Register() {
 
                 {form.role === 'recruteur' && (
                   <>
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>
-                        Nom de l'entreprise <span style={{ color: professionalTheme.colors.error.DEFAULT }}>*</span>
+                    <div className="register-form-group">
+                      <label className="register-label">
+                        Nom de l'entreprise <span style={{ color: '#EF4444' }}>*</span>
                       </label>
                       <input
                         type="text"
+                        className="register-input"
                         placeholder="Tech Corp SARL"
                         value={form.entreprise}
                         onChange={updateForm('entreprise')}
-                        style={styles.input(!!errors.entreprise)}
+                        style={errors.entreprise ? {
+                          border: '2px solid #EF4444',
+                          background: '#FEE2E2',
+                        } : {}}
                       />
                       {errors.entreprise && (
-                        <div style={styles.errorText}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <div className="register-error-text">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                           </svg>
@@ -643,24 +388,24 @@ export default function Register() {
                       )}
                     </div>
 
-                    <div style={styles.formGroup}>
-                      <label style={styles.label}>Secteur d'activité</label>
+                    <div className="register-form-group">
+                      <label className="register-label">Secteur d'activité</label>
                       <input
                         type="text"
+                        className="register-input"
                         placeholder="Technologie, Finance, Santé..."
                         value={form.secteur}
                         onChange={updateForm('secteur')}
-                        style={styles.input(false)}
                       />
                     </div>
                   </>
                 )}
 
-                <div style={styles.buttonGroup}>
+                <div className="register-form-actions">
                   <button
                     type="button"
                     onClick={handleBack}
-                    style={styles.buttonSecondary}
+                    className="register-button register-button-secondary"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -670,15 +415,12 @@ export default function Register() {
                   <button
                     type="submit"
                     disabled={loading}
-                    style={{
-                      ...styles.buttonPrimary,
-                      opacity: loading ? 0.6 : 1,
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                    }}
+                    className="register-button register-button-primary"
+                    style={loading ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
                   >
                     {loading ? (
                       <>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="register-spinner">
                           <circle cx="12" cy="12" r="10" opacity="0.25"/>
                           <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/>
                         </svg>
@@ -698,11 +440,24 @@ export default function Register() {
             )}
           </form>
 
-          <div style={styles.loginLink}>
+          <div style={{
+            textAlign: 'center',
+            marginTop: '1.5rem',
+            fontSize: '0.875rem',
+            color: '#71717A',
+          }}>
             Déjà un compte ?{' '}
             <button
               onClick={() => navigate('/login')}
-              style={styles.loginLinkButton}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#5B73F7',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: 'inherit',
+                padding: 0,
+              }}
             >
               Se connecter
             </button>

@@ -1,12 +1,32 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem('user')) || null
-  );
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+
+        if (storedUser && storedToken) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   const login = async (email, password) => {
     const data = await api('/auth/login', 'POST', { email, password });
@@ -42,7 +62,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, adminLogin, register, logout, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, login, adminLogin, register, logout, loginWithGoogle, loading }}>
       {children}
     </AuthContext.Provider>
   );

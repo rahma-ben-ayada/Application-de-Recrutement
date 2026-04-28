@@ -42,6 +42,7 @@ import ProfilCandidat     from '../pages/candidat/Profil';
 import ParametresCandidat from '../pages/candidat/Parametres';
 
 import ProtectedRoute from './ProtectedRoute';
+import PublicRoute from './PublicRoute';
 
 export default function AppRoutes() {
   return (
@@ -69,6 +70,7 @@ export default function AppRoutes() {
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute role="admin" />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard"  element={<DashboardAdmin />} />
           <Route path="recruteurs" element={<GestionRecruteurs />} />
           <Route path="candidats"  element={<ConsultationCandidats />} />
@@ -78,6 +80,7 @@ export default function AppRoutes() {
 
           {/* Recruteur */}
           <Route path="/recruteur" element={<ProtectedRoute role="recruteur" />}>
+            <Route index element={<Navigate to="/recruteur/dashboard" replace />} />
             <Route path="dashboard"    element={<DashboardRecruteur />} />
             <Route path="offres"       element={<MesOffres />} />
             <Route path="candidatures" element={<Candidatures />} />
@@ -88,6 +91,7 @@ export default function AppRoutes() {
 
           {/* Candidat */}
           <Route path="/candidat" element={<ProtectedRoute role="candidat" />}>
+            <Route index element={<Navigate to="/candidat/offres" replace />} />
             <Route path="offres"       element={<OffresEmploi />} />
             <Route path="favoris"      element={<MesFavoris />} />
             <Route path="alertes"      element={<Alertes />} />

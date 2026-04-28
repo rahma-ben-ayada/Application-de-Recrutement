@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { professionalTheme, professionalKeyframes, createInputStyle, createButtonStyle } from '../../theme/professionalTheme';
+import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -41,263 +41,29 @@ export default function Login() {
     }
   };
 
-  const styles = {
-    page: {
-      minHeight: '100vh',
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      background: '#FFFFFF',
-      fontFamily: professionalTheme.fonts.sans,
-      '@media (max-width: 1024px)': {
-        gridTemplateColumns: '1fr',
-      },
-    },
-    leftPanel: {
-      background: professionalTheme.gradients.primary,
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      padding: '3rem',
-      overflow: 'hidden',
-      '@media (max-width: 1024px)': {
-        display: 'none',
-      },
-    },
-    rightPanel: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem',
-      background: '#FAFAFA',
-      '@media (max-width: 640px)': {
-        padding: '1.5rem',
-      },
-    },
-    leftContent: {
-      position: 'relative',
-      zIndex: 1,
-      maxWidth: '480px',
-      '@media (max-width: 768px)': {
-        maxWidth: '100%',
-      },
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      marginBottom: '2rem',
-    },
-    logoIcon: {
-      width: '48px',
-      height: '48px',
-      borderRadius: professionalTheme.radius.xl,
-      background: 'rgba(255, 255, 255, 0.2)',
-      backdropFilter: 'blur(10px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#FFFFFF',
-      fontWeight: 700,
-      fontSize: '1.125rem',
-    },
-    logoText: {
-      fontSize: professionalTheme.fontSizes.xl,
-      fontWeight: 700,
-      color: '#FFFFFF',
-      letterSpacing: '-0.02em',
-    },
-    leftTitle: {
-      fontSize: professionalTheme.fontSizes['4xl'],
-      fontWeight: 700,
-      color: '#FFFFFF',
-      marginBottom: '1rem',
-      lineHeight: 1.2,
-      '@media (max-width: 768px)': {
-        fontSize: professionalTheme.fontSizes['3xl'],
-      },
-    },
-    leftSubtitle: {
-      fontSize: professionalTheme.fontSizes.base,
-      color: 'rgba(255, 255, 255, 0.8)',
-      marginBottom: '2rem',
-      lineHeight: 1.6,
-      '@media (max-width: 768px)': {
-        fontSize: professionalTheme.fontSizes.sm,
-      },
-    },
-    featureList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-    },
-    featureItem: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      padding: '1rem',
-      background: 'rgba(255, 255, 255, 0.1)',
-      backdropFilter: 'blur(10px)',
-      borderRadius: professionalTheme.radius.xl,
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-    },
-    featureIcon: {
-      width: '40px',
-      height: '40px',
-      borderRadius: professionalTheme.radius.lg,
-      background: 'rgba(255, 255, 255, 0.2)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '1.25rem',
-    },
-    featureText: {
-      flex: 1,
-    },
-    featureTitle: {
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      color: '#FFFFFF',
-      marginBottom: '0.25rem',
-    },
-    featureDescription: {
-      fontSize: professionalTheme.fontSizes.xs,
-      color: 'rgba(255, 255, 255, 0.7)',
-    },
-    formContainer: {
-      width: '100%',
-      maxWidth: '400px',
-      '@media (max-width: 640px)': {
-        maxWidth: '100%',
-      },
-    },
-    formHeader: {
-      marginBottom: '2rem',
-      textAlign: 'center',
-      '@media (max-width: 640px)': {
-        marginBottom: '1.5rem',
-      },
-    },
-    formTitle: {
-      fontSize: professionalTheme.fontSizes['3xl'],
-      fontWeight: 700,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.5rem',
-      '@media (max-width: 640px)': {
-        fontSize: professionalTheme.fontSizes['2xl'],
-      },
-    },
-    formSubtitle: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-    },
-    formGroup: {
-      marginBottom: '1.5rem',
-    },
-    label: {
-      display: 'block',
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 500,
-      color: professionalTheme.colors.neutral[700],
-      marginBottom: '0.5rem',
-    },
-    inputWrapper: {
-      position: 'relative',
-    },
-    input: (field) => ({
-      ...createInputStyle(focusedField === field ? 'focus' : 'default'),
-      paddingLeft: '2.75rem',
-      paddingRight: field === 'password' ? '3rem' : '0.875rem',
-    }),
-    inputIcon: {
-      position: 'absolute',
-      left: '0.875rem',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      color: professionalTheme.colors.neutral[400],
-      pointerEvents: 'none',
-    },
-    togglePassword: {
-      position: 'absolute',
-      right: '0.875rem',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      color: professionalTheme.colors.neutral[400],
-      padding: '0.25rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    forgotPassword: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      marginBottom: '1.5rem',
-    },
-    forgotPasswordLink: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.primary[600],
-      textDecoration: 'none',
-      fontWeight: 500,
-      cursor: 'pointer',
-    },
-    submitButton: {
-      ...createButtonStyle('primary', 'lg'),
-      width: '100%',
-      marginBottom: '1.5rem',
-    },
-    errorAlert: {
-      background: professionalTheme.colors.error.light,
-      border: `1px solid ${professionalTheme.colors.error.DEFAULT}`,
-      borderRadius: professionalTheme.radius.xl,
-      padding: '0.75rem 1rem',
-      marginBottom: '1.5rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem',
-      color: professionalTheme.colors.error.dark,
-      fontSize: professionalTheme.fontSizes.sm,
-    },
-    decorativeCircle: (top, right, size, delay) => ({
-      position: 'absolute',
-      width: size,
-      height: size,
-      borderRadius: '50%',
-      background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
-      top,
-      right,
-      pointerEvents: 'none',
-      animation: `float ${delay}s ease-in-out infinite`,
-    }),
-  };
-
   return (
-    <div style={styles.page}>
-      <style>{professionalKeyframes}</style>
-
+    <div className="login-page">
       {/* ===== LEFT PANEL ===== */}
-      <div style={styles.leftPanel}>
-        <div style={styles.decorativeCircle('-10%', '-10%', '300px', 8)} />
-        <div style={styles.decorativeCircle('60%', '80%', '200px', 6)} />
-        <div style={styles.decorativeCircle('80%', '20%', '150px', 10)} />
+      <div className="login-left-panel">
+        <div className="login-decorative-circle" style={{ top: '-10%', right: '-10%', width: '300px', height: '300px' }} />
+        <div className="login-decorative-circle" style={{ top: '60%', right: '80%', width: '200px', height: '200px', animationDelay: '2s' }} />
+        <div className="login-decorative-circle" style={{ top: '80%', right: '20%', width: '150px', height: '150px', animationDelay: '4s' }} />
 
-        <div style={styles.leftContent}>
-          <div style={styles.logo}>
-            <div style={styles.logoIcon}>SR</div>
-            <div style={styles.logoText}>SmartRecruit</div>
+        <div className="login-left-content">
+          <div className="login-logo">
+            <div className="login-logo-icon">SR</div>
+            <div className="login-logo-text">SmartRecruit</div>
           </div>
 
-          <h1 style={styles.leftTitle}>
+          <h1 className="login-left-title">
             Connectez-vous à Votre Espace
           </h1>
 
-          <p style={styles.leftSubtitle}>
+          <p className="login-left-subtitle">
             Accédez à votre tableau de bord et gérez vos candidatures ou offres d'emploi en toute simplicité.
           </p>
 
-          <div style={styles.featureList}>
+          <div className="login-feature-list">
             {[
               {
                 icon: '🎯',
@@ -315,11 +81,11 @@ export default function Login() {
                 description: 'Données protégées',
               },
             ].map((feature, index) => (
-              <div key={index} style={styles.featureItem}>
-                <div style={styles.featureIcon}>{feature.icon}</div>
-                <div style={styles.featureText}>
-                  <div style={styles.featureTitle}>{feature.title}</div>
-                  <div style={styles.featureDescription}>{feature.description}</div>
+              <div key={index} className="login-feature-item">
+                <div className="login-feature-icon">{feature.icon}</div>
+                <div className="login-feature-text">
+                  <div className="login-feature-title">{feature.title}</div>
+                  <div className="login-feature-description">{feature.description}</div>
                 </div>
               </div>
             ))}
@@ -328,15 +94,15 @@ export default function Login() {
       </div>
 
       {/* ===== RIGHT PANEL ===== */}
-      <div style={styles.rightPanel}>
-        <div style={styles.formContainer}>
-          <div style={styles.formHeader}>
-            <h2 style={styles.formTitle}>Bienvenue 👋</h2>
-            <p style={styles.formSubtitle}>Connectez-vous pour continuer</p>
+      <div className="login-right-panel">
+        <div className="login-form-container">
+          <div className="login-form-header">
+            <h2 className="login-form-title">Bienvenue 👋</h2>
+            <p className="login-form-subtitle">Connectez-vous pour continuer</p>
           </div>
 
           {error && (
-            <div style={styles.errorAlert}>
+            <div className="login-error-alert">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 8v4M12 16h.01"/>
@@ -346,19 +112,19 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Adresse email</label>
-              <div style={styles.inputWrapper}>
+            <div className="login-form-group">
+              <label className="login-label">Adresse email</label>
+              <div className="login-input-wrapper">
                 <input
                   type="email"
+                  className="login-input"
                   placeholder="vous@exemple.com"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
-                  style={styles.input('email')}
                 />
-                <span style={styles.inputIcon}>
+                <span className="login-input-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                     <path d="M22 6l-10 7L2 6"/>
@@ -367,19 +133,19 @@ export default function Login() {
               </div>
             </div>
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Mot de passe</label>
-              <div style={styles.inputWrapper}>
+            <div className="login-form-group">
+              <label className="login-label">Mot de passe</label>
+              <div className="login-input-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  className={`login-input ${showPassword ? '' : 'has-password'}`}
                   placeholder="••••••••"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
-                  style={styles.input('password')}
                 />
-                <span style={styles.inputIcon}>
+                <span className="login-input-icon">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -387,8 +153,9 @@ export default function Login() {
                 </span>
                 <button
                   type="button"
+                  className="login-toggle-password"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={styles.togglePassword}
+                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 >
                   {showPassword ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -405,11 +172,11 @@ export default function Login() {
               </div>
             </div>
 
-            <div style={styles.forgotPassword}>
+            <div className="login-forgot-password">
               <button
                 type="button"
+                className="login-forgot-password-link"
                 onClick={() => navigate('/forgot-password')}
-                style={styles.forgotPasswordLink}
               >
                 Mot de passe oublié ?
               </button>
@@ -417,16 +184,12 @@ export default function Login() {
 
             <button
               type="submit"
+              className="login-submit-button"
               disabled={loading}
-              style={{
-                ...styles.submitButton,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
             >
               {loading ? (
                 <>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: 'spin 1s linear infinite' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="login-spinner">
                     <circle cx="12" cy="12" r="10" opacity="0.25"/>
                     <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75"/>
                   </svg>
@@ -443,70 +206,21 @@ export default function Login() {
             </button>
 
             {/* Divider */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '1.5rem 0',
-              gap: '1rem',
-            }}>
-              <div style={{
-                flex: 1,
-                height: '1px',
-                background: professionalTheme.colors.neutral[200],
-              }} />
-              <span style={{
-                fontSize: professionalTheme.fontSizes.sm,
-                color: professionalTheme.colors.neutral[500],
-                padding: '0 0.5rem',
-              }}>
-                ou
-              </span>
-              <div style={{
-                flex: 1,
-                height: '1px',
-                background: professionalTheme.colors.neutral[200],
-              }} />
+            <div className="login-divider">
+              <div className="login-divider-line" />
+              <span className="login-divider-text">ou</span>
+              <div className="login-divider-line" />
             </div>
 
             {/* Google Sign In Button */}
             <button
               type="button"
+              className="login-google-button"
               onClick={() => {
                 const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
                 window.location.href = `${apiUrl}/api/auth/google`;
               }}
               disabled={loading}
-              style={{
-                width: '100%',
-                padding: '0.875rem 1rem',
-                background: '#FFFFFF',
-                border: `1px solid ${professionalTheme.colors.neutral[300]}`,
-                borderRadius: professionalTheme.radius.xl,
-                color: professionalTheme.colors.neutral[700],
-                fontSize: professionalTheme.fontSizes.base,
-                fontWeight: 500,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem',
-                transition: 'all 0.2s ease',
-                opacity: loading ? 0.6 : 1,
-                ':hover': {
-                  background: professionalTheme.colors.neutral[50],
-                  borderColor: professionalTheme.colors.neutral[400],
-                },
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.background = professionalTheme.colors.neutral[50];
-                  e.currentTarget.style.borderColor = professionalTheme.colors.neutral[400];
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#FFFFFF';
-                e.currentTarget.style.borderColor = professionalTheme.colors.neutral[300];
-              }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -518,19 +232,11 @@ export default function Login() {
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.neutral[600] }}>
+          <p className="login-signup-text">
             Pas encore de compte ?{' '}
             <button
+              className="login-signup-link"
               onClick={() => navigate('/register')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: professionalTheme.colors.primary[600],
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: 'inherit',
-                padding: 0,
-              }}
             >
               Créer un compte
             </button>

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import './Sidebar.css';
 
 const menus = {
   admin: [
-  { label: 'Dashboard',  icon: '📊', path: '/admin/dashboard' },
-{ label: 'Recruteurs', icon: '🏢', path: '/admin/recruteurs' },
-{ label: 'Candidats',  icon: '👤', path: '/admin/candidats' },
-{ label: 'Offres',     icon: '📋', path: '/admin/offres' },
-{ label: 'Paramètres', icon: '⚙️', path: '/admin/parametres' },
-
+    { label: 'Dashboard',  icon: '📊', path: '/admin/dashboard' },
+    { label: 'Recruteurs', icon: '🏢', path: '/admin/recruteurs' },
+    { label: 'Candidats',  icon: '👤', path: '/admin/candidats' },
+    { label: 'Offres',     icon: '📋', path: '/admin/offres' },
+    { label: 'Paramètres', icon: '⚙️', path: '/admin/parametres' },
   ],
   recruteur: [
     { label: 'Dashboard',    icon: '📊', path: '/recruteur/dashboard' },
@@ -30,118 +31,110 @@ const menus = {
   ],
 };
 
-export default function Sidebar({ role = 'admin' }) {
+export default function Sidebar({ role = 'admin', isOpen, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Use user's role from AuthContext if available, otherwise use prop
+  const userRole = user?.role || role;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleNavigate = (path) => {
+    navigate(path);
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
 
   return (
-    <div style={{
-      width: collapsed ? '70px' : '240px',
-      minHeight: '100vh',
-      background: '#0F172A',
-      padding: '24px 12px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '4px',
-      transition: '220ms cubic-bezier(.4,0,.2,1)',
-      position: 'relative',
-      flexShrink: 0,
-    }}>
-      {/* Logo — cliquable vers dashboard */}
-      <div
-        onClick={() => navigate(`/${role}/dashboard`)}
-        style={{
-          fontFamily: 'Syne, sans-serif',
-          fontSize: collapsed ? '14px' : '20px',
-          fontWeight: '800',
-          color: '#fff',
-          padding: '8px 12px',
-          marginBottom: '16px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          cursor: 'pointer',
-        }}
-      >
-        {collapsed ? 'SR' : <>Smart<span style={{ color: '#60A5FA' }}>Recruit</span></>}
-      </div>
-
-      {/* Bouton collapse */}
-      <button
-        onClick={() => setCollapsed(c => !c)}
-        style={{
-          position: 'absolute',
-          right: '-12px',
-          top: '72px',
-          width: '24px', height: '24px',
-          borderRadius: '50%',
-          background: '#1E3A8A',
-          border: '2px solid #0F172A',
-          color: '#fff',
-          fontSize: '11px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-        }}
-      >
-        {collapsed ? '›' : '‹'}
-      </button>
-
-      {/* Role badge */}
-      {!collapsed && (
-        <div style={{
-          background: '#1E3A8A',
-          borderRadius: '8px',
-          padding: '6px 12px',
-          fontSize: '11px',
-          color: '#60A5FA',
-          fontWeight: '600',
-          textTransform: 'uppercase',
-          letterSpacing: '.05em',
-          marginBottom: '12px',
-        }}>
-          {role === 'admin' ? '🛡 Administrateur' : role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
-        </div>
+    <>
+      {/* Mobile overlay */}
+      {isMobile && isOpen && (
+        <div className="sidebar-mobile-overlay" onClick={onClose} />
       )}
 
-      {/* Menu items */}
-      {menus[role].map((item) => {
-        const isActive = location.pathname === item.path;
-        return (
+      <div
+        className={`sidebar ${collapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''}`}
+      >
+        {/* Mobile close button */}
+        {isMobile && (
           <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            title={collapsed ? item.label : ''}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: collapsed ? '0' : '12px',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: '12px',
-              borderRadius: '10px',
-              border: 'none',
-              cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              fontSize: '14px',
-              fontWeight: '500',
-              background: isActive ? '#1E3A8A' : 'transparent',
-              color: isActive ? '#fff' : '#94A3B8',
-              width: '100%',
-              textAlign: 'left',
-              transition: '150ms',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-            }}
-            onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#1E293B'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94A3B8'; }}
+            className="sidebar-close-button"
+            onClick={onClose}
+            aria-label="Fermer le menu"
           >
-            <span style={{ fontSize: '18px', flexShrink: 0 }}>{item.icon}</span>
-            {!collapsed && item.label}
+            ✕
           </button>
-        );
-      })}
-    </div>
+        )}
+
+        {/* Logo */}
+        <div
+          className="sidebar-logo"
+          onClick={() => handleNavigate('/')}
+        >
+          {collapsed && !isMobile ? 'SR' : (
+            <>
+              Smart<span className="sidebar-logo-text">Recruit</span>
+            </>
+          )}
+        </div>
+
+        {/* Collapse button (desktop only) */}
+        <button
+          className="sidebar-collapse-button"
+          onClick={() => setCollapsed(c => !c)}
+          aria-label={collapsed ? 'Développer' : 'Réduire'}
+        >
+          {collapsed ? '›' : '‹'}
+        </button>
+
+        {/* Role badge */}
+        <div className="sidebar-role-badge">
+          {userRole === 'admin' ? '🛡 Administrateur' : userRole === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
+        </div>
+
+        {/* Menu items */}
+        <div className="sidebar-menu">
+          {menus[userRole]?.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.path}
+                className={`sidebar-menu-item ${isActive ? 'active' : ''}`}
+                onClick={() => handleNavigate(item.path)}
+                title={collapsed ? item.label : ''}
+              >
+                <span className="sidebar-menu-icon">{item.icon}</span>
+                <span className="sidebar-menu-text">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Export a toggle button component for mobile
+export function SidebarToggle({ onClick }) {
+  return (
+    <button
+      className="sidebar-mobile-toggle"
+      onClick={onClick}
+      aria-label="Ouvrir le menu"
+    >
+      ☰
+    </button>
   );
 }

@@ -1,14 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
+import './Layout.css';
 
 export default function CandidatLayout({ children, title = 'Espace Candidat' }) {
+  const { loading, user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleMenuToggle = () => {
+    setSidebarOpen(prev => !prev);
+  };
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#FFFFFF',
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid #E5E7EB',
+          borderTopColor: '#5B73F7',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // If no user after loading, don't render the layout
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8FAFC' }}>
-      <Sidebar role="candidat" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Header title={title} />
-        <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto' }}>
+    <div className="layout-container">
+      <Sidebar
+        role="candidat"
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      <div className="layout-main">
+        <Header title={title} onMenuToggle={handleMenuToggle} />
+        <main className="layout-content">
           {children}
         </main>
       </div>

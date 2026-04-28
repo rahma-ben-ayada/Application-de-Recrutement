@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { SidebarToggle } from './Sidebar';
+import './Header.css';
 
-export default function Header({ title }) {
+export default function Header({ title, onMenuToggle }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -16,62 +18,32 @@ export default function Header({ title }) {
   const displayRole = user?.role || '';
 
   return (
-    <div style={{
-      height: '64px',
-      background: '#fff',
-      borderBottom: '1px solid #E2E8F0',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 32px',
-      boxShadow: '0 1px 3px rgba(15,23,42,.06)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-    }}>
-      <h2 style={{
-        fontFamily: 'Syne, sans-serif',
-        fontSize: '18px',
-        fontWeight: '700',
-        color: '#1E293B',
-      }}>
-        {title}
-      </h2>
+    <div className="header">
+      <div className="header-left">
+        <SidebarToggle onClick={onMenuToggle} />
+        <h2 className="header-title">{title}</h2>
+      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '14px', fontWeight: '600', color: '#1E293B' }}>
-            {displayName}
-          </div>
-          <div style={{ fontSize: '12px', color: '#94A3B8', textTransform: 'capitalize' }}>
-            {displayRole}
-          </div>
+      <div className="header-right">
+        {/* Desktop user info */}
+        <div className="header-user-info">
+          <div className="header-user-name">{displayName}</div>
+          <div className="header-user-role">{displayRole}</div>
         </div>
 
-        <div style={{
-          width: '38px', height: '38px',
-          borderRadius: '50%',
-          background: '#1E3A8A',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#fff', fontWeight: '700', fontSize: '15px',
-          fontFamily: 'Syne, sans-serif',
-        }}>
-          {displayName[0].toUpperCase()}
-        </div>
-
-        <button onClick={handleLogout} style={{
-          background: '#FEF2F2',
-          color: '#EF4444',
-          border: 'none',
-          borderRadius: '50px',
-          padding: '8px 16px',
-          fontSize: '13px',
-          cursor: 'pointer',
-          fontFamily: 'DM Sans, sans-serif',
-          fontWeight: '500',
-        }}>
+        {/* Desktop avatar and logout */}
+        <div className="header-avatar">{displayName[0].toUpperCase()}</div>
+        <button className="header-logout-button" onClick={handleLogout}>
           Déconnexion
         </button>
+
+        {/* Mobile avatar and logout */}
+        <div className="header-mobile-user">
+          <div className="header-mobile-avatar">{displayName[0].toUpperCase()}</div>
+          <button className="header-mobile-logout" onClick={handleLogout} aria-label="Déconnexion">
+            ⏻
+          </button>
+        </div>
       </div>
     </div>
   );

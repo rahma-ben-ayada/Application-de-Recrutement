@@ -1,0 +1,255 @@
+/* ============================================
+   VIDEO UPLOAD COMPONENT STYLES
+   ============================================ */
+
+.video-upload {
+  width: 100%;
+}
+
+.video-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #F8FAFC;
+  border: 2px dashed #E2E8F0;
+  border-radius: 12px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .video-upload-placeholder {
+    padding: 24px 16px;
+  }
+}
+
+.video-upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .video-upload-icon {
+    font-size: 36px;
+  }
+}
+
+.video-upload-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .video-upload-title {
+    font-size: 16px;
+  }
+}
+
+.video-upload-description {
+  font-size: 14px;
+  color: #94A3B8;
+  margin-bottom: 24px;
+  max-width: 400px;
+}
+
+@media (max-width: 640px) {
+  .video-upload-description {
+    font-size: 13px;
+  }
+}
+
+.video-upload-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .video-upload-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.video-upload-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .video-upload-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.video-upload-button-primary {
+  background: linear-gradient(135deg, #5B73F7 0%, #7C3AED 100%);
+  color: #fff;
+}
+
+.video-upload-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 115, 247, 0.3);
+}
+
+.video-upload-button-secondary {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #E2E8F0;
+}
+
+.video-upload-button-secondary:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.video-upload-button-danger {
+  background: #FEF2F2;
+  color: #EF4444;
+}
+
+.video-upload-button-danger:hover {
+  background: #FEE2E2;
+}
+
+.video-upload-info {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .video-upload-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.video-upload-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.video-upload-info-icon {
+  font-size: 16px;
+}
+
+/* Preview Styles */
+.video-upload-preview {
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-upload-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+@media (max-width: 640px) {
+  .video-upload-preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+}
+
+.video-upload-preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
+  margin: 0;
+}
+
+.video-upload-preview-size {
+  font-size: 12px;
+  color: #64748B;
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #E2E8F0;
+}
+
+.video-upload-preview-video {
+  position: relative;
+  width: 100%;
+  background: #000;
+}
+
+.video-upload-video-element {
+  width: 100%;
+  max-height: 400px;
+  display: block;
+}
+
+.video-upload-recording-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #FEF2F2;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.video-upload-recording-dot {
+  width: 8px;
+  height: 8px;
+  background: #EF4444;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.video-upload-preview-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+}
+
+@media (max-width: 640px) {
+  .video-upload-preview-actions {
+    flex-direction: column;
+    padding: 12px 16px;
+  }
+
+  .video-upload-preview-actions .video-upload-button {
+    width: 100%;
+  }
+}
