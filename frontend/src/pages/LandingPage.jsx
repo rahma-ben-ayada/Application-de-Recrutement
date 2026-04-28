@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { professionalTheme, professionalKeyframes } from '../theme/professionalTheme';
+import api from '../utils/api';
 
-const offresRecentes = [
-  { id: 1, titre: 'Développeur React Senior', entreprise: 'Tech Corp',   lieu: 'Tunis',  type: 'CDI',   salaire: '2500 - 3500 TND', logo: '💻' },
-  { id: 2, titre: 'Data Scientist',           entreprise: 'StartUp RH', lieu: 'Remote', type: 'CDD',   salaire: '3000 - 4000 TND', logo: '📊' },
-  { id: 3, titre: 'UX/UI Designer',           entreprise: 'Big Finance', lieu: 'Sfax',   type: 'Stage', salaire: '800 - 1200 TND',  logo: '🎨' },
-  { id: 4, titre: 'Chef de projet IT',        entreprise: 'Dev Studio',  lieu: 'Tunis',  type: 'CDI',   salaire: '3500 - 4500 TND', logo: '⚡' },
-  { id: 5, titre: 'Développeur Java',         entreprise: 'Big Finance', lieu: 'Sousse', type: 'CDI',   salaire: '2800 - 3800 TND', logo: '☕' },
-  { id: 6, titre: 'DevOps Engineer',          entreprise: 'Cloud Corp',  lieu: 'Remote', type: 'CDI',   salaire: '4000 - 5000 TND', logo: '☁️' },
-];
+const logoMap = {
+  'CDI': '💼',
+  'CDD': '📋',
+  'Stage': '🎓',
+  'Freelance': '🚀',
+  default: '💼',
+};
+
+const getLogoForType = (type) => logoMap[type] || logoMap.default;
 
 const stats = [
   { value: '12K+', label: 'Candidats Actifs',   icon: '👤', color: '#5B73F7' },
@@ -43,6 +45,9 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [offres, setOffres] = useState([]);
+  const [loadingOffres, setLoadingOffres] = useState(true);
+  const [offresError, setOffresError] = useState(null);
 
   const handleLogout = () => {
     logout();
@@ -77,7 +82,37 @@ export default function LandingPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const filteredOffres = offresRecentes.filter(o =>
+  useEffect(() => {
+    const fetchOffres = async () => {
+      try {
+        setLoadingOffres(true);
+        setOffresError(null);
+        const data = await api('/offres', 'GET');
+        const transformedOffres = data.offres.map((offre) => ({
+          id: offre._id,
+          titre: offre.titre,
+          entreprise: offre.recruteur?.entreprise || offre.recruteur?.nom || 'Entreprise',
+          lieu: offre.lieu,
+          type: offre.type,
+          salaire: offre.salaire || 'Non spécifié',
+          logo: getLogoForType(offre.type),
+          competences: offre.competences || [],
+          description: offre.description,
+          createdAt: offre.createdAt,
+        }));
+        setOffres(transformedOffres);
+      } catch (err) {
+        console.error('Error fetching offers:', err);
+        setOffresError('Impossible de charger les offres. Veuillez réessayer.');
+      } finally {
+        setLoadingOffres(false);
+      }
+    };
+
+    fetchOffres();
+  }, []);
+
+  const filteredOffres = offres.filter(o =>
     o.titre.toLowerCase().includes(search.toLowerCase()) ||
     o.entreprise.toLowerCase().includes(search.toLowerCase()) ||
     o.lieu.toLowerCase().includes(search.toLowerCase())
@@ -969,62 +1004,94 @@ export default function LandingPage() {
             />
           </div>
 
-          <div style={styles.offresGrid}>
-            {filteredOffres.slice(0, 6).map((offre) => (
-              <div
-                key={offre.id}
-                style={styles.offreCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                onClick={() => user ? navigate('/candidat/offres') : navigate('/login')}
+          {loadingOffres ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid #E5E7EB',
+                borderTop: `3px solid ${professionalTheme.colors.primary[600]}`,
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }} />
+              <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : offresError ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+              <p style={{ color: professionalTheme.colors.error.main, marginBottom: '1rem' }}>{offresError}</p>
+              <button
+                style={{ ...styles.button, ...styles.buttonPrimary }}
+                onClick={() => window.location.reload()}
               >
-                <div style={styles.offreHeader}>
-                  <div style={styles.offreLogo}>{offre.logo}</div>
-                  <div>
-                    <div style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
-                      {offre.entreprise}
-                    </div>
-                    <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[600] }}>
-                      📍 {offre.lieu}
+                Réessayer
+              </button>
+            </div>
+          ) : filteredOffres.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+              <p style={{ color: professionalTheme.colors.neutral[600], fontSize: professionalTheme.fontSizes.lg }}>
+                {search ? 'Aucune offre ne correspond à votre recherche.' : 'Aucune offre disponible pour le moment.'}
+              </p>
+            </div>
+          ) : (
+            <div style={styles.offresGrid}>
+              {filteredOffres.slice(0, 6).map((offre) => (
+                <div
+                  key={offre.id}
+                  style={styles.offreCard}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                  onClick={() => user ? navigate('/candidat/offres') : navigate('/login')}
+                >
+                  <div style={styles.offreHeader}>
+                    <div style={styles.offreLogo}>{offre.logo}</div>
+                    <div>
+                      <div style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
+                        {offre.entreprise}
+                      </div>
+                      <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[600] }}>
+                        📍 {offre.lieu}
+                      </div>
                     </div>
                   </div>
+
+                  <h3 style={styles.offreTitle}>{offre.titre}</h3>
+
+                  <div style={styles.offreTags}>
+                    <span style={{ ...styles.offreTag, background: professionalTheme.colors.info.light, color: professionalTheme.colors.info.dark }}>
+                      {offre.type}
+                    </span>
+                    <span style={{ ...styles.offreTag, background: professionalTheme.colors.success.light, color: professionalTheme.colors.success.dark }}>
+                      💰 {offre.salaire}
+                    </span>
+                  </div>
+
+                  <button
+                    style={{
+                      ...styles.button,
+                      ...styles.buttonPrimary,
+                      width: '100%',
+                      padding: '0.625rem',
+                      fontSize: professionalTheme.fontSizes.sm,
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      user ? navigate('/candidat/offres') : navigate('/login');
+                    }}
+                  >
+                    {user ? 'Voir les offres' : 'Postuler →'}
+                  </button>
                 </div>
-
-                <h3 style={styles.offreTitle}>{offre.titre}</h3>
-
-                <div style={styles.offreTags}>
-                  <span style={{ ...styles.offreTag, background: professionalTheme.colors.info.light, color: professionalTheme.colors.info.dark }}>
-                    {offre.type}
-                  </span>
-                  <span style={{ ...styles.offreTag, background: professionalTheme.colors.success.light, color: professionalTheme.colors.success.dark }}>
-                    💰 {offre.salaire}
-                  </span>
-                </div>
-
-                <button
-                  style={{
-                    ...styles.button,
-                    ...styles.buttonPrimary,
-                    width: '100%',
-                    padding: '0.625rem',
-                    fontSize: professionalTheme.fontSizes.sm,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    user ? navigate('/candidat/offres') : navigate('/login');
-                  }}
-                >
-                  {user ? 'Voir les offres' : 'Postuler →'}
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
