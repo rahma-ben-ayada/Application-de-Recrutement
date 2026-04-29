@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getOffres,
+  getOffreById,
   creerOffre,
   getMesOffres,
   modifierOffre,
@@ -13,6 +14,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 
 // ===== PUBLIC =====
 router.get('/', getOffres);
+router.get('/:id', getOffreById);
 
 // ===== ADMIN =====
 router.get('/all', protect, authorize('admin'), getAllOffres);

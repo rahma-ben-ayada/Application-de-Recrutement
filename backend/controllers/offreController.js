@@ -13,6 +13,25 @@ exports.getOffres = async (req, res) => {
   }
 };
 
+// ===== PUBLIC — Voir une seule offre =====
+exports.getOffreById = async (req, res) => {
+  try {
+    const offre = await Offre.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+      status: 'active'
+    }).populate('recruteur', 'nom entreprise email');
+
+    if (!offre) {
+      return res.status(404).json({ success: false, message: 'Offre non trouvée' });
+    }
+
+    res.status(200).json({ success: true, offre });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ===== RECRUTEUR — Créer une offre =====
 exports.creerOffre = async (req, res) => {
   try {

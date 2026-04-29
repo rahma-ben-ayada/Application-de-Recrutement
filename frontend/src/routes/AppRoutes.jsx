@@ -14,6 +14,7 @@ import LoginAdmin       from '../pages/auth/LoginAdmin';
 // Public Pages
 import Fonctionnalités from '../pages/Fonctionnalités';
 import Offres          from '../pages/Offres';
+import OffreDetails    from '../pages/OffreDetails';
 import Entreprises     from '../pages/Entreprises';
 import Ressources      from '../pages/Ressources';
 import ArticleDetails  from '../pages/ArticleDetails';
@@ -58,6 +59,7 @@ export default function AppRoutes() {
           {/* Public Pages */}
           <Route path="/fonctionnalites" element={<Fonctionnalités />} />
           <Route path="/offres"           element={<Offres />} />
+          <Route path="/offres/:id"       element={<OffreDetails />} />
           <Route path="/entreprises"      element={<Entreprises />} />
           <Route path="/ressources"       element={<Ressources />} />
           <Route path="/article/:id"      element={<ArticleDetails />} />
