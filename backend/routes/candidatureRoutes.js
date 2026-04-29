@@ -5,6 +5,7 @@ const upload = require('../middleware/upload');
 const {
   postuler,
   getMesCandidatures,
+  getRecentCandidatures,
   getCandidaturesOffre,
   updateStatut,
   getAllCandidatures,
@@ -22,6 +23,7 @@ router.post('/',
 );
 
 router.get('/mes', protect, authorize('candidat'), getMesCandidatures);
+router.get('/recent', protect, authorize('recruteur'), getRecentCandidatures);
 router.get('/stats', protect, authorize('candidat'), getStatsCandidat);
 router.get('/offre/:offreId', protect, authorize('recruteur'), getCandidaturesOffre);
 router.put('/:id', protect, authorize('recruteur'), updateStatut);

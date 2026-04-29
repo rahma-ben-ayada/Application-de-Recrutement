@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
+import { SidebarProvider } from '../context/SidebarContext';
+import { AlertProvider } from '../context/AlertContext';
 
 // Auth
 import Login            from '../pages/auth/Login';
@@ -49,8 +51,10 @@ import PublicRoute from './PublicRoute';
 export default function AppRoutes() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+      <SidebarProvider>
+        <AuthProvider>
+          <AlertProvider>
+            <Routes>
 
           {/* Landing */}
           <Route path="/"     element={<LandingPage />} />
@@ -108,8 +112,10 @@ export default function AppRoutes() {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
-        </Routes>
-      </AuthProvider>
+            </Routes>
+          </AlertProvider>
+        </AuthProvider>
+      </SidebarProvider>
     </BrowserRouter>
   );
 }

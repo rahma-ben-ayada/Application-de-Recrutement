@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CandidatLayout from '../../layouts/CandidatLayout';
 import api from '../../utils/api';
 import { luxuryTheme } from '../../theme/luxuryTheme';
 
 export default function Alertes() {
+  const navigate = useNavigate();
   const [alertes, setAlertes] = useState([]);
   const [resultats, setResultats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -245,7 +247,9 @@ export default function Alertes() {
                     </div>
                   </div>
                   <button
-                    onClick={() => {/* TODO: Naviguer vers les offres */}}
+                    onClick={() => navigate('/candidat/offres', {
+                      state: { alerteResultats: resultat.offres }
+                    })}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '8px',
@@ -255,7 +259,10 @@ export default function Alertes() {
                       fontSize: '13px',
                       fontWeight: '600',
                       cursor: 'pointer',
+                      transition: 'all 0.2s ease',
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#047857'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#059669'}
                   >
                     Voir les offres →
                   </button>

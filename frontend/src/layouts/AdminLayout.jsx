@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSidebar } from '../context/SidebarContext';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
 import './Layout.css';
 
 export default function AdminLayout({ children, title = 'Dashboard' }) {
   const { loading, user } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleMenuToggle = () => {
-    setSidebarOpen(prev => !prev);
-  };
+  const { isOpen: sidebarOpen, toggleSidebar } = useSidebar();
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -46,13 +43,9 @@ export default function AdminLayout({ children, title = 'Dashboard' }) {
 
   return (
     <div className="layout-container">
-      <Sidebar
-        role="admin"
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+      <Sidebar role="admin" />
       <div className="layout-main">
-        <Header title={title} onMenuToggle={handleMenuToggle} />
+        <Header title={title} onMenuToggle={toggleSidebar} />
         <main className="layout-content">
           {children}
         </main>

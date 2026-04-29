@@ -137,3 +137,17 @@ exports.getStatsCandidat = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// ===== RECRUTEUR — Get recent candidatures =====
+exports.getRecentCandidatures = async (req, res) => {
+  try {
+    const candidatures = await Candidature.find({ isDeleted: false })
+      .populate('candidatId', 'nom email photo')
+      .populate('offreId', 'titre')
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.status(200).json({ success: true, candidatures });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

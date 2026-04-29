@@ -36,13 +36,57 @@ exports.getOffreById = async (req, res) => {
 exports.creerOffre = async (req, res) => {
   try {
     const { titre, description, lieu, type, salaire, competences } = req.body;
+
+    // Validation
+    if (!titre || titre.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le titre est requis'
+      });
+    }
+
+    if (!lieu || lieu.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le lieu est requis'
+      });
+    }
+
+    if (!type || !['CDI', 'CDD', 'Stage', 'Freelance'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Le type de contrat est invalide'
+      });
+    }
+
+    // Create offer
     const offre = await Offre.create({
-      titre, description, lieu, type, salaire,
-      competences, recruteur: req.user._id,
+      titre: titre.trim(),
+      lieu: lieu.trim(),
+      type,
+      description: description?.trim() || '',
+      salaire: salaire?.trim() || '',
+      competences: Array.isArray(competences) ? competences : [],
+      recruteur: req.user._id,
     });
-    res.status(201).json({ success: true, message: 'Offre créée ✅', offre });
+
+    res.status(201).json({
+      success: true,
+      message: 'Offre créée avec succès',
+      offre
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error creating offer:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur lors de la création de l\'offre'
+    });
   }
 };
 
@@ -67,18 +111,72 @@ exports.modifierOffre = async (req, res) => {
       recruteur: req.user._id,
       isDeleted: false,
     });
-    if (!offre) return res.status(404).json({
-      success: false,
-      message: 'Offre non trouvée',
-    });
+
+    if (!offre) {
+      return res.status(404).json({
+        success: false,
+        message: 'Offre non trouvée'
+      });
+    }
 
     const { titre, description, lieu, type, salaire, competences, status } = req.body;
-    Object.assign(offre, { titre, description, lieu, type, salaire, competences, status });
+
+    // Validation for updated fields
+    if (titre !== undefined) {
+      if (!titre || titre.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Le titre est requis'
+        });
+      }
+      offre.titre = titre.trim();
+    }
+
+    if (lieu !== undefined) {
+      if (!lieu || lieu.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Le lieu est requis'
+        });
+      }
+      offre.lieu = lieu.trim();
+    }
+
+    if (type !== undefined) {
+      if (!['CDI', 'CDD', 'Stage', 'Freelance'].includes(type)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Le type de contrat est invalide'
+        });
+      }
+      offre.type = type;
+    }
+
+    // Update optional fields
+    if (description !== undefined) offre.description = description.trim();
+    if (salaire !== undefined) offre.salaire = salaire.trim();
+    if (competences !== undefined) offre.competences = Array.isArray(competences) ? competences : [];
+    if (status !== undefined && ['active', 'closed'].includes(status)) offre.status = status;
+
     await offre.save();
 
-    res.status(200).json({ success: true, message: 'Offre modifiée ✅', offre });
+    res.status(200).json({
+      success: true,
+      message: 'Offre modifiée avec succès',
+      offre
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error updating offer:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur lors de la modification de l\'offre'
+    });
   }
 };
 

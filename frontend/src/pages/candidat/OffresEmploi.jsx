@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { professionalTheme, professionalKeyframes } from '../../theme/professionalTheme';
 import CandidatLayout from '../../layouts/CandidatLayout';
 import api from '../../utils/api';
 
 export default function OffresEmploi() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [offres, setOffres] = useState([]);
   const [mesCandidatures, setMesCandidatures] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('Tous');
@@ -16,32 +21,48 @@ export default function OffresEmploi() {
   const [cvFile, setCvFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [message, setMessage] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [fromAlerte, setFromAlerte] = useState(false);
 
   const types = ['Tous', 'CDI', 'CDD', 'Stage', 'Freelance'];
   const lieux = ['Tous', 'Tunis', 'Sfax', 'Sousse', 'Remote'];
 
   useEffect(() => {
-    fetchOffres();
-    fetchMesCandidatures();
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const fetchOffres = async () => {
+  useEffect(() => {
+    fetchData();
+
+    // Check if coming from alertes page with results
+    if (location.state?.alerteResultats) {
+      setOffres(location.state.alerteResultats);
+      setFromAlerte(true);
+      setMessage({
+        type: 'success',
+        text: `${location.state.alerteResultats.length} offre(s) trouvée(s) correspondant à vos alertes`
+      });
+      setTimeout(() => setMessage(null), 5000);
+    }
+  }, [location.state]);
+
+  const fetchData = async () => {
     try {
-      const data = await api('/offres');
-      setOffres(data.offres);
+      const [offresData, candidaturesData, statsData] = await Promise.all([
+        api('/offres'),
+        api('/candidatures/mes'),
+        api('/candidatures/stats').catch(() => ({ stats: null })),
+      ]);
+      setOffres(offresData.offres || []);
+      setMesCandidatures(candidaturesData.candidatures || []);
+      setStats(statsData.stats);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchMesCandidatures = async () => {
-    try {
-      const data = await api('/candidatures/mes');
-      setMesCandidatures(data.candidatures);
-    } catch (err) {
-      console.error(err);
     }
   };
 
@@ -81,7 +102,7 @@ export default function OffresEmploi() {
 
       setShowModal(false);
       showMessage('success', `✅ Candidature envoyée pour "${offreToPostuler.titre}" !`);
-      fetchMesCandidatures();
+      fetchData();
     } catch (err) {
       showMessage('error', err.message);
     }
@@ -97,427 +118,813 @@ export default function OffresEmploi() {
     return matchSearch && matchType && matchLieu;
   });
 
+  const statsCards = [
+    {
+      label: 'Offres disponibles',
+      value: offres.length,
+      color: '#5B73F7',
+      bg: 'rgba(91, 115, 247, 0.1)',
+      icon: '📋',
+    },
+    {
+      label: 'Mes candidatures',
+      value: mesCandidatures.length,
+      color: '#10B981',
+      bg: 'rgba(16, 185, 129, 0.1)',
+      icon: '📨',
+    },
+    {
+      label: 'En entretien',
+      value: stats?.en_entretien || 0,
+      color: '#F59E0B',
+      bg: 'rgba(245, 158, 11, 0.1)',
+      icon: '🎯',
+    },
+    {
+      label: 'Acceptées',
+      value: stats?.acceptees || 0,
+      color: '#06B6D4',
+      bg: 'rgba(6, 182, 212, 0.1)',
+      icon: '✅',
+    },
+  ];
+
   const typeBadge = (type) => {
     const styles = {
-      CDI:       { bg: '#DBEAFE', color: '#1E3A8A' },
-      CDD:       { bg: '#FEF3C7', color: '#D97706' },
-      Stage:     { bg: '#D1FAE5', color: '#059669' },
+      CDI: { bg: '#DBEAFE', color: '#1E3A8A' },
+      CDD: { bg: '#FEF3C7', color: '#D97706' },
+      Stage: { bg: '#D1FAE5', color: '#059669' },
       Freelance: { bg: '#EDE9FE', color: '#7C3AED' },
     };
     const s = styles[type] || { bg: '#F1F5F9', color: '#475569' };
     return (
       <span style={{
         background: s.bg, color: s.color,
-        padding: '4px 10px', borderRadius: '50px',
-        fontSize: '12px', fontWeight: '600',
+        padding: '0.25rem 0.75rem', borderRadius: professionalTheme.radius.full,
+        fontSize: professionalTheme.fontSizes.xs, fontWeight: 600,
       }}>
         {type}
       </span>
     );
   };
 
+  const styles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '2rem',
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '1rem',
+    },
+    headerTitle: {
+      fontSize: professionalTheme.fontSizes['2xl'],
+      fontWeight: 800,
+      color: professionalTheme.colors.neutral[900],
+    },
+    statsGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+      gap: '1.5rem',
+    },
+    statCard: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: isMobile ? '1.5rem' : '2rem',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      boxShadow: professionalTheme.shadows.sm,
+    },
+    statIcon: {
+      width: '56px',
+      height: '56px',
+      borderRadius: professionalTheme.radius.xl,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.75rem',
+    },
+    statContent: {
+      flex: 1,
+    },
+    statValue: {
+      fontSize: professionalTheme.fontSizes['2xl'],
+      fontWeight: 800,
+      color: professionalTheme.colors.neutral[900],
+    },
+    statLabel: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      fontWeight: 500,
+    },
+    filtersCard: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: '1.5rem',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      boxShadow: professionalTheme.shadows.sm,
+    },
+    filtersGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr',
+      gap: '1rem',
+    },
+    filterGroup: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem',
+    },
+    filterLabel: {
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[700],
+    },
+    searchInput: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      borderRadius: professionalTheme.radius.full,
+      border: `2px solid ${professionalTheme.colors.neutral[200]}`,
+      fontSize: professionalTheme.fontSizes.base,
+      outline: 'none',
+      transition: professionalTheme.transitions.default,
+    },
+    filterButtons: {
+      display: 'flex',
+      gap: '0.5rem',
+      flexWrap: 'wrap',
+    },
+    filterButton: (isActive) => ({
+      padding: '0.5rem 1rem',
+      borderRadius: professionalTheme.radius.full,
+      border: isActive ? `2px solid ${professionalTheme.colors.primary[600]}` : `1px solid ${professionalTheme.colors.neutral[200]}`,
+      background: isActive ? professionalTheme.colors.primary[50] : '#FFFFFF',
+      color: isActive ? professionalTheme.colors.primary[700] : professionalTheme.colors.neutral[700],
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.fast,
+    }),
+    select: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      borderRadius: professionalTheme.radius.full,
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      fontSize: professionalTheme.fontSizes.base,
+      outline: 'none',
+      background: '#FFFFFF',
+      cursor: 'pointer',
+    },
+    contentGrid: {
+      display: 'grid',
+      gridTemplateColumns: selected ? '1fr 400px' : '1fr',
+      gap: '2rem',
+    },
+    offresList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+    },
+    offreCard: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: '1.5rem',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.default,
+      boxShadow: professionalTheme.shadows.sm,
+    },
+    offreHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '1rem',
+      gap: '1rem',
+    },
+    offreCompany: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      marginBottom: '0.5rem',
+    },
+    offreLogo: {
+      width: '48px',
+      height: '48px',
+      borderRadius: professionalTheme.radius.lg,
+      background: professionalTheme.colors.neutral[100],
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.25rem',
+    },
+    offreTitle: {
+      fontSize: professionalTheme.fontSizes.lg,
+      fontWeight: 700,
+      color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.5rem',
+    },
+    offreMeta: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+    },
+    offreTags: {
+      display: 'flex',
+      gap: '0.5rem',
+      flexWrap: 'wrap',
+      marginBottom: '1rem',
+    },
+    offreActions: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '0.5rem',
+    },
+    applyButton: {
+      padding: '0.625rem 1.25rem',
+      borderRadius: professionalTheme.radius.full,
+      background: professionalTheme.gradients.primary,
+      color: '#FFFFFF',
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      border: 'none',
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.default,
+    },
+    appliedBadge: {
+      padding: '0.5rem 1rem',
+      borderRadius: professionalTheme.radius.full,
+      background: professionalTheme.colors.success.light,
+      color: professionalTheme.colors.success.dark,
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+    },
+    detailPanel: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: '2rem',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      boxShadow: professionalTheme.shadows.sm,
+      position: 'sticky',
+      top: '20px',
+      maxHeight: 'calc(100vh - 100px)',
+      overflowY: 'auto',
+    },
+    detailHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '1.5rem',
+    },
+    detailTitle: {
+      fontSize: professionalTheme.fontSizes.xl,
+      fontWeight: 700,
+      color: professionalTheme.colors.neutral[900],
+    },
+    detailRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: '0.75rem 0',
+      borderBottom: `1px solid ${professionalTheme.colors.neutral[100]}`,
+    },
+    detailLabel: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+    },
+    detailValue: {
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[900],
+    },
+    detailSection: {
+      marginTop: '1.5rem',
+    },
+    detailSectionTitle: {
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[700],
+      marginBottom: '0.75rem',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    },
+    detailDescription: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[700],
+      lineHeight: 1.7,
+    },
+    competencesGrid: {
+      display: 'flex',
+      gap: '0.5rem',
+      flexWrap: 'wrap',
+    },
+    competenceTag: {
+      padding: '0.375rem 0.75rem',
+      borderRadius: professionalTheme.radius.full,
+      background: professionalTheme.colors.primary[50],
+      color: professionalTheme.colors.primary[700],
+      fontSize: professionalTheme.fontSizes.xs,
+      fontWeight: 600,
+    },
+    modal: {
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(15, 23, 42, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem',
+    },
+    modalContent: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: '2rem',
+      width: '100%',
+      maxWidth: '520px',
+      maxHeight: '90vh',
+      overflowY: 'auto',
+      boxShadow: professionalTheme.shadows['2xl'],
+    },
+    modalTitle: {
+      fontSize: professionalTheme.fontSizes.xl,
+      fontWeight: 700,
+      color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.5rem',
+    },
+    modalSubtitle: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      marginBottom: '2rem',
+    },
+    formGroup: {
+      marginBottom: '1.5rem',
+    },
+    formLabel: {
+      display: 'block',
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.5rem',
+    },
+    fileInput: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '1rem',
+      borderRadius: professionalTheme.radius.lg,
+      border: cvFile ? `2px solid ${professionalTheme.colors.success.main}` : `2px dashed ${professionalTheme.colors.neutral[200]}`,
+      background: professionalTheme.colors.neutral[50],
+    },
+    fileInputButton: {
+      padding: '0.5rem 1rem',
+      borderRadius: professionalTheme.radius.full,
+      background: professionalTheme.colors.primary[600],
+      color: '#FFFFFF',
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      cursor: 'pointer',
+      border: 'none',
+    },
+    textarea: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      borderRadius: professionalTheme.radius.lg,
+      border: `2px solid ${professionalTheme.colors.neutral[200]}`,
+      fontSize: professionalTheme.fontSizes.base,
+      outline: 'none',
+      fontFamily: 'inherit',
+      resize: 'vertical',
+      minHeight: '100px',
+    },
+    modalActions: {
+      display: 'flex',
+      gap: '1rem',
+      marginTop: '2rem',
+    },
+    modalButton: {
+      flex: 1,
+      padding: '0.875rem 1.5rem',
+      borderRadius: professionalTheme.radius.full,
+      fontSize: professionalTheme.fontSizes.base,
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.default,
+    },
+    emptyState: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: '4rem 2rem',
+      textAlign: 'center',
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+    },
+    messageBox: (type) => ({
+      padding: '1rem 1.25rem',
+      borderRadius: professionalTheme.radius.lg,
+      marginBottom: '1.5rem',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      background: type === 'success' ? professionalTheme.colors.success.light : professionalTheme.colors.error.light,
+      color: type === 'success' ? professionalTheme.colors.success.dark : professionalTheme.colors.error.dark,
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 500,
+    }),
+  };
+
+  if (loading) {
+    return (
+      <CandidatLayout title="Offres d'emploi">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+            <div style={{ color: professionalTheme.colors.neutral[600] }}>Chargement...</div>
+          </div>
+        </div>
+      </CandidatLayout>
+    );
+  }
+
   return (
     <CandidatLayout title="Offres d'emploi">
-
-      {/* Message */}
-      {message && (
-        <div style={{
-          padding: '12px 16px', borderRadius: '10px', marginBottom: '20px',
-          background: message.type === 'success' ? '#D1FAE5' : '#FEE2E2',
-          color: message.type === 'success' ? '#059669' : '#EF4444',
-          fontSize: '14px', fontWeight: '500',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
-          {message.text}
-          <button onClick={() => setMessage(null)} style={{
-            background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: 'inherit',
-          }}>✕</button>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-        {[
-          { label: 'Offres disponibles', value: offres.length,          color: '#1E3A8A', bg: '#DBEAFE', icon: '📋' },
-          { label: 'Mes candidatures',   value: mesCandidatures.length, color: '#059669', bg: '#D1FAE5', icon: '📨' },
-          { label: 'Résultats filtrés',  value: filtered.length,        color: '#7C3AED', bg: '#EDE9FE', icon: '🔍' },
-        ].map((s, i) => (
-          <div key={i} style={{
-            background: '#fff', borderRadius: '14px', padding: '20px',
-            border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '16px',
-          }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '12px',
-              background: s.bg, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: '22px',
-            }}>
-              {s.icon}
-            </div>
-            <div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '24px', fontWeight: '800', color: s.color }}>
-                {s.value}
-              </div>
-              <div style={{ fontSize: '12px', color: '#94A3B8' }}>{s.label}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Filtres */}
-      <div style={{
-        background: '#fff', borderRadius: '14px', padding: '20px',
-        border: '1px solid #E2E8F0', marginBottom: '20px',
-        display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end',
-      }}>
-        <div style={{ flex: 2, minWidth: '240px' }}>
-          <label style={{ fontSize: '12px', color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
-            Recherche
-          </label>
-          <input
-            placeholder="🔍 Titre, entreprise, compétence..."
-            value={search} onChange={e => setSearch(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label style={{ fontSize: '12px', color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
-            Type de contrat
-          </label>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {types.map(t => (
-              <button key={t} onClick={() => setFilterType(t)} style={{
-                padding: '8px 14px', borderRadius: '50px', border: 'none',
-                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '13px',
-                background: filterType === t ? '#1E3A8A' : '#F1F5F9',
-                color: filterType === t ? '#fff' : '#475569',
-                fontWeight: filterType === t ? '600' : '400', transition: '150ms',
-              }}>
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label style={{ fontSize: '12px', color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
-            Lieu
-          </label>
-          <select value={filterLieu} onChange={e => setFilterLieu(e.target.value)} style={{
-            height: '42px', padding: '0 14px', borderRadius: '10px',
-            border: '1.5px solid #E2E8F0', fontFamily: 'DM Sans, sans-serif',
-            fontSize: '14px', outline: 'none', background: '#F8FAFC', cursor: 'pointer',
-          }}>
-            {lieux.map(l => <option key={l}>{l}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {/* Liste + Panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: '20px' }}>
-
-        {/* Liste offres */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
-              Chargement...
-            </div>
-          ) : filtered.length === 0 ? (
-            <div style={{
-              background: '#fff', borderRadius: '14px', padding: '40px',
-              textAlign: 'center', color: '#94A3B8', border: '1px solid #E2E8F0',
-            }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</div>
-              Aucune offre trouvée
-            </div>
-          ) : (
-            filtered.map(offre => (
-              <div key={offre._id}
-                onClick={() => setSelected(selected?._id === offre._id ? null : offre)}
-                style={{
-                  background: '#fff', borderRadius: '14px', padding: '20px 24px',
-                  border: selected?._id === offre._id ? '2px solid #1E3A8A' : '1px solid #E2E8F0',
-                  cursor: 'pointer', transition: '200ms',
-                  boxShadow: selected?._id === offre._id ? '0 4px 20px rgba(30,58,138,.15)' : '0 2px 8px rgba(15,23,42,.04)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                      <div style={{
-                        width: '44px', height: '44px', borderRadius: '10px',
-                        background: '#DBEAFE', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontSize: '20px', flexShrink: 0,
-                      }}>
-                        🏢
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#1E293B', fontFamily: 'Syne, sans-serif' }}>
-                          {offre.titre}
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '2px' }}>
-                          {offre.recruteur?.entreprise || '—'} • 📍 {offre.lieu}
-                        </div>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      {typeBadge(offre.type)}
-                      {offre.salaire && (
-                        <span style={{ background: '#D1FAE5', color: '#059669', padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '500' }}>
-                          💰 {offre.salaire}
-                        </span>
-                      )}
-                      {(offre.competences || []).slice(0, 3).map((c, i) => (
-                        <span key={i} style={{ background: '#F1F5F9', color: '#475569', padding: '4px 10px', borderRadius: '50px', fontSize: '12px', fontWeight: '500' }}>
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', marginLeft: '16px' }}>
-                    <span style={{ fontSize: '11px', color: '#CBD5E1' }}>
-                      {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
-                    </span>
-                    {dejaPostule(offre._id) ? (
-                      <span style={{ background: '#D1FAE5', color: '#059669', padding: '6px 14px', borderRadius: '50px', fontSize: '12px', fontWeight: '600' }}>
-                        ✓ Postulé
-                      </span>
-                    ) : (
-                      <button onClick={e => { e.stopPropagation(); openPostuler(offre); }} style={{
-                        padding: '8px 18px', borderRadius: '50px', border: 'none',
-                        background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                        fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: '500',
-                      }}>
-                        Postuler →
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Panel détail */}
-        {selected && (
-          <div style={{
-            background: '#fff', borderRadius: '16px', padding: '24px',
-            border: '1px solid #E2E8F0', height: 'fit-content',
-            position: 'sticky', top: '20px',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '16px', fontWeight: '700', color: '#1E293B' }}>
-                Détail de l'offre
-              </h3>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
-            </div>
-
-            <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '18px', fontWeight: '800', color: '#1E293B', marginBottom: '4px' }}>
-              {selected.titre}
-            </div>
-            <div style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '16px' }}>
-              {selected.recruteur?.entreprise || '—'} • 📍 {selected.lieu}
-            </div>
-
-            {[
-              { label: 'Type',      value: selected.type },
-              { label: 'Lieu',      value: selected.lieu },
-              { label: 'Salaire',   value: selected.salaire || '—' },
-              { label: 'Publié le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
-            ].map((f, i) => (
-              <div key={i} style={{
-                display: 'flex', justifyContent: 'space-between',
-                padding: '10px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px',
-              }}>
-                <span style={{ color: '#94A3B8' }}>{f.label}</span>
-                <span style={{ color: '#1E293B', fontWeight: '500' }}>{f.value}</span>
-              </div>
-            ))}
-
-            {(selected.competences || []).length > 0 && (
-              <div style={{ margin: '16px 0' }}>
-                <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-                  Compétences requises
-                </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {selected.competences.map((c, i) => (
-                    <span key={i} style={{ background: '#DBEAFE', color: '#1E3A8A', padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selected.description && (
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
-                  Description
-                </div>
-                <p style={{ fontSize: '13px', color: '#475569', lineHeight: '1.7' }}>
-                  {selected.description}
-                </p>
-              </div>
-            )}
-
-            {dejaPostule(selected._id) ? (
-              <div style={{
-                background: '#D1FAE5', borderRadius: '10px', padding: '14px',
-                textAlign: 'center', color: '#059669', fontWeight: '600', fontSize: '14px',
-              }}>
-                ✓ Vous avez déjà postulé à cette offre
-              </div>
-            ) : (
-              <button onClick={() => openPostuler(selected)} style={{
-                width: '100%', height: '46px', borderRadius: '50px', border: 'none',
-                background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: '500',
-              }}>
-                Postuler à cette offre →
-              </button>
-            )}
+      <style>{professionalKeyframes}</style>
+      <div style={styles.container}>
+        {/* Message */}
+        {message && (
+          <div style={styles.messageBox(message.type)}>
+            {message.text}
+            <button
+              onClick={() => setMessage(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1.25rem',
+                color: 'inherit',
+              }}
+            >
+              ✕
+            </button>
           </div>
         )}
-      </div>
 
-      {/* Modal Postuler */}
-      {showModal && offreToPostuler && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(15,23,42,.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-        }} onClick={() => setShowModal(false)}>
-          <div style={{
-            background: '#fff', borderRadius: '16px', padding: '32px',
-            width: '100%', maxWidth: '520px',
-            boxShadow: '0 20px 48px rgba(15,23,42,.2)',
-            maxHeight: '90vh', overflowY: 'auto',
-          }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={styles.header}>
+          <h1 style={styles.headerTitle}>Trouvez votre prochain emploi</h1>
+        </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: '20px', fontWeight: '700', color: '#1E293B' }}>
-                Postuler à l'offre
-              </h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', fontSize: '18px' }}>✕</button>
-            </div>
-
-            <div style={{ background: '#EFF6FF', borderRadius: '10px', padding: '12px 16px', marginBottom: '24px' }}>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontSize: '14px', fontWeight: '700', color: '#1E3A8A' }}>
-                {offreToPostuler.titre}
+        {/* Stats */}
+        <div style={styles.statsGrid}>
+          {statsCards.map((stat, index) => (
+            <div key={index} style={styles.statCard}>
+              <div style={{ ...styles.statIcon, background: stat.bg }}>
+                {stat.icon}
               </div>
-              <div style={{ fontSize: '13px', color: '#94A3B8' }}>
-                {offreToPostuler.recruteur?.entreprise || '—'} • {offreToPostuler.lieu}
+              <div style={styles.statContent}>
+                <div style={{ ...styles.statValue, color: stat.color }}>{stat.value}</div>
+                <div style={styles.statLabel}>{stat.label}</div>
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* CV */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>
-                📄 CV <span style={{ color: '#EF4444' }}>*</span>
-                <span style={{ color: '#94A3B8', fontSize: '12px', fontWeight: '400' }}> (PDF, DOC, DOCX)</span>
-              </label>
-              <div style={{
-                border: cvFile ? '1.5px solid #059669' : '1.5px dashed #E2E8F0',
-                borderRadius: '10px', padding: '12px 14px', background: '#F8FAFC',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <span style={{ fontSize: '13px', color: cvFile ? '#059669' : '#94A3B8' }}>
-                  {cvFile ? `✓ ${cvFile.name}` : 'Aucun fichier sélectionné'}
-                </span>
-                <label style={{
-                  padding: '6px 14px', borderRadius: '8px',
-                  background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                  fontSize: '12px', fontFamily: 'DM Sans, sans-serif', fontWeight: '500',
-                }}>
-                  📁 Parcourir
-                  <input type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }}
-                    onChange={e => setCvFile(e.target.files[0])} />
-                </label>
-              </div>
-            </div>
-
-            {/* Vidéo */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>
-                🎥 Vidéo de présentation
-                <span style={{ color: '#94A3B8', fontSize: '12px', fontWeight: '400' }}> (30 sec max, MP4/MOV)</span>
-              </label>
-              <div style={{
-                border: videoFile ? '1.5px solid #059669' : '1.5px dashed #E2E8F0',
-                borderRadius: '10px', padding: '12px 14px', background: '#F8FAFC',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <span style={{ fontSize: '13px', color: videoFile ? '#059669' : '#94A3B8' }}>
-                  {videoFile ? `✓ ${videoFile.name}` : 'Aucun fichier sélectionné'}
-                </span>
-                <label style={{
-                  padding: '6px 14px', borderRadius: '8px',
-                  background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                  fontSize: '12px', fontFamily: 'DM Sans, sans-serif', fontWeight: '500',
-                }}>
-                  🎬 Parcourir
-                  <input type="file" accept=".mp4,.mov,.webm" style={{ display: 'none' }}
-                    onChange={e => setVideoFile(e.target.files[0])} />
-                </label>
-              </div>
-              {videoFile && (
-                <p style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px' }}>
-                  ⚠️ Assurez-vous que la vidéo fait moins de 30 secondes
-                </p>
-              )}
-            </div>
-
-            {/* Lettre */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={labelStyle}>
-                ✍️ Lettre de motivation
-                <span style={{ color: '#94A3B8', fontSize: '12px', fontWeight: '400' }}> (optionnel)</span>
-              </label>
-              <textarea
-                placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..."
-                value={lettre} onChange={e => setLettre(e.target.value)}
-                rows={4}
-                style={{
-                  width: '100%', padding: '12px 14px',
-                  border: '1.5px solid #E2E8F0', borderRadius: '10px',
-                  fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-                  outline: 'none', boxSizing: 'border-box',
-                  background: '#F8FAFC', resize: 'vertical',
-                }}
+        {/* Filters */}
+        <div style={styles.filtersCard}>
+          <div style={styles.filtersGrid}>
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Recherche</label>
+              <input
+                placeholder="🔍 Titre, entreprise, compétence..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={styles.searchInput}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setShowModal(false)} style={{
-                flex: 1, height: '44px', borderRadius: '50px',
-                border: '1.5px solid #E2E8F0', background: '#fff',
-                cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '14px', color: '#475569',
-              }}>
-                Annuler
-              </button>
-              <button onClick={handlePostuler} style={{
-                flex: 1, height: '44px', borderRadius: '50px', border: 'none',
-                background: '#1E3A8A', color: '#fff', cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '14px', fontWeight: '500',
-              }}>
-                Envoyer ma candidature →
-              </button>
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Type de contrat</label>
+              <div style={styles.filterButtons}>
+                {types.map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setFilterType(t)}
+                    style={styles.filterButton(filterType === t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={styles.filterGroup}>
+              <label style={styles.filterLabel}>Lieu</label>
+              <select value={filterLieu} onChange={e => setFilterLieu(e.target.value)} style={styles.select}>
+                {lieux.map(l => <option key={l}>{l}</option>)}
+              </select>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Content */}
+        <div style={styles.contentGrid}>
+          {/* Offres List */}
+          <div style={styles.offresList}>
+            {filtered.length === 0 ? (
+              <div style={styles.emptyState}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+                <div style={{ fontSize: professionalTheme.fontSizes.lg, fontWeight: 700, color: professionalTheme.colors.neutral[900], marginBottom: '0.5rem' }}>
+                  Aucune offre trouvée
+                </div>
+                <div style={{ fontSize: professionalTheme.fontSizes.base, color: professionalTheme.colors.neutral[600] }}>
+                  Essayez d'ajuster vos critères de recherche
+                </div>
+              </div>
+            ) : (
+              filtered.map(offre => (
+                <div
+                  key={offre._id}
+                  style={{
+                    ...styles.offreCard,
+                    border: selected?._id === offre._id ? `2px solid ${professionalTheme.colors.primary[600]}` : `1px solid ${professionalTheme.colors.neutral[200]}`,
+                    boxShadow: selected?._id === offre._id ? professionalTheme.shadows.md : professionalTheme.shadows.sm,
+                  }}
+                  onClick={() => setSelected(selected?._id === offre._id ? null : offre)}
+                  onMouseEnter={(e) => {
+                    if (selected?._id !== offre._id) {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = professionalTheme.shadows.md;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selected?._id !== offre._id) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = professionalTheme.shadows.sm;
+                    }
+                  }}
+                >
+                  <div style={styles.offreHeader}>
+                    <div style={{ flex: 1 }}>
+                      <div style={styles.offreCompany}>
+                        <div style={styles.offreLogo}>🏢</div>
+                        <div>
+                          <div style={{ fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
+                            {offre.recruteur?.entreprise || 'Entreprise'}
+                          </div>
+                          <div style={styles.offreMeta}>
+                            📍 {offre.lieu} • {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
+                          </div>
+                        </div>
+                      </div>
+                      <h3 style={styles.offreTitle}>{offre.titre}</h3>
+                      <div style={styles.offreTags}>
+                        {typeBadge(offre.type)}
+                        {offre.salaire && (
+                          <span style={{
+                            background: professionalTheme.colors.success.light,
+                            color: professionalTheme.colors.success.dark,
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: professionalTheme.radius.full,
+                            fontSize: professionalTheme.fontSizes.xs,
+                            fontWeight: 600,
+                          }}>
+                            💰 {offre.salaire}
+                          </span>
+                        )}
+                        {(offre.competences || []).slice(0, 3).map((c, i) => (
+                          <span key={i} style={{
+                            background: professionalTheme.colors.neutral[100],
+                            color: professionalTheme.colors.neutral[700],
+                            padding: '0.25rem 0.75rem',
+                            borderRadius: professionalTheme.radius.full,
+                            fontSize: professionalTheme.fontSizes.xs,
+                            fontWeight: 500,
+                          }}>
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={styles.offreActions}>
+                      <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[400] }}>
+                        {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
+                      </div>
+                      {dejaPostule(offre._id) ? (
+                        <div style={styles.appliedBadge}>✓ Postulé</div>
+                      ) : (
+                        <button
+                          style={styles.applyButton}
+                          onClick={e => {
+                            e.stopPropagation();
+                            openPostuler(offre);
+                          }}
+                        >
+                          Postuler →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Detail Panel */}
+          {selected && (
+            <div style={styles.detailPanel}>
+              <div style={styles.detailHeader}>
+                <h3 style={styles.detailTitle}>Détail de l'offre</h3>
+                <button
+                  onClick={() => setSelected(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: professionalTheme.colors.neutral[400],
+                    fontSize: '1.5rem',
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={styles.detailTitle}>{selected.titre}</div>
+              <div style={styles.offreMeta} style={{ marginBottom: '1rem' }}>
+                {selected.recruteur?.entreprise || '—'} • 📍 {selected.lieu}
+              </div>
+
+              {[
+                { label: 'Type', value: selected.type },
+                { label: 'Lieu', value: selected.lieu },
+                { label: 'Salaire', value: selected.salaire || '—' },
+                { label: 'Publié le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
+              ].map((f, i) => (
+                <div key={i} style={styles.detailRow}>
+                  <span style={styles.detailLabel}>{f.label}</span>
+                  <span style={styles.detailValue}>{f.value}</span>
+                </div>
+              ))}
+
+              {(selected.competences || []).length > 0 && (
+                <div style={styles.detailSection}>
+                  <div style={styles.detailSectionTitle}>Compétences requises</div>
+                  <div style={styles.competencesGrid}>
+                    {selected.competences.map((c, i) => (
+                      <span key={i} style={styles.competenceTag}>{c}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selected.description && (
+                <div style={styles.detailSection}>
+                  <div style={styles.detailSectionTitle}>Description</div>
+                  <p style={styles.detailDescription}>{selected.description}</p>
+                </div>
+              )}
+
+              {dejaPostule(selected._id) ? (
+                <div style={{
+                  ...styles.appliedBadge,
+                  textAlign: 'center',
+                  marginTop: '1.5rem',
+                  padding: '1rem',
+                }}>
+                  ✓ Vous avez déjà postulé à cette offre
+                </div>
+              ) : (
+                <button
+                  onClick={() => openPostuler(selected)}
+                  style={{ ...styles.applyButton, width: '100%', marginTop: '1.5rem' }}
+                >
+                  Postuler à cette offre →
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Modal */}
+        {showModal && offreToPostuler && (
+          <div style={styles.modal} onClick={() => setShowModal(false)}>
+            <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+              <div style={styles.detailHeader}>
+                <h3 style={styles.modalTitle}>Postuler à l'offre</h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: professionalTheme.colors.neutral[400] }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{
+                background: professionalTheme.colors.primary[50],
+                borderRadius: professionalTheme.radius.lg,
+                padding: '1rem',
+                marginBottom: '2rem',
+              }}>
+                <div style={{ fontWeight: 700, color: professionalTheme.colors.primary[700] }}>
+                  {offreToPostuler.titre}
+                </div>
+                <div style={{ fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.primary[600] }}>
+                  {offreToPostuler.recruteur?.entreprise || '—'} • {offreToPostuler.lieu}
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>
+                  📄 CV <span style={{ color: professionalTheme.colors.error.main }}>*</span>
+                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
+                    {' '}(PDF, DOC, DOCX)
+                  </span>
+                </label>
+                <div style={styles.fileInput}>
+                  <span style={{ fontSize: professionalTheme.fontSizes.sm, color: cvFile ? professionalTheme.colors.success.dark : professionalTheme.colors.neutral[500] }}>
+                    {cvFile ? `✓ ${cvFile.name}` : 'Aucun fichier sélectionné'}
+                  </span>
+                  <label style={styles.fileInputButton}>
+                    📁 Parcourir
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      style={{ display: 'none' }}
+                      onChange={e => setCvFile(e.target.files[0])}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>
+                  🎥 Vidéo de présentation
+                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
+                    {' '}(30 sec max, MP4/MOV)
+                  </span>
+                </label>
+                <div style={styles.fileInput}>
+                  <span style={{ fontSize: professionalTheme.fontSizes.sm, color: videoFile ? professionalTheme.colors.success.dark : professionalTheme.colors.neutral[500] }}>
+                    {videoFile ? `✓ ${videoFile.name}` : 'Aucun fichier sélectionné'}
+                  </span>
+                  <label style={styles.fileInputButton}>
+                    🎬 Parcourir
+                    <input
+                      type="file"
+                      accept=".mp4,.mov,.webm"
+                      style={{ display: 'none' }}
+                      onChange={e => setVideoFile(e.target.files[0])}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>
+                  ✍️ Lettre de motivation
+                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
+                    {' '}(optionnel)
+                  </span>
+                </label>
+                <textarea
+                  placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..."
+                  value={lettre}
+                  onChange={e => setLettre(e.target.value)}
+                  style={styles.textarea}
+                />
+              </div>
+
+              <div style={styles.modalActions}>
+                <button
+                  onClick={() => setShowModal(false)}
+                  style={{
+                    ...styles.modalButton,
+                    background: '#FFFFFF',
+                    color: professionalTheme.colors.neutral[700],
+                    border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handlePostuler}
+                  style={{
+                    ...styles.modalButton,
+                    background: professionalTheme.gradients.primary,
+                    color: '#FFFFFF',
+                    border: 'none',
+                  }}
+                >
+                  Envoyer ma candidature →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </CandidatLayout>
   );
 }
-
-const inputStyle = {
-  width: '100%', height: '42px', padding: '0 14px',
-  border: '1.5px solid #E2E8F0', borderRadius: '10px',
-  fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-  outline: 'none', boxSizing: 'border-box', background: '#F8FAFC',
-};
-
-const labelStyle = {
-  fontSize: '13px', fontWeight: '500', color: '#475569',
-  display: 'block', marginBottom: '6px',
-};

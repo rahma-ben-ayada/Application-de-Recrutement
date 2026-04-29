@@ -68,13 +68,29 @@ export default function MesOffres() {
   };
 
   const saveOffre = async () => {
-    if (!form.titre.trim()) return alert('Le titre est requis');
-    if (!form.lieu.trim()) return alert('Le lieu est requis');
+    // Validation
+    if (!form.titre?.trim()) {
+      showMessage('error', '❌ Le titre est requis');
+      return;
+    }
+    if (!form.lieu?.trim()) {
+      showMessage('error', '❌ Le lieu est requis');
+      return;
+    }
+    if (!form.type) {
+      showMessage('error', '❌ Le type de contrat est requis');
+      return;
+    }
 
+    // Prepare payload with proper structure
     const payload = {
-      ...form,
+      titre: form.titre.trim(),
+      lieu: form.lieu.trim(),
+      type: form.type,
+      description: form.description?.trim() || '',
+      salaire: form.salaire?.trim() || '',
       competences: form.competences
-        ? form.competences.split(',').map(c => c.trim()).filter(Boolean)
+        ? form.competences.split(',').map(c => c.trim()).filter(c => c.length > 0)
         : [],
     };
 
@@ -83,13 +99,14 @@ export default function MesOffres() {
         await api(`/offres/${editOffre._id}`, 'PUT', payload);
         showMessage('success', '✅ Offre modifiée avec succès !');
       } else {
-        await api('/offres', 'POST', payload);
+        const response = await api('/offres', 'POST', payload);
         showMessage('success', '✅ Offre créée avec succès !');
       }
       setShowModal(false);
       fetchMesOffres();
     } catch (err) {
-      showMessage('error', err.message);
+      console.error('Error saving offer:', err);
+      showMessage('error', err.message || '❌ Erreur lors de la sauvegarde');
     }
   };
 

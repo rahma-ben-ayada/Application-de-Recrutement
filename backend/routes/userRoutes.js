@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllUsers,
   getPendingUsers,
+  getRecentUsers,
   validateUser,
   rejectUser,
   suspendUser,
@@ -18,6 +19,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // ===== ADMIN uniquement =====
 router.get('/',                  protect, authorize('admin'), getAllUsers);
 router.get('/pending',           protect, authorize('admin'), getPendingUsers);
+router.get('/recent',            protect, authorize('admin'), getRecentUsers);
 router.get('/stats',             protect, authorize('admin'), getStats);
 router.post('/',                 protect, authorize('admin'), addUser);
 router.put('/:id/validate',      protect, authorize('admin'), validateUser);
