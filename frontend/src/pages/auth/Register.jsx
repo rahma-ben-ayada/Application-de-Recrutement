@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { professionalTheme } from '../../theme/professionalTheme';
 import './Register.css';
 
 export default function Register() {
@@ -18,23 +19,119 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [nameValidation, setNameValidation] = useState({
+    minLength: false,
+    maxLength: false,
+    validChars: false,
+    twoWords: false,
+    noNumbers: false,
+  });
+
+  // Real-time name validation
+  useEffect(() => {
+    if (form.nom.trim()) {
+      const trimmed = form.nom.trim();
+      setNameValidation({
+        minLength: trimmed.length >= 3,
+        maxLength: trimmed.length <= 50,
+        validChars: /^[a-zA-ZÀ-ÿ\s'-]+$/.test(trimmed),
+        twoWords: trimmed.split(/\s+/).length >= 2,
+        noNumbers: !/\d/.test(form.nom),
+      });
+    } else {
+      setNameValidation({
+        minLength: false,
+        maxLength: false,
+        validChars: false,
+        twoWords: false,
+        noNumbers: false,
+      });
+    }
+  }, [form.nom]);
 
   const updateForm = (field) => (e) => {
-    setForm(f => ({ ...f, [field]: e.target.value }));
+    const value = e.target.value;
+    setForm(f => ({ ...f, [field]: value }));
+
+    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(e => ({ ...e, [field]: null }));
+    }
+
+    // Real-time validation for name field
+    if (field === 'nom' && value.trim()) {
+      const nomErrors = [];
+
+      if (value.trim().length < 3) {
+        nomErrors.push('Minimum 3 caractères');
+      }
+      if (value.trim().length > 50) {
+        nomErrors.push('Maximum 50 caractères');
+      }
+      if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(value.trim())) {
+        nomErrors.push('Lettres uniquement');
+      }
+      if (value.trim().split(/\s+/).length < 2) {
+        nomErrors.push('Nom et prénom requis');
+      }
+      if (/\d/.test(value)) {
+        nomErrors.push('Pas de chiffres');
+      }
+
+      // Show real-time feedback if there are errors
+      if (nomErrors.length > 0 && value.trim().length >= 2) {
+        setErrors(e => ({
+          ...e,
+          nom: nomErrors[0] // Show first error
+        }));
+      }
     }
   };
 
   const validateStep1 = () => {
     const newErrors = {};
-    if (!form.nom.trim()) newErrors.nom = 'Le nom est requis';
-    if (!form.email) newErrors.email = "L'email est requis";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Email invalide';
-    if (!form.password) newErrors.password = 'Le mot de passe est requis';
-    else if (form.password.length < 8) newErrors.password = 'Minimum 8 caractères';
-    if (!form.confirmPassword) newErrors.confirmPassword = 'La confirmation est requise';
-    else if (form.password !== form.confirmPassword) newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+
+    // Name validation
+    if (!form.nom.trim()) {
+      newErrors.nom = 'Le nom est requis';
+    } else if (form.nom.trim().length < 3) {
+      newErrors.nom = 'Le nom doit contenir au moins 3 caractères';
+    } else if (form.nom.trim().length > 50) {
+      newErrors.nom = 'Le nom ne peut pas dépasser 50 caractères';
+    } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(form.nom.trim())) {
+      newErrors.nom = 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes';
+    } else if (form.nom.trim().split(/\s+/).length < 2) {
+      newErrors.nom = 'Veuillez entrer votre nom et prénom (au moins 2 mots)';
+    } else if (/\d/.test(form.nom)) {
+      newErrors.nom = 'Le nom ne peut pas contenir de chiffres';
+    } else if (/[^a-zA-ZÀ-ÿ\s'-]/.test(form.nom)) {
+      newErrors.nom = 'Caractères spéciaux non autorisés dans le nom';
+    }
+
+    // Email validation
+    if (!form.email) {
+      newErrors.email = "L'email est requis";
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      newErrors.email = 'Email invalide';
+    }
+
+    // Password validation
+    if (!form.password) {
+      newErrors.password = 'Le mot de passe est requis';
+    } else if (form.password.length < 8) {
+      newErrors.password = 'Minimum 8 caractères';
+    }
+
+    // Confirm password validation
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = 'La confirmation est requise';
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
+    }
+
     return newErrors;
   };
 
@@ -89,44 +186,34 @@ export default function Register() {
         <div className="register-right-panel" style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
           <div className="register-success-content">
             <div className="register-success-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
             </div>
 
-            <h2 className="register-success-title">Compte créé avec succès !</h2>
+            <h2 className="register-success-title">Compte créé avec succès ! 🎉</h2>
 
             <p className="register-success-text">
               Bienvenue sur SmartRecruit. Votre compte a été créé et est en attente de validation.
             </p>
 
-            <div style={{
-              background: '#FEF3C7',
-              border: '1px solid #F59E0B',
-              borderRadius: '0.75rem',
-              padding: '1rem 1.25rem',
-              marginBottom: '2rem',
-              display: 'flex',
-              gap: '0.75rem',
-              alignItems: 'flex-start',
-            }}>
-              <div style={{ fontSize: '1.25rem', flexShrink: 0 }}>⏳</div>
-              <div style={{
-                fontSize: '0.875rem',
-                color: '#92400E',
-                textAlign: 'left',
-              }}>
+            <div className="register-success-alert">
+              <div style={{ fontSize: '1.5rem' }}>⏳</div>
+              <div>
                 <strong>En attente de validation</strong><br />
-                Votre compte doit être validé par un administrateur avant que vous puissiez vous connecter. Vous recevrez un email de confirmation une fois votre compte activé.
+                Votre compte doit être validé par un administrateur avant que vous puissiez vous connecter.
               </div>
             </div>
 
             <button
               onClick={() => navigate('/login')}
               className="register-button register-button-primary"
-              style={{ width: 'auto', padding: '0.875rem 2rem' }}
+              style={{ width: 'auto', padding: '1rem 2.5rem' }}
             >
               Retour à la connexion
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -134,12 +221,20 @@ export default function Register() {
     );
   }
 
+  const passwordStrength = form.password ? (
+    form.password.length < 8 ? { score: 1, text: 'Faible', color: '#EF4444' } :
+    form.password.length < 12 ? { score: 2, text: 'Moyen', color: '#F59E0B' } :
+    !/[A-Z]/.test(form.password) || !/[0-9]/.test(form.password) ? { score: 2, text: 'Moyen', color: '#F59E0B' } :
+    { score: 3, text: 'Fort', color: '#10B981' }
+  ) : null;
+
   return (
     <div className="register-page">
       {/* ===== LEFT PANEL ===== */}
       <div className="register-left-panel">
+        <div className="register-grid-pattern" />
         <div className="register-left-content">
-          <div className="register-logo">
+          <div className="register-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="register-logo-icon">SR</div>
             <div className="register-logo-text">SmartRecruit</div>
           </div>
@@ -154,17 +249,13 @@ export default function Register() {
 
           <div className="register-benefit-list">
             {[
-              { text: 'Inscription gratuite et sans engagement' },
-              { text: 'Accès aux offres de Premium' },
-              { text: 'Outils de suivi avancés' },
-              { text: 'Support client dédié 24/7' },
+              { text: 'Inscription gratuite et sans engagement', icon: '✨' },
+              { text: 'Accès aux offres de Premium', icon: '💎' },
+              { text: 'Outils de suivi avancés', icon: '📊' },
+              { text: 'Support client dédié 24/7', icon: '💬' },
             ].map((benefit, index) => (
-              <div key={index} className="register-benefit-item">
-                <div className="register-benefit-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M20 6L9 17l-5-5"/>
-                  </svg>
-                </div>
+              <div key={index} className="register-benefit-item" style={{ animationDelay: `${index * 0.1}s` }}>
+                <span className="register-benefit-emoji">{benefit.icon}</span>
                 <span className="register-benefit-text">{benefit.text}</span>
               </div>
             ))}
@@ -175,10 +266,20 @@ export default function Register() {
       {/* ===== RIGHT PANEL ===== */}
       <div className="register-right-panel">
         <div className="register-form-container">
+          {/* Mobile Logo */}
+          <div className="register-mobile-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <div className="register-logo-icon" style={{ width: '44px', height: '44px', fontSize: '1.125rem' }}>SR</div>
+            <div className="register-logo-text" style={{ fontSize: '1.25rem' }}>SmartRecruit</div>
+          </div>
+
           {/* Progress Bar */}
           <div className="register-progress-bar">
-            <div className={`register-progress-step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`} />
-            <div className={`register-progress-step ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`} />
+            <div className={`register-progress-step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
+              {step > 1 && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+            </div>
+            <div className={`register-progress-step ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
+              {step > 2 && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+            </div>
           </div>
 
           <div className="register-form-header">
@@ -193,18 +294,11 @@ export default function Register() {
           </div>
 
           {errors.api && (
-            <div style={{
-              background: '#FEE2E2',
-              border: '1px solid #EF4444',
-              borderRadius: '0.75rem',
-              padding: '0.75rem 1rem',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              gap: '0.75rem',
-              color: '#991B1B',
-              fontSize: '0.875rem',
-            }}>
-              <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+            <div className="register-error-alert">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4M12 16h.01"/>
+              </svg>
               <span>{errors.api}</span>
             </div>
           )}
@@ -212,35 +306,93 @@ export default function Register() {
           <form onSubmit={step === 1 ? (e) => { e.preventDefault(); handleNext(); } : handleSubmit}>
             {step === 1 && (
               <>
+                {/* Name Input */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    Nom complet <span style={{ color: '#EF4444' }}>*</span>
+                    Nom complet <span className="required">*</span>
                   </label>
-                  <input
-                    type="text"
-                    className="register-input"
-                    placeholder="Ahmed Trabelsi"
-                    value={form.nom}
-                    onChange={updateForm('nom')}
-                    style={errors.nom ? {
-                      border: '2px solid #EF4444',
-                      background: '#FEE2E2',
-                    } : {}}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      className="register-input"
+                      placeholder="Ahmed Trabelsi"
+                      value={form.nom}
+                      onChange={updateForm('nom')}
+                      style={{
+                        ...errors.nom ? {
+                          border: '2px solid #EF4444',
+                          background: '#FEE2E2',
+                        } : {},
+                        ...(form.nom && !errors.nom ? {
+                          border: '2px solid #10B981',
+                        } : {}),
+                        paddingRight: '2.5rem',
+                      }}
+                    />
+                    {form.nom && !errors.nom && (
+                      <span style={{
+                        position: 'absolute',
+                        right: '1rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#10B981',
+                        fontSize: '1.25rem',
+                      }}>
+                        ✓
+                      </span>
+                    )}
+                  </div>
                   {errors.nom && (
                     <div className="register-error-text">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
                       {errors.nom}
                     </div>
                   )}
+                  {form.nom && !errors.nom && (
+                    <div className="name-requirements-hint" style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#10B981' }}>
+                      ✓ Format valide
+                    </div>
+                  )}
+                  {form.nom && form.nom.length > 0 && (
+                    <div className="name-validation-indicators" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {[
+                        { valid: nameValidation.minLength, label: 'Min. 3 car.' },
+                        { valid: nameValidation.twoWords, label: 'Nom + Prénom' },
+                        { valid: nameValidation.validChars, label: 'Lettres uniquement' },
+                        { valid: nameValidation.noNumbers, label: 'Pas de chiffres' },
+                      ].map((req, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            fontSize: '0.7rem',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            background: req.valid ? '#D1FAE5' : '#F3F4F6',
+                            color: req.valid ? '#065F46' : '#9CA3AF',
+                            border: `1px solid ${req.valid ? '#10B981' : '#E5E7EB'}`,
+                            fontWeight: '500',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {req.valid ? '✓' : '○'} {req.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!form.nom && (
+                    <div className="name-requirements" style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#71717A' }}>
+                      <span style={{ color: '#9CA3AF' }}>💡</span> Ex: Ahmed Trabelsi (au moins 2 mots, lettres uniquement)
+                    </div>
+                  )}
                 </div>
 
+                {/* Email Input */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    Adresse email <span style={{ color: '#EF4444' }}>*</span>
+                    Adresse email <span className="required">*</span>
                   </label>
                   <input
                     type="email"
@@ -255,7 +407,7 @@ export default function Register() {
                   />
                   {errors.email && (
                     <div className="register-error-text">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -264,24 +416,87 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Password Input */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    Mot de passe <span style={{ color: '#EF4444' }}>*</span>
+                    Mot de passe <span className="required">*</span>
                   </label>
-                  <input
-                    type="password"
-                    className="register-input"
-                    placeholder="Min. 8 caractères"
-                    value={form.password}
-                    onChange={updateForm('password')}
-                    style={errors.password ? {
-                      border: '2px solid #EF4444',
-                      background: '#FEE2E2',
-                    } : {}}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className="register-input"
+                      placeholder="Min. 8 caractères"
+                      style={{
+                        ...errors.password ? {
+                          border: '2px solid #EF4444',
+                          background: '#FEE2E2',
+                        } : {},
+                        paddingRight: '3rem',
+                      }}
+                      value={form.password}
+                      onChange={updateForm('password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.875rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#9CA3AF',
+                        padding: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        borderRadius: '0.5rem',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = professionalTheme.colors.primary[500];
+                        e.currentTarget.style.background = 'rgba(91, 115, 247, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#9CA3AF';
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                      aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    >
+                      {showPassword ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {passwordStrength && (
+                    <div className="password-strength">
+                      <div className="password-strength-bar">
+                        <div
+                          className="password-strength-fill"
+                          style={{
+                            width: `${(passwordStrength.score / 3) * 100}%`,
+                            background: passwordStrength.color,
+                          }}
+                        />
+                      </div>
+                      <span style={{ color: passwordStrength.color, fontSize: '0.75rem' }}>
+                        {passwordStrength.text}
+                      </span>
+                    </div>
+                  )}
                   {errors.password && (
                     <div className="register-error-text">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -290,24 +505,71 @@ export default function Register() {
                   )}
                 </div>
 
+                {/* Confirm Password Input */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    Confirmer le mot de passe <span style={{ color: '#EF4444' }}>*</span>
+                    Confirmer le mot de passe <span className="required">*</span>
                   </label>
-                  <input
-                    type="password"
-                    className="register-input"
-                    placeholder="••••••••"
-                    value={form.confirmPassword}
-                    onChange={updateForm('confirmPassword')}
-                    style={errors.confirmPassword ? {
-                      border: '2px solid #EF4444',
-                      background: '#FEE2E2',
-                    } : {}}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="register-input"
+                      placeholder="••••••••"
+                      style={{
+                        ...errors.confirmPassword ? {
+                          border: '2px solid #EF4444',
+                          background: '#FEE2E2',
+                        } : {},
+                        paddingRight: '3rem',
+                      }}
+                      value={form.confirmPassword}
+                      onChange={updateForm('confirmPassword')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.875rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#9CA3AF',
+                        padding: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        borderRadius: '0.5rem',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = professionalTheme.colors.primary[500];
+                        e.currentTarget.style.background = 'rgba(91, 115, 247, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#9CA3AF';
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                      aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    >
+                      {showConfirmPassword ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                   {errors.confirmPassword && (
                     <div className="register-error-text">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -329,9 +591,10 @@ export default function Register() {
 
             {step === 2 && (
               <>
+                {/* Role Selection */}
                 <div className="register-form-group">
                   <label className="register-label">
-                    Je suis un(e) <span style={{ color: '#EF4444' }}>*</span>
+                    Je suis un(e) <span className="required">*</span>
                   </label>
                   <div className="register-role-cards">
                     {[
@@ -346,12 +609,19 @@ export default function Register() {
                         <div className="register-role-icon">{role.icon}</div>
                         <div className="register-role-title">{role.title}</div>
                         <div className="register-role-description">{role.description}</div>
+                        {form.role === role.value && (
+                          <div className="register-role-check">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <path d="M20 6L9 17l-5-5"/>
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                   {errors.role && (
                     <div className="register-error-text">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                         <circle cx="12" cy="12" r="10"/>
                         <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                       </svg>
@@ -364,7 +634,7 @@ export default function Register() {
                   <>
                     <div className="register-form-group">
                       <label className="register-label">
-                        Nom de l'entreprise <span style={{ color: '#EF4444' }}>*</span>
+                        Nom de l'entreprise <span className="required">*</span>
                       </label>
                       <input
                         type="text"
@@ -379,7 +649,7 @@ export default function Register() {
                       />
                       {errors.entreprise && (
                         <div className="register-error-text">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: '0.25rem' }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2"/>
                           </svg>
@@ -440,24 +710,11 @@ export default function Register() {
             )}
           </form>
 
-          <div style={{
-            textAlign: 'center',
-            marginTop: '1.5rem',
-            fontSize: '0.875rem',
-            color: '#71717A',
-          }}>
+          <div className="register-login-text">
             Déjà un compte ?{' '}
             <button
               onClick={() => navigate('/login')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#5B73F7',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: 'inherit',
-                padding: 0,
-              }}
+              className="register-login-link"
             >
               Se connecter
             </button>

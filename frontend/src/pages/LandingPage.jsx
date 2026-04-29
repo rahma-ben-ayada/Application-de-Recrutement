@@ -15,10 +15,10 @@ const logoMap = {
 const getLogoForType = (type) => logoMap[type] || logoMap.default;
 
 const stats = [
-  { value: '12K+', label: 'Candidats Actifs',   icon: '👤', color: '#5B73F7' },
-  { value: '340+', label: 'Entreprises',        icon: '🏢', color: '#14D2C4' },
-  { value: '1.2K',label: 'Offres Publiées',    icon: '📋', color: '#F59E0B' },
-  { value: '98%',  label: 'Satisfaction',       icon: '⭐', color: '#8B5CF6' },
+  { value: '12K+', label: 'Candidats Actifs',   icon: '👥', color: '#5B73F7', bg: 'rgba(91, 115, 247, 0.1)' },
+  { value: '340+', label: 'Entreprises',        icon: '🏢', color: '#14D2C4', bg: 'rgba(20, 210, 196, 0.1)' },
+  { value: '1.2K',label: 'Offres Publiées',    icon: '💼', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
+  { value: '98%',  label: 'Satisfaction',       icon: '⭐', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' },
 ];
 
 const features = [
@@ -36,6 +36,13 @@ const temoignages = [
   { nom: 'Lina Cherif',    poste: 'Candidat Recruté', avatar: 'LC', texte: 'J\'ai décroché mon emploi idéal en 2 semaines. Plateforme intuitive.', color: '#10B981' },
 ];
 
+const howItWorks = [
+  { step: '01', title: 'Créez votre compte', desc: 'Inscription gratuite en 2 minutes', icon: '👤' },
+  { step: '02', title: 'Complétez votre profil', desc: 'Ajoutez votre CV et compétences', icon: '📝' },
+  { step: '03', title: 'Postulez aux offres', desc: 'Trouvez l\'opportunité qui vous correspond', icon: '💼' },
+  { step: '04', title: 'Décrochez l\'emploi', desc: 'Suivez vos candidatures en temps réel', icon: '🎉' },
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -48,6 +55,7 @@ export default function LandingPage() {
   const [offres, setOffres] = useState([]);
   const [loadingOffres, setLoadingOffres] = useState(true);
   const [offresError, setOffresError] = useState(null);
+  const [visibleSection, setVisibleSection] = useState(null);
 
   const handleLogout = () => {
     logout();
@@ -56,7 +64,6 @@ export default function LandingPage() {
 
   const handleNavigateToDashboard = () => {
     if (user?.role) {
-      // Candidates don't have a dashboard, they go to offres
       const dashboardPath = user.role === 'candidat'
         ? '/candidat/offres'
         : `/${user.role}/dashboard`;
@@ -65,10 +72,25 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+
+      // Detect visible sections for animations
+      const sections = ['stats', 'features', 'how-it-works', 'testimonials'];
+      sections.forEach(section => {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const isVisible = rect.top < window.innerHeight - 100;
+          if (isVisible && visibleSection !== section) {
+            setVisibleSection(section);
+          }
+        }
+      });
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [visibleSection]);
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimatedStats(true), 500);
@@ -121,26 +143,36 @@ export default function LandingPage() {
   const styles = {
     page: {
       fontFamily: professionalTheme.fonts.sans,
-      background: '#FFFFFF',
+      background: '#FAFAFA',
       color: professionalTheme.colors.neutral[900],
       lineHeight: 1.6,
+      overflowX: 'hidden',
     },
+    // Enhanced Navbar with glassmorphism
     navbar: {
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       zIndex: 10000,
-      background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'transparent',
-      backdropFilter: 'blur(12px)',
-      borderBottom: scrolled ? `1px solid ${professionalTheme.colors.neutral[200]}` : 'none',
+      background: scrolled
+        ? 'rgba(255, 255, 255, 0.85)'
+        : 'rgba(255, 255, 255, 0.6)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderBottom: scrolled
+        ? `1px solid ${professionalTheme.colors.neutral[200]}`
+        : '1px solid rgba(224, 224, 227, 0.5)',
       transition: professionalTheme.transitions.default,
+      boxShadow: scrolled
+        ? '0 4px 30px rgba(0, 0, 0, 0.05)'
+        : 'none',
     },
     navContainer: {
-      maxWidth: '1280px',
+      maxWidth: '1400px',
       margin: '0 auto',
-      padding: isMobile ? '0 1rem' : '0 1.5rem',
-      height: '72px',
+      padding: isMobile ? '0 1.5rem' : '0 2rem',
+      height: '80px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -150,10 +182,11 @@ export default function LandingPage() {
       alignItems: 'center',
       gap: '0.75rem',
       cursor: 'pointer',
+      transition: professionalTheme.transitions.fast,
     },
     logoIcon: {
-      width: isMobile ? '36px' : '40px',
-      height: isMobile ? '36px' : '40px',
+      width: isMobile ? '42px' : '48px',
+      height: isMobile ? '42px' : '48px',
       borderRadius: professionalTheme.radius.xl,
       background: professionalTheme.gradients.primary,
       display: 'flex',
@@ -162,17 +195,53 @@ export default function LandingPage() {
       color: '#FFFFFF',
       fontWeight: 700,
       fontSize: isMobile ? '16px' : '18px',
+      boxShadow: '0 8px 24px rgba(91, 115, 247, 0.3)',
+      transition: professionalTheme.transitions.fast,
     },
     logoText: {
-      fontSize: isMobile ? professionalTheme.fontSizes.lg : professionalTheme.fontSizes.xl,
-      fontWeight: 700,
-      color: professionalTheme.colors.neutral[900],
+      fontSize: isMobile ? professionalTheme.fontSizes.xl : professionalTheme.fontSizes['2xl'],
+      fontWeight: 800,
+      background: professionalTheme.gradients.primary,
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
       letterSpacing: '-0.02em',
     },
     navLinks: {
       display: isMobile ? 'none' : 'flex',
-      gap: '2rem',
+      gap: '2.5rem',
       alignItems: 'center',
+    },
+    navLink: {
+      color: professionalTheme.colors.neutral[700],
+      textDecoration: 'none',
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      transition: professionalTheme.transitions.fast,
+      cursor: 'pointer',
+      position: 'relative',
+      padding: '0.5rem 0',
+    },
+    button: {
+      padding: '0.75rem 1.5rem',
+      borderRadius: professionalTheme.radius.full,
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.default,
+      border: 'none',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+    },
+    buttonPrimary: {
+      background: professionalTheme.gradients.primary,
+      color: '#FFFFFF',
+      boxShadow: '0 4px 15px rgba(91, 115, 247, 0.3)',
+    },
+    buttonSecondary: {
+      background: professionalTheme.colors.neutral[100],
+      color: professionalTheme.colors.neutral[900],
     },
     mobileMenuButton: {
       display: isMobile ? 'flex' : 'none',
@@ -180,10 +249,6 @@ export default function LandingPage() {
       border: 'none',
       cursor: 'pointer',
       padding: '0.5rem',
-      flexDirection: 'column',
-      gap: '4px',
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     mobileMenuLine: (isOpen) => ({
       width: '24px',
@@ -209,7 +274,7 @@ export default function LandingPage() {
     mobileMenuOverlay: {
       display: mobileMenuOpen ? 'block' : 'none',
       position: 'fixed',
-      top: '72px',
+      top: '80px',
       left: 0,
       right: 0,
       bottom: 0,
@@ -219,7 +284,7 @@ export default function LandingPage() {
     mobileMenu: {
       display: mobileMenuOpen ? 'flex' : 'none',
       position: 'fixed',
-      top: '72px',
+      top: '80px',
       left: 0,
       right: 0,
       background: '#FFFFFF',
@@ -228,77 +293,43 @@ export default function LandingPage() {
       gap: '0.75rem',
       borderBottom: `1px solid ${professionalTheme.colors.neutral[200]}`,
       boxShadow: professionalTheme.shadows.xl,
-      maxHeight: 'calc(100vh - 72px)',
-      overflowY: 'auto',
       zIndex: 9999,
-      animation: 'slideDown 0.3s ease',
     },
-    mobileMenuLink: {
-      padding: '1rem',
-      color: professionalTheme.colors.neutral[800],
-      textDecoration: 'none',
-      fontSize: professionalTheme.fontSizes.base,
-      fontWeight: 500,
-      borderRadius: professionalTheme.radius.lg,
-      transition: professionalTheme.transitions.fast,
-      cursor: 'pointer',
-      border: `1px solid transparent`,
-    },
-    mobileMenuButtons: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.75rem',
-      marginTop: '1rem',
-      paddingTop: '1rem',
-      borderTop: `1px solid ${professionalTheme.colors.neutral[200]}`,
-    },
-    navLink: {
-      color: professionalTheme.colors.neutral[600],
-      textDecoration: 'none',
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 500,
-      transition: professionalTheme.transitions.fast,
-      cursor: 'pointer',
-    },
-    button: {
-      padding: '0.625rem 1.25rem',
-      borderRadius: professionalTheme.radius.lg,
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 500,
-      cursor: 'pointer',
-      transition: professionalTheme.transitions.default,
-      border: 'none',
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-    },
-    buttonPrimary: {
-      background: professionalTheme.gradients.primary,
-      color: '#FFFFFF',
-    },
-    buttonSecondary: {
-      background: professionalTheme.colors.neutral[100],
-      color: professionalTheme.colors.neutral[900],
-    },
+    // Enhanced Hero Section
     hero: {
-      paddingTop: isMobile ? '5rem' : '8rem',
-      paddingBottom: isMobile ? '2rem' : '5rem',
-      background: professionalTheme.gradients.subtle,
+      paddingTop: isMobile ? '7rem' : '10rem',
+      paddingBottom: isMobile ? '4rem' : '8rem',
+      background: `linear-gradient(135deg, ${professionalTheme.colors.primary[50]} 0%, ${professionalTheme.colors.secondary[50]} 50%, ${professionalTheme.colors.neutral[50]} 100%)`,
       position: 'relative',
       overflow: 'hidden',
     },
+    heroBackground: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      opacity: 0.4,
+      backgroundImage: `
+        radial-gradient(circle at 20% 50%, rgba(91, 115, 247, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(20, 210, 196, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)
+      `,
+      animation: 'float 20s ease-in-out infinite',
+    },
     heroContainer: {
-      maxWidth: '1280px',
+      maxWidth: '1400px',
       margin: '0 auto',
-      padding: isMobile ? '0 1rem' : '0 1.5rem',
+      padding: isMobile ? '0 1.5rem' : '0 2rem',
       display: 'grid',
-      gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-      gap: isMobile ? '2rem' : '4rem',
+      gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr',
+      gap: isMobile ? '3rem' : '6rem',
       alignItems: 'center',
-      textAlign: isMobile ? 'center' : 'left',
+      position: 'relative',
+      zIndex: 1,
     },
     heroContent: {
-      maxWidth: isMobile ? '100%' : '560px',
+      maxWidth: isMobile ? '100%' : '640px',
     },
     badge: {
       display: 'inline-flex',
@@ -306,37 +337,45 @@ export default function LandingPage() {
       gap: '0.5rem',
       background: professionalTheme.colors.primary[50],
       color: professionalTheme.colors.primary[700],
-      padding: '0.375rem 0.875rem',
+      padding: '0.5rem 1rem',
       borderRadius: professionalTheme.radius.full,
       fontSize: isMobile ? professionalTheme.fontSizes.xs : professionalTheme.fontSizes.sm,
-      fontWeight: 500,
+      fontWeight: 600,
       marginBottom: '1.5rem',
+      border: `1px solid ${professionalTheme.colors.primary[100]}`,
+      boxShadow: `0 4px 12px ${professionalTheme.colors.primary[100]}`,
     },
     heroTitle: {
-      fontSize: isMobile ? professionalTheme.fontSizes['3xl'] : professionalTheme.fontSizes['5xl'],
+      fontSize: isMobile ? professionalTheme.fontSizes['4xl'] : professionalTheme.fontSizes['5xl'],
       fontWeight: 800,
       lineHeight: 1.1,
       color: professionalTheme.colors.neutral[900],
-      marginBottom: isMobile ? '1rem' : '1.5rem',
+      marginBottom: '1.5rem',
       letterSpacing: '-0.03em',
     },
+    heroTitleGradient: {
+      background: professionalTheme.gradients.primary,
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+    },
     heroSubtitle: {
-      fontSize: isMobile ? professionalTheme.fontSizes.sm : professionalTheme.fontSizes.lg,
+      fontSize: isMobile ? professionalTheme.fontSizes.base : professionalTheme.fontSizes.xl,
       color: professionalTheme.colors.neutral[600],
-      marginBottom: isMobile ? '1.5rem' : '2rem',
-      maxWidth: isMobile ? '100%' : '480px',
+      marginBottom: '2rem',
+      maxWidth: isMobile ? '100%' : '540px',
+      lineHeight: 1.7,
     },
     heroButtons: {
       display: 'flex',
       gap: '1rem',
-      marginBottom: '2rem',
+      marginBottom: '3rem',
       flexDirection: isMobile ? 'column' : 'row',
-      justifyContent: isMobile ? 'center' : 'flex-start',
     },
     heroStats: {
       display: 'flex',
-      gap: isMobile ? '1rem' : '2rem',
-      paddingTop: isMobile ? '1.5rem' : '2rem',
+      gap: isMobile ? '1.5rem' : '3rem',
+      paddingTop: '2rem',
       borderTop: `1px solid ${professionalTheme.colors.neutral[200]}`,
     },
     heroStat: {
@@ -344,190 +383,249 @@ export default function LandingPage() {
     },
     heroStatValue: {
       fontSize: professionalTheme.fontSizes['3xl'],
-      fontWeight: 700,
+      fontWeight: 800,
       color: professionalTheme.colors.primary[600],
+      marginBottom: '0.25rem',
     },
     heroStatLabel: {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
+      fontWeight: 500,
     },
+    // Enhanced Hero Image/Card
     heroImage: {
       position: 'relative',
     },
     heroCard: {
-      background: professionalTheme.glass.card.background,
-      backdropFilter: professionalTheme.glass.card.backdropFilter,
-      border: professionalTheme.glass.card.border,
+      background: 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.5)',
       borderRadius: professionalTheme.radius['3xl'],
-      padding: '2rem',
-      boxShadow: professionalTheme.shadows['2xl'],
+      padding: '2.5rem',
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.1)',
+      position: 'relative',
+      transform: 'perspective(1000px) rotateY(-5deg)',
+      transition: professionalTheme.transitions.default,
     },
+    heroCardBefore: {
+      content: '""',
+      position: 'absolute',
+      top: '-20px',
+      right: '-20px',
+      width: '100%',
+      height: '100%',
+      background: professionalTheme.gradients.primary,
+      borderRadius: professionalTheme.radius['3xl'],
+      zIndex: -1,
+      opacity: 0.2,
+    },
+    // Enhanced Sections
     section: {
-      padding: '5rem 1.5rem',
+      padding: isMobile ? '5rem 1.5rem' : '7rem 2rem',
     },
     sectionContainer: {
-      maxWidth: '1280px',
+      maxWidth: '1400px',
       margin: '0 auto',
     },
     sectionHeader: {
       textAlign: 'center',
-      marginBottom: '3rem',
+      marginBottom: isMobile ? '3rem' : '4rem',
+    },
+    sectionBadge: {
+      display: 'inline-block',
+      padding: '0.375rem 0.875rem',
+      borderRadius: professionalTheme.radius.full,
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      background: professionalTheme.colors.primary[50],
+      color: professionalTheme.colors.primary[700],
+      marginBottom: '1rem',
     },
     sectionTitle: {
-      fontSize: professionalTheme.fontSizes['4xl'],
-      fontWeight: 700,
+      fontSize: isMobile ? professionalTheme.fontSizes['3xl'] : professionalTheme.fontSizes['4xl'],
+      fontWeight: 800,
       color: professionalTheme.colors.neutral[900],
       marginBottom: '1rem',
       letterSpacing: '-0.02em',
     },
     sectionSubtitle: {
-      fontSize: professionalTheme.fontSizes.lg,
+      fontSize: isMobile ? professionalTheme.fontSizes.base : professionalTheme.fontSizes.xl,
       color: professionalTheme.colors.neutral[600],
-      maxWidth: '600px',
+      maxWidth: '640px',
       margin: '0 auto',
+    },
+    // Enhanced Stats Section
+    statsSection: {
+      background: '#FFFFFF',
+      borderRadius: professionalTheme.radius['3xl'],
+      padding: isMobile ? '2rem' : '3rem',
+      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)',
+      marginTop: isMobile ? '-3rem' : '-4rem',
+      position: 'relative',
+      zIndex: 10,
+      maxWidth: '1200px',
+      marginLeft: 'auto',
+      marginRight: 'auto',
     },
     statsGrid: {
       display: 'grid',
       gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-      gap: isMobile ? '1rem' : '1.5rem',
+      gap: isMobile ? '1.5rem' : '2rem',
     },
     statCard: {
-      background: '#FFFFFF',
-      borderRadius: professionalTheme.radius['2xl'],
-      padding: isMobile ? '1.25rem' : '1.5rem',
-      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
       textAlign: 'center',
+      padding: isMobile ? '1rem' : '1.5rem',
+      borderRadius: professionalTheme.radius.xl,
       transition: professionalTheme.transitions.default,
     },
-    statValue: {
-      fontSize: isMobile ? professionalTheme.fontSizes['3xl'] : professionalTheme.fontSizes['4xl'],
-      fontWeight: 700,
-      color: professionalTheme.colors.primary[600],
-      marginBottom: '0.25rem',
-    },
-    statLabel: {
-      fontSize: isMobile ? professionalTheme.fontSizes.xs : professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-      marginBottom: '0.5rem',
-    },
-    statChange: {
-      fontSize: professionalTheme.fontSizes.xs,
-      color: professionalTheme.colors.success.dark,
-      fontWeight: 500,
-    },
-    featuresGrid: {
-      display: 'grid',
-      gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-      gap: isMobile ? '1.25rem' : '2rem',
-    },
-    featureCard: {
-      background: '#FFFFFF',
-      borderRadius: professionalTheme.radius['2xl'],
-      padding: '2rem',
-      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      transition: professionalTheme.transitions.default,
-      cursor: 'pointer',
-    },
-    featureIcon: {
-      width: '56px',
-      height: '56px',
+    statIcon: {
+      width: isMobile ? '56px' : '64px',
+      height: isMobile ? '56px' : '64px',
       borderRadius: professionalTheme.radius.xl,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: '1.25rem',
-      fontSize: '1.5rem',
+      fontSize: isMobile ? '1.5rem' : '2rem',
+      margin: '0 auto 1rem',
     },
-    featureTitle: {
-      fontSize: professionalTheme.fontSizes.xl,
-      fontWeight: 600,
-      color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.5rem',
+    statValue: {
+      fontSize: isMobile ? professionalTheme.fontSizes['2xl'] : professionalTheme.fontSizes['3xl'],
+      fontWeight: 800,
+      marginBottom: '0.25rem',
     },
-    featureDescription: {
+    statLabel: {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
-      lineHeight: 1.6,
+      fontWeight: 500,
     },
-    testimonialsSection: {
-      background: professionalTheme.colors.neutral[50],
-    },
-    testimonialsGrid: {
+    // Enhanced Features Section
+    featuresGrid: {
       display: 'grid',
       gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
       gap: isMobile ? '1.5rem' : '2rem',
     },
-    testimonialCard: {
+    featureCard: {
       background: '#FFFFFF',
       borderRadius: professionalTheme.radius['2xl'],
-      padding: isMobile ? '1.5rem' : '2rem',
+      padding: isMobile ? '2rem' : '2.5rem',
       border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      transition: professionalTheme.transitions.default,
+      cursor: 'pointer',
+      position: 'relative',
+      overflow: 'hidden',
     },
-    testimonialHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
-      marginBottom: '1rem',
+    featureCardBefore: {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '4px',
+      background: professionalTheme.gradients.primary,
+      transform: 'scaleX(0)',
+      transformOrigin: 'left',
+      transition: professionalTheme.transitions.default,
     },
-    testimonialAvatar: {
-      width: '48px',
-      height: '48px',
-      borderRadius: '50%',
+    featureIcon: {
+      width: '64px',
+      height: '64px',
+      borderRadius: professionalTheme.radius.xl,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      color: '#FFFFFF',
-      fontWeight: 600,
-      fontSize: professionalTheme.fontSizes.sm,
+      marginBottom: '1.5rem',
+      fontSize: '1.75rem',
     },
-    testimonialInfo: {},
-    testimonialName: {
-      fontSize: professionalTheme.fontSizes.base,
-      fontWeight: 600,
+    featureTitle: {
+      fontSize: professionalTheme.fontSizes.xl,
+      fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.75rem',
     },
-    testimonialRole: {
+    featureDescription: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      lineHeight: 1.7,
+    },
+    // Enhanced How It Works Section
+    howItWorksGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+      gap: isMobile ? '2rem' : '3rem',
+    },
+    stepCard: {
+      textAlign: 'center',
+      position: 'relative',
+    },
+    stepNumber: {
+      width: '64px',
+      height: '64px',
+      borderRadius: '50%',
+      background: professionalTheme.gradients.primary,
+      color: '#FFFFFF',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: professionalTheme.fontSizes.xl,
+      fontWeight: 800,
+      margin: '0 auto 1.5rem',
+      boxShadow: '0 8px 24px rgba(91, 115, 247, 0.3)',
+    },
+    stepIcon: {
+      fontSize: '2.5rem',
+      marginBottom: '1rem',
+    },
+    stepTitle: {
+      fontSize: professionalTheme.fontSizes.lg,
+      fontWeight: 700,
+      color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.5rem',
+    },
+    stepDescription: {
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
     },
-    testimonialContent: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[700],
-      lineHeight: 1.7,
-      marginBottom: '1rem',
-      fontStyle: 'italic',
-    },
-    testimonialRating: {
-      display: 'flex',
-      gap: '0.25rem',
-      color: professionalTheme.colors.warning.DEFAULT,
-    },
+    // Enhanced Offers Section
     offresSection: {
-      background: professionalTheme.colors.neutral[50],
+      background: '#FFFFFF',
     },
     offresGrid: {
       display: 'grid',
       gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-      gap: isMobile ? '1rem' : '1.5rem',
+      gap: isMobile ? '1.5rem' : '2rem',
     },
     offreCard: {
       background: '#FFFFFF',
       borderRadius: professionalTheme.radius['2xl'],
-      padding: isMobile ? '1.25rem' : '1.5rem',
+      padding: isMobile ? '1.5rem' : '2rem',
       border: `1px solid ${professionalTheme.colors.neutral[200]}`,
       transition: professionalTheme.transitions.default,
       cursor: 'pointer',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+   offreCardBefore: {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '4px',
+      background: professionalTheme.gradients.primary,
+      transform: 'scaleX(0)',
+      transformOrigin: 'left',
+      transition: professionalTheme.transitions.default,
     },
     offreHeader: {
       display: 'flex',
       alignItems: 'center',
       gap: '1rem',
-      marginBottom: '1rem',
+      marginBottom: '1.25rem',
     },
     offreLogo: {
-      width: '48px',
-      height: '48px',
-      borderRadius: professionalTheme.radius.lg,
+      width: '56px',
+      height: '56px',
+      borderRadius: professionalTheme.radius.xl,
       background: professionalTheme.colors.neutral[100],
       display: 'flex',
       alignItems: 'center',
@@ -535,69 +633,141 @@ export default function LandingPage() {
       fontSize: '1.5rem',
     },
     offreTitle: {
-      fontSize: professionalTheme.fontSizes.base,
-      fontWeight: 600,
+      fontSize: professionalTheme.fontSizes.lg,
+      fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.75rem',
+      marginBottom: '1rem',
+      lineHeight: 1.4,
     },
     offreTags: {
       display: 'flex',
       gap: '0.5rem',
-      marginBottom: '1rem',
+      marginBottom: '1.25rem',
+      flexWrap: 'wrap',
     },
     offreTag: {
-      padding: '0.25rem 0.75rem',
-      borderRadius: professionalTheme.radius.md,
+      padding: '0.375rem 0.75rem',
+      borderRadius: professionalTheme.radius.full,
       fontSize: professionalTheme.fontSizes.xs,
-      fontWeight: 500,
+      fontWeight: 600,
     },
+    // Enhanced Testimonials Section
+    testimonialsSection: {
+      background: professionalTheme.colors.neutral[900],
+      color: '#FFFFFF',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    testimonialsBackground: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      opacity: 0.1,
+      backgroundImage: `
+        radial-gradient(circle at 20% 50%, rgba(91, 115, 247, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(20, 210, 196, 0.3) 0%, transparent 50%)
+      `,
+    },
+    testimonialsGrid: {
+      display: 'grid',
+      gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+      gap: isMobile ? '2rem' : '2.5rem',
+      position: 'relative',
+      zIndex: 1,
+    },
+    testimonialCard: {
+      background: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: professionalTheme.radius['2xl'],
+      padding: isMobile ? '2rem' : '2.5rem',
+      transition: professionalTheme.transitions.default,
+    },
+    testimonialHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      marginBottom: '1.5rem',
+    },
+    testimonialAvatar: {
+      width: '56px',
+      height: '56px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#FFFFFF',
+      fontWeight: 700,
+      fontSize: professionalTheme.fontSizes.lg,
+    },
+    testimonialContent: {
+      fontSize: professionalTheme.fontSizes.base,
+      color: 'rgba(255, 255, 255, 0.9)',
+      lineHeight: 1.7,
+      marginBottom: '1.5rem',
+      fontStyle: 'italic',
+    },
+    testimonialRating: {
+      display: 'flex',
+      gap: '0.25rem',
+      color: '#FBBF24',
+    },
+    // Enhanced CTA Section
     ctaSection: {
       background: professionalTheme.gradients.primary,
       borderRadius: professionalTheme.radius['3xl'],
-      padding: '4rem 2rem',
+      padding: isMobile ? '4rem 2rem' : '6rem 3rem',
       textAlign: 'center',
       position: 'relative',
       overflow: 'hidden',
     },
+    ctaBackground: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      opacity: 0.2,
+      backgroundImage: `
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)
+      `,
+    },
     ctaContent: {
       position: 'relative',
       zIndex: 1,
-      maxWidth: '600px',
-      margin: '0 auto',
     },
     ctaTitle: {
-      fontSize: professionalTheme.fontSizes['4xl'],
-      fontWeight: 700,
+      fontSize: isMobile ? professionalTheme.fontSizes['3xl'] : professionalTheme.fontSizes['4xl'],
+      fontWeight: 800,
       color: '#FFFFFF',
-      marginBottom: '1rem',
+      marginBottom: '1.5rem',
     },
     ctaSubtitle: {
-      fontSize: professionalTheme.fontSizes.lg,
+      fontSize: isMobile ? professionalTheme.fontSizes.base : professionalTheme.fontSizes.xl,
       color: 'rgba(255, 255, 255, 0.9)',
-      marginBottom: '2rem',
+      marginBottom: '2.5rem',
+      maxWidth: '640px',
+      marginLeft: 'auto',
+      marginRight: 'auto',
     },
+    // Enhanced Footer
     footer: {
       background: professionalTheme.colors.neutral[900],
       color: '#FFFFFF',
-      padding: '4rem 1.5rem 2rem',
+      padding: isMobile ? '4rem 2rem 2rem' : '6rem 2rem 2rem',
     },
     footerContainer: {
-      maxWidth: '1280px',
+      maxWidth: '1400px',
       margin: '0 auto',
     },
     footerGrid: {
       display: 'grid',
       gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr 1fr',
-      gap: isMobile ? '1.5rem' : '3rem',
-      marginBottom: '3rem',
-    },
-    footerBrand: {
-      maxWidth: isMobile ? '100%' : '280px',
-    },
-    footerDescription: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[400],
-      lineHeight: 1.7,
+      gap: isMobile ? '2rem' : '4rem',
+      marginBottom: '4rem',
     },
     footerLink: {
       display: 'block',
@@ -615,17 +785,17 @@ export default function LandingPage() {
       borderTop: `1px solid ${professionalTheme.colors.neutral[800]}`,
       flexDirection: isMobile ? 'column' : 'row',
       gap: isMobile ? '1rem' : '0',
-      textAlign: isMobile ? 'center' : 'left',
     },
     searchInput: {
       width: '100%',
-      maxWidth: '500px',
-      padding: '0.875rem 1.5rem',
+      maxWidth: '560px',
+      padding: '1rem 1.5rem',
       borderRadius: professionalTheme.radius.full,
       border: `2px solid ${professionalTheme.colors.neutral[200]}`,
-      fontSize: professionalTheme.fontSizes.sm,
+      fontSize: professionalTheme.fontSizes.base,
       outline: 'none',
       transition: professionalTheme.transitions.default,
+      background: '#FFFFFF',
     },
   };
 
@@ -636,8 +806,17 @@ export default function LandingPage() {
       {/* ===== NAVBAR ===== */}
       <nav style={styles.navbar}>
         <div style={styles.navContainer}>
-          <div style={styles.logo} onClick={() => navigate('/')}>
-            <div style={styles.logoIcon}>SR</div>
+          <div
+            style={styles.logo}
+            onClick={() => navigate('/')}
+            onMouseEnter={(e) => {
+              e.currentTarget.querySelector('[data-logo-icon]').style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.querySelector('[data-logo-icon]').style.transform = 'scale(1)';
+            }}
+          >
+            <div style={styles.logoIcon} data-logo-icon>SR</div>
             <div style={styles.logoText}>SmartRecruit</div>
           </div>
 
@@ -656,7 +835,7 @@ export default function LandingPage() {
                   e.target.style.color = professionalTheme.colors.primary[600];
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.color = professionalTheme.colors.neutral[600];
+                  e.target.style.color = professionalTheme.colors.neutral[700];
                 }}
               >
                 {link}
@@ -664,61 +843,37 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            {/* Authenticated user menu */}
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {user ? (
-              <>
-                <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                  {/* Role badge */}
-                  <div style={{
-                    padding: '0.375rem 0.875rem',
-                    borderRadius: professionalTheme.radius.full,
-                    fontSize: professionalTheme.fontSizes.sm,
-                    fontWeight: 500,
-                    background: professionalTheme.colors.primary[50],
-                    color: professionalTheme.colors.primary[700],
-                  }}>
-                    {user.role === 'admin' ? '🛡 Admin' : user.role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
-                  </div>
-
-                  {/* Dashboard button */}
-                  <button
-                    style={{ ...styles.button, background: 'transparent', color: professionalTheme.colors.neutral[700], border: `1px solid ${professionalTheme.colors.neutral[300]}` }}
-                    onClick={handleNavigateToDashboard}
-                  >
-                    Mon Dashboard
-                  </button>
-
-                  {/* Logout button */}
-                  <button
-                    style={{ ...styles.button, ...styles.buttonPrimary }}
-                    onClick={handleLogout}
-                  >
-                    Déconnexion
-                  </button>
+              <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <div style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: professionalTheme.radius.full,
+                  fontSize: professionalTheme.fontSizes.sm,
+                  fontWeight: 600,
+                  background: professionalTheme.colors.primary[50],
+                  color: professionalTheme.colors.primary[700],
+                }}>
+                  {user.role === 'admin' ? '🛡 Admin' : user.role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
                 </div>
-              </>
+                <button style={{ ...styles.button, ...styles.buttonSecondary }} onClick={handleNavigateToDashboard}>
+                  Mon Dashboard
+                </button>
+                <button style={{ ...styles.button, ...styles.buttonPrimary }} onClick={handleLogout}>
+                  Déconnexion
+                </button>
+              </div>
             ) : (
               <div style={{ display: isMobile ? 'none' : 'flex', gap: '0.75rem' }}>
-                <button
-                  style={{ ...styles.button, background: 'transparent', color: professionalTheme.colors.neutral[700], border: `1px solid ${professionalTheme.colors.neutral[300]}` }}
-                  onClick={() => navigate('/login')}
-                >
+                <button style={{ ...styles.button, ...styles.buttonSecondary }} onClick={() => navigate('/login')}>
                   Connexion
                 </button>
-                <button
-                  style={{ ...styles.button, ...styles.buttonPrimary }}
-                  onClick={() => navigate('/register')}
-                >
-                  Démarrer gratuitement
+                <button style={{ ...styles.button, ...styles.buttonPrimary }} onClick={() => navigate('/register')}>
+                  Démarrer Gratuitement
                 </button>
               </div>
             )}
-            <button
-              style={styles.mobileMenuButton}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
-            >
+            <button style={styles.mobileMenuButton} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               <div style={styles.mobileMenuLine(mobileMenuOpen)} />
               <div style={styles.mobileMenuLineCenter(mobileMenuOpen)} />
               <div style={styles.mobileMenuLineBottom(mobileMenuOpen)} />
@@ -730,15 +885,12 @@ export default function LandingPage() {
       {/* ===== MOBILE MENU ===== */}
       {mobileMenuOpen && (
         <>
-          <div
-            style={styles.mobileMenuOverlay}
-            onClick={() => setMobileMenuOpen(false)}
-          />
+          <div style={styles.mobileMenuOverlay} onClick={() => setMobileMenuOpen(false)} />
           <div style={styles.mobileMenu}>
             {['Fonctionnalités', 'Offres', 'Entreprises', 'Ressources'].map((link) => (
               <a
                 key={link}
-                style={styles.mobileMenuLink}
+                style={{ ...styles.navLink, padding: '1rem' }}
                 onClick={() => {
                   setMobileMenuOpen(false);
                   if (link === 'Fonctionnalités') navigate('/fonctionnalites');
@@ -750,92 +902,37 @@ export default function LandingPage() {
                 {link}
               </a>
             ))}
-
-            {/* Mobile menu: Authenticated vs Not authenticated */}
-            {user ? (
-              <div style={styles.mobileMenuButtons}>
-                {/* Role badge */}
-                <div style={{
-                  padding: '0.75rem 1rem',
-                  borderRadius: professionalTheme.radius.full,
-                  fontSize: professionalTheme.fontSizes.sm,
-                  fontWeight: 500,
-                  background: professionalTheme.colors.primary[50],
-                  color: professionalTheme.colors.primary[700],
-                  textAlign: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                }}>
-                  {user.role === 'admin' ? '🛡 Admin' : user.role === 'recruteur' ? '🏢 Recruteur' : '👤 Candidat'}
-                </div>
-
-                <button
-                  style={{ ...styles.button, width: '100%', background: professionalTheme.colors.neutral[100], color: professionalTheme.colors.neutral[900] }}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleNavigateToDashboard();
-                  }}
-                >
-                  Mon Dashboard
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', ...styles.buttonPrimary }}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  Déconnexion
-                </button>
-              </div>
-            ) : (
-              <div style={styles.mobileMenuButtons}>
-                <button
-                  style={{ ...styles.button, width: '100%', background: professionalTheme.colors.neutral[100], color: professionalTheme.colors.neutral[900] }}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate('/login');
-                  }}
-                >
-                  Connexion
-                </button>
-                <button
-                  style={{ ...styles.button, width: '100%', ...styles.buttonPrimary }}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate('/register');
-                  }}
-                >
-                  Démarrer gratuitement
-                </button>
-              </div>
-            )}
           </div>
         </>
       )}
 
       {/* ===== HERO SECTION ===== */}
       <section style={styles.hero}>
+        <div style={styles.heroBackground} />
         <div style={styles.heroContainer}>
           <div style={styles.heroContent}>
+            <div style={styles.badge}>
+              <span>🚀</span>
+              <span>#1 Plateforme de Recrutement IA</span>
+            </div>
             <h1 style={styles.heroTitle}>
-              {user ? `Bienvenue, ${user.nom || user.name || 'Utilisateur'} !` : 'Connectez les Meilleurs '}
-              {!user && <span style={{ color: professionalTheme.colors.primary[600] }}>Talents</span>}
+              {user ? `Bienvenue, ${user.nom || user.name || 'Utilisateur'} !` : (
+                <>
+                  Connectez les Meilleurs{' '}
+                  <span style={styles.heroTitleGradient}>Talents</span>
+                </>
+              )}
             </h1>
-
             <p style={styles.heroSubtitle}>
               {user
                 ? `Vous êtes connecté en tant que ${user.role === 'admin' ? 'administrateur' : user.role === 'recruteur' ? 'recruteur' : 'candidat'}. Continuez à explorer SmartRecruit ou accédez à votre dashboard.`
                 : 'SmartRecruit utilise l\'intelligence artificielle pour révolutionner votre processus de recrutement. Trouvez le candidat idéal en moins de temps.'
               }
             </p>
-
             <div style={styles.heroButtons}>
               {user ? (
                 <button
-                  style={{ ...styles.button, ...styles.buttonPrimary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
+                  style={{ ...styles.button, ...styles.buttonPrimary, padding: '1rem 2rem', fontSize: '1rem' }}
                   onClick={handleNavigateToDashboard}
                 >
                   Mon Dashboard
@@ -846,7 +943,7 @@ export default function LandingPage() {
               ) : (
                 <>
                   <button
-                    style={{ ...styles.button, ...styles.buttonPrimary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
+                    style={{ ...styles.button, ...styles.buttonPrimary, padding: '1rem 2rem', fontSize: '1rem' }}
                     onClick={() => navigate('/register')}
                   >
                     Commencer Gratuitement
@@ -854,15 +951,12 @@ export default function LandingPage() {
                       <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
                   </button>
-                  <button
-                    style={{ ...styles.button, ...styles.buttonSecondary, padding: '0.875rem 1.75rem', fontSize: '1rem' }}
-                  >
+                  <button style={{ ...styles.button, ...styles.buttonSecondary, padding: '1rem 2rem', fontSize: '1rem' }}>
                     Voir la Démo
                   </button>
                 </>
               )}
             </div>
-
             <div style={styles.heroStats}>
               {stats.slice(0, 3).map((stat, index) => (
                 <div key={index} style={styles.heroStat}>
@@ -875,27 +969,26 @@ export default function LandingPage() {
 
           <div style={styles.heroImage}>
             <div style={styles.heroCard}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+              <div style={{ marginBottom: '2rem' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>📊</div>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                   Dashboard Analytics
                 </h3>
-                <p style={{ fontSize: '0.875rem', color: professionalTheme.colors.neutral[600] }}>
+                <p style={{ fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.neutral[600] }}>
                   Suivez vos candidatures en temps réel
                 </p>
               </div>
-
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem' }}>
                 {[
                   { label: 'Candidats', value: '2,847', color: professionalTheme.colors.primary[500] },
                   { label: 'Entretiens', value: '156', color: professionalTheme.colors.secondary[600] },
                   { label: 'Recrutés', value: '43', color: professionalTheme.colors.success.DEFAULT },
                 ].map((item, i) => (
                   <div key={i} style={{ flex: 1 }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: item.color }}>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 800, color: item.color, marginBottom: '0.25rem' }}>
                       {item.value}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: professionalTheme.colors.neutral[600] }}>
+                    <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[600] }}>
                       {item.label}
                     </div>
                   </div>
@@ -907,28 +1000,37 @@ export default function LandingPage() {
       </section>
 
       {/* ===== STATS SECTION ===== */}
-      <section style={styles.section}>
+      <div style={styles.statsSection} id="stats">
+        <div style={styles.statsGrid}>
+          {stats.map((stat, index) => (
+            <div key={index} style={styles.statCard}>
+              <div style={{ ...styles.statIcon, background: stat.bg, color: stat.color }}>
+                {stat.icon}
+              </div>
+              <div style={{ ...styles.statValue, color: stat.color }}>{stat.value}</div>
+              <div style={styles.statLabel}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ===== HOW IT WORKS ===== */}
+      <section style={styles.section} id="how-it-works">
         <div style={styles.sectionContainer}>
-          <div style={styles.statsGrid}>
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                style={styles.statCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
-                  e.currentTarget.style.borderColor = stat.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.borderColor = professionalTheme.colors.neutral[200];
-                }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{stat.icon}</div>
-                <div style={{ ...styles.statValue, color: stat.color }}>{stat.value}</div>
-                <div style={styles.statLabel}>{stat.label}</div>
-                <div style={styles.statChange}>+{Math.floor(Math.random() * 30) + 10}% vs mois dernier</div>
+          <div style={styles.sectionHeader}>
+            <div style={styles.sectionBadge}>Comment ça marche</div>
+            <h2 style={styles.sectionTitle}>4 Égles Simples</h2>
+            <p style={styles.sectionSubtitle}>
+              Commencez à recruter ou trouver votre emploi idéal en quelques minutes
+            </p>
+          </div>
+          <div style={styles.howItWorksGrid}>
+            {howItWorks.map((step, index) => (
+              <div key={index} style={styles.stepCard}>
+                <div style={styles.stepNumber}>{step.step}</div>
+                <div style={styles.stepIcon}>{step.icon}</div>
+                <h3 style={styles.stepTitle}>{step.title}</h3>
+                <p style={styles.stepDescription}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -936,34 +1038,33 @@ export default function LandingPage() {
       </section>
 
       {/* ===== FEATURES SECTION ===== */}
-      <section style={{ ...styles.section, background: professionalTheme.colors.neutral[50] }}>
+      <section style={{ ...styles.section, background: professionalTheme.colors.neutral[50] }} id="features">
         <div style={styles.sectionContainer}>
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>
-              Fonctionnalités Puissantes
-            </h2>
+            <div style={styles.sectionBadge}>Fonctionnalités</div>
+            <h2 style={styles.sectionTitle}>Puissantes & Innovantes</h2>
             <p style={styles.sectionSubtitle}>
               Découvrez comment SmartRecruit transforme votre processus de recrutement
             </p>
           </div>
-
           <div style={styles.featuresGrid}>
             {features.map((feature) => (
               <div
                 key={feature.title}
                 style={styles.featureCard}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.transform = 'translateY(-8px)';
                   e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
-                  e.currentTarget.style.borderColor = feature.color;
+                  e.currentTarget.querySelector('[data-feature-line]').style.transform = 'scaleX(1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.borderColor = professionalTheme.colors.neutral[200];
+                  e.currentTarget.querySelector('[data-feature-line]').style.transform = 'scaleX(0)';
                 }}
               >
-                <div style={{ ...styles.featureIcon, background: feature.color + '20', color: feature.color }}>
+                <div style={{ ...styles.featureCardBefore, background: feature.color }} data-feature-line />
+                <div style={{ ...styles.featureIcon, background: `${feature.color}15`, color: feature.color }}>
                   {feature.icon}
                 </div>
                 <h3 style={styles.featureTitle}>{feature.title}</h3>
@@ -978,15 +1079,14 @@ export default function LandingPage() {
       <section style={{ ...styles.section, ...styles.offresSection }}>
         <div style={styles.sectionContainer}>
           <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>
-              Offres Récentes
-            </h2>
+            <div style={styles.sectionBadge}>Opportunités</div>
+            <h2 style={styles.sectionTitle}>Offres Récentes</h2>
             <p style={styles.sectionSubtitle}>
               Découvrez les dernières opportunités de carrière
             </p>
           </div>
 
-          <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'center' }}>
             <input
               type="text"
               placeholder="🔍 Rechercher une offre..."
@@ -995,7 +1095,7 @@ export default function LandingPage() {
               style={styles.searchInput}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = professionalTheme.colors.primary[500];
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(91, 115, 247, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 0 4px rgba(91, 115, 247, 0.1)';
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = professionalTheme.colors.neutral[200];
@@ -1005,32 +1105,29 @@ export default function LandingPage() {
           </div>
 
           {loadingOffres ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4rem' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                border: '3px solid #E5E7EB',
-                borderTop: `3px solid ${professionalTheme.colors.primary[600]}`,
+                width: '48px',
+                height: '48px',
+                border: '4px solid #E5E7EB',
+                borderTop: `4px solid ${professionalTheme.colors.primary[600]}`,
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite',
               }} />
               <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
             </div>
           ) : offresError ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
               <p style={{ color: professionalTheme.colors.error.main, marginBottom: '1rem' }}>{offresError}</p>
-              <button
-                style={{ ...styles.button, ...styles.buttonPrimary }}
-                onClick={() => window.location.reload()}
-              >
+              <button style={{ ...styles.button, ...styles.buttonPrimary }} onClick={() => window.location.reload()}>
                 Réessayer
               </button>
             </div>
           ) : filteredOffres.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-              <p style={{ color: professionalTheme.colors.neutral[600], fontSize: professionalTheme.fontSizes.lg }}>
+            <div style={{ textAlign: 'center', padding: '4rem' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
+              <p style={{ color: professionalTheme.colors.neutral[600], fontSize: professionalTheme.fontSizes.xl }}>
                 {search ? 'Aucune offre ne correspond à votre recherche.' : 'Aucune offre disponible pour le moment.'}
               </p>
             </div>
@@ -1041,15 +1138,18 @@ export default function LandingPage() {
                   key={offre.id}
                   style={styles.offreCard}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.transform = 'translateY(-8px)';
                     e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
+                    e.currentTarget.querySelector('[data-offre-line]').style.transform = 'scaleX(1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
                     e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.querySelector('[data-offre-line]').style.transform = 'scaleX(0)';
                   }}
                   onClick={() => user ? navigate('/candidat/offres') : navigate('/login')}
                 >
+                  <div style={styles.offreCardBefore} data-offre-line />
                   <div style={styles.offreHeader}>
                     <div style={styles.offreLogo}>{offre.logo}</div>
                     <div>
@@ -1061,9 +1161,7 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </div>
-
                   <h3 style={styles.offreTitle}>{offre.titre}</h3>
-
                   <div style={styles.offreTags}>
                     <span style={{ ...styles.offreTag, background: professionalTheme.colors.info.light, color: professionalTheme.colors.info.dark }}>
                       {offre.type}
@@ -1072,13 +1170,12 @@ export default function LandingPage() {
                       💰 {offre.salaire}
                     </span>
                   </div>
-
                   <button
                     style={{
                       ...styles.button,
                       ...styles.buttonPrimary,
                       width: '100%',
-                      padding: '0.625rem',
+                      padding: '0.75rem',
                       fontSize: professionalTheme.fontSizes.sm,
                     }}
                     onClick={(e) => {
@@ -1096,27 +1193,45 @@ export default function LandingPage() {
       </section>
 
       {/* ===== TESTIMONIALS ===== */}
-      <section style={{ ...styles.section, ...styles.testimonialsSection }}>
+      <section style={{ ...styles.section, ...styles.testimonialsSection }} id="testimonials">
+        <div style={styles.testimonialsBackground} />
         <div style={styles.sectionContainer}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>
+          <div style={{ ...styles.sectionHeader, position: 'relative', zIndex: 1 }}>
+            <div style={{ ...styles.sectionBadge, background: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF' }}>
+              Témoignages
+            </div>
+            <h2 style={{ ...styles.sectionTitle, color: '#FFFFFF' }}>
               Ce que disent nos Clients
             </h2>
-            <p style={styles.sectionSubtitle}>
+            <p style={{ ...styles.sectionSubtitle, color: 'rgba(255, 255, 255, 0.8)' }}>
               Des milliers d'entreprises nous font confiance
             </p>
           </div>
-
           <div style={styles.testimonialsGrid}>
             {temoignages.map((temoignage) => (
-              <div key={temoignage.nom} style={styles.testimonialCard}>
+              <div
+                key={temoignage.nom}
+                style={styles.testimonialCard}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              >
                 <div style={styles.testimonialHeader}>
                   <div style={{ ...styles.testimonialAvatar, background: temoignage.color }}>
                     {temoignage.avatar}
                   </div>
-                  <div style={styles.testimonialInfo}>
-                    <div style={styles.testimonialName}>{temoignage.nom}</div>
-                    <div style={styles.testimonialRole}>{temoignage.poste}</div>
+                  <div>
+                    <div style={{ fontSize: professionalTheme.fontSizes.base, fontWeight: 700, color: '#FFFFFF' }}>
+                      {temoignage.nom}
+                    </div>
+                    <div style={{ fontSize: professionalTheme.fontSizes.sm, color: 'rgba(255, 255, 255, 0.7)' }}>
+                      {temoignage.poste}
+                    </div>
                   </div>
                 </div>
                 <p style={styles.testimonialContent}>"{temoignage.texte}"</p>
@@ -1137,6 +1252,7 @@ export default function LandingPage() {
       <section style={styles.section}>
         <div style={styles.sectionContainer}>
           <div style={styles.ctaSection}>
+            <div style={styles.ctaBackground} />
             <div style={styles.ctaContent}>
               <h2 style={styles.ctaTitle}>
                 {user ? 'Bienvenue sur SmartRecruit !' : 'Prêt à Transformer Votre Recrutement ?'}
@@ -1147,10 +1263,10 @@ export default function LandingPage() {
                   : 'Rejoignez des milliers d\'entreprises qui font confiance à SmartRecruit pour trouver les meilleurs talents.'
                 }
               </p>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 {user ? (
                   <button
-                    style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '0.875rem 2rem', fontSize: '1rem' }}
+                    style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '1rem 2.5rem', fontSize: '1rem' }}
                     onClick={handleNavigateToDashboard}
                   >
                     Aller au Dashboard
@@ -1158,13 +1274,13 @@ export default function LandingPage() {
                 ) : (
                   <>
                     <button
-                      style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '0.875rem 2rem', fontSize: '1rem' }}
+                      style={{ ...styles.button, background: '#FFFFFF', color: professionalTheme.colors.primary[600], padding: '1rem 2.5rem', fontSize: '1rem' }}
                       onClick={() => navigate('/register')}
                     >
                       Démarrer Gratuitement
                     </button>
                     <button
-                      style={{ ...styles.button, background: 'transparent', color: '#FFFFFF', border: '2px solid rgba(255, 255, 255, 0.3)', padding: '0.875rem 2rem', fontSize: '1rem' }}
+                      style={{ ...styles.button, background: 'transparent', color: '#FFFFFF', border: '2px solid rgba(255, 255, 255, 0.3)', padding: '1rem 2.5rem', fontSize: '1rem' }}
                     >
                       Contacter l'Équipe
                     </button>
@@ -1180,18 +1296,18 @@ export default function LandingPage() {
       <footer style={styles.footer}>
         <div style={styles.footerContainer}>
           <div style={styles.footerGrid}>
-            <div style={styles.footerBrand}>
-              <div style={styles.logo}>
-                <div style={{ ...styles.logoIcon, width: '36px', height: '36px', fontSize: '14px' }}>SR</div>
-                <div style={{ fontSize: professionalTheme.fontSizes.lg, fontWeight: 700 }}>SmartRecruit</div>
+            <div>
+              <div style={styles.logo} style={{ marginBottom: '1rem' }}>
+                <div style={{ ...styles.logoIcon, width: '40px', height: '40px', fontSize: '14px' }}>SR</div>
+                <div style={{ fontSize: professionalTheme.fontSizes.xl, fontWeight: 700 }}>SmartRecruit</div>
               </div>
-              <p style={styles.footerDescription}>
+              <p style={{ fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.neutral[400], lineHeight: 1.7, maxWidth: '280px' }}>
                 La plateforme de recrutement intelligente qui connecte les meilleurs talents aux opportunités idéales grâce à l'IA.
               </p>
             </div>
 
             <div>
-              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 600, marginBottom: '1rem', color: '#FFFFFF' }}>
+              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 700, marginBottom: '1.25rem', color: '#FFFFFF' }}>
                 Produit
               </h4>
               {['Fonctionnalités', 'Tarification', 'Entreprises', 'API'].map((link) => (
@@ -1200,7 +1316,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 600, marginBottom: '1rem', color: '#FFFFFF' }}>
+              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 700, marginBottom: '1.25rem', color: '#FFFFFF' }}>
                 Entreprise
               </h4>
               {['À Propos', 'Blog', 'Carrières', 'Contact'].map((link) => (
@@ -1209,7 +1325,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 600, marginBottom: '1rem', color: '#FFFFFF' }}>
+              <h4 style={{ fontSize: professionalTheme.fontSizes.sm, fontWeight: 700, marginBottom: '1.25rem', color: '#FFFFFF' }}>
                 Légal
               </h4>
               {['Confidentialité', 'CGU', 'Cookies', 'Mentions'].map((link) => (
@@ -1228,8 +1344,8 @@ export default function LandingPage() {
                   key={social}
                   href="#"
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     borderRadius: professionalTheme.radius.lg,
                     background: professionalTheme.colors.neutral[800],
                     display: 'flex',
@@ -1239,6 +1355,15 @@ export default function LandingPage() {
                     textDecoration: 'none',
                     fontSize: professionalTheme.fontSizes.xs,
                     fontWeight: 600,
+                    transition: professionalTheme.transitions.fast,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = professionalTheme.colors.primary[600];
+                    e.currentTarget.style.color = '#FFFFFF';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = professionalTheme.colors.neutral[800];
+                    e.currentTarget.style.color = professionalTheme.colors.neutral[400];
                   }}
                 >
                   {social.slice(0, 2)}
