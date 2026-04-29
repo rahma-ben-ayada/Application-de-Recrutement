@@ -1,71 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { professionalTheme, professionalKeyframes } from '../theme/professionalTheme';
+import api from '../utils/api';
 
-const articles = [
-  {
-    id: 1,
-    title: '10 Astuces pour un CV Parfait',
-    category: 'Conseils Carrière',
-    excerpt: 'Découvrez les techniques pour créer un CV qui se démarque et attire les recruteurs.',
-    image: '📄',
-    date: '15 Avr 2024',
-    readTime: '5 min',
-    featured: true,
-  },
-  {
-    id: 2,
-    title: 'Comment Réussir un Entretien Vidéo',
-    category: 'Entretien',
-    excerpt: 'Préparez-vous efficacement aux entretiens en ligne avec ces conseils pratiques.',
-    image: '📹',
-    date: '12 Avr 2024',
-    readTime: '7 min',
-    featured: true,
-  },
-  {
-    id: 3,
-    title: 'Les Compétences les Plus Recherchées en 2024',
-    category: 'Tendances',
-    excerpt: 'Analyse des compétences clés que les entreprises recherchent cette année.',
-    image: '🎯',
-    date: '10 Avr 2024',
-    readTime: '6 min',
-    featured: false,
-  },
-  {
-    id: 4,
-    title: 'Lettre de Motivation : Exemples et Modèles',
-    category: 'Conseils Carrière',
-    excerpt: 'Templates et exemples de lettres de motivation efficaces.',
-    image: '✉️',
-    date: '8 Avr 2024',
-    readTime: '8 min',
-    featured: false,
-  },
-  {
-    id: 5,
-    title: 'Questions Fréquentes en Entretien',
-    category: 'Entretien',
-    excerpt: 'Préparez-vous aux questions les plus posées par les recruteurs.',
-    image: '❓',
-    date: '5 Avr 2024',
-    readTime: '10 min',
-    featured: false,
-  },
-  {
-    id: 6,
-    title: 'Networking : Stratégies pour Candidats',
-    category: 'Carrière',
-    excerpt: 'Comment développer votre réseau professionnel pour booster votre recherche.',
-    image: '🤝',
-    date: '3 Avr 2024',
-    readTime: '6 min',
-    featured: false,
-  },
-];
-
-const categories = ['Tous', 'Conseils Carrière', 'Entretien', 'Tendances', 'Carrière'];
+const categories = ['Tous', 'Conseils Carrière', 'Entretien', 'Tendances', 'Carrière', 'Technologie'];
 
 const guides = [
   { title: 'Guide du Recrutement', description: 'Tout savoir sur le recrutement moderne', icon: '📚' },
@@ -80,6 +18,9 @@ export default function Ressources() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -88,15 +29,36 @@ export default function Ressources() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const filteredArticles = articles.filter(article => {
-    const matchCategory = selectedCategory === 'Tous' || article.category === selectedCategory;
-    const matchSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                     article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const categorieParam = selectedCategory === 'Tous' ? '' : selectedCategory;
+        const searchParam = searchQuery || '';
+        const queryParams = new URLSearchParams();
+        if (categorieParam) queryParams.append('categorie', categorieParam);
+        if (searchParam) queryParams.append('search', searchParam);
+
+        const data = await api(`/articles${queryParams.toString() ? '?' + queryParams.toString() : ''}`, 'GET');
+        setArticles(data.articles || []);
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+        setError('Impossible de charger les articles.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, [selectedCategory, searchQuery]);
 
   const featuredArticles = articles.filter(a => a.featured);
-  const regularArticles = filteredArticles.filter(a => !a.featured);
+  const regularArticles = articles.filter(a => !a.featured);
+
+  const handleArticleClick = (articleId) => {
+    navigate(`/article/${articleId}`);
+  };
 
   const styles = {
     page: {
@@ -366,6 +328,7 @@ export default function Ressources() {
       overflow: 'hidden',
       border: '1px solid #E4E4E7',
       transition: professionalTheme.transitions.default,
+      cursor: 'pointer',
     },
     articleCardLarge: {
       display: 'grid',
@@ -679,69 +642,117 @@ export default function Ressources() {
             </div>
           </div>
 
-          {/* Featured Articles */}
-          {featuredArticles.length > 0 && (
-            <div style={styles.featuredSection}>
-              <div style={styles.featuredGrid}>
-                {featuredArticles.map((article) => (
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: '4px solid #E5E7EB',
+                borderTop: `4px solid ${professionalTheme.colors.primary[600]}`,
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }} />
+              <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+              <p style={{ color: professionalTheme.colors.error.main, marginBottom: '1rem' }}>{error}</p>
+              <button
+                style={{ ...styles.button, background: professionalTheme.gradients.primary, color: '#FFFFFF' }}
+                onClick={() => window.location.reload()}
+              >
+                Réessayer
+              </button>
+            </div>
+          ) : articles.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📰</div>
+              <p style={{ color: professionalTheme.colors.neutral[600], fontSize: professionalTheme.fontSizes.lg }}>
+                {searchQuery || selectedCategory !== 'Tous'
+                  ? 'Aucun article ne correspond à votre recherche.'
+                  : 'Aucun article disponible pour le moment.'}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Featured Articles */}
+              {featuredArticles.length > 0 && (
+                <div style={styles.featuredSection}>
+                  <div style={styles.featuredGrid}>
+                    {featuredArticles.map((article) => (
+                      <div
+                        key={article._id}
+                        style={{ ...styles.articleCard, ...styles.articleCardLarge }}
+                        onClick={() => handleArticleClick(article._id)}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
+                      >
+                        <div style={{ ...styles.articleImage, ...styles.articleImageLarge }}>
+                          {article.imageUrl ? (
+                            <img src={article.imageUrl} alt={article.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            article.image || '📄'
+                          )}
+                        </div>
+                        <div style={styles.articleContent}>
+                          <span style={styles.articleCategory}>{article.categorie}</span>
+                          <h3 style={styles.articleTitle}>{article.titre}</h3>
+                          <p style={styles.articleExcerpt}>{article.extrait}</p>
+                          <div style={styles.articleMeta}>
+                            <span>📅 {new Date(article.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span>⏱️ {article.tempsLecture || '5 min'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Regular Articles */}
+              <div style={styles.articlesGrid}>
+                {regularArticles.map((article) => (
                   <div
-                    key={article.id}
-                    style={{ ...styles.articleCard, ...styles.articleCardLarge }}
+                    key={article._id}
+                    style={styles.articleCard}
+                    onClick={() => handleArticleClick(article._id)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = professionalTheme.shadows.xl;
+                      e.currentTarget.style.boxShadow = professionalTheme.shadows.lg;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    <div style={{ ...styles.articleImage, ...styles.articleImageLarge }}>
-                      {article.image}
+                    <div style={styles.articleImage}>
+                      {article.imageUrl ? (
+                        <img src={article.imageUrl} alt={article.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        article.image || '📄'
+                      )}
                     </div>
                     <div style={styles.articleContent}>
-                      <span style={styles.articleCategory}>{article.category}</span>
-                      <h3 style={styles.articleTitle}>{article.title}</h3>
-                      <p style={styles.articleExcerpt}>{article.excerpt}</p>
+                      <span style={styles.articleCategory}>{article.categorie}</span>
+                      <h3 style={styles.articleTitle}>{article.titre}</h3>
+                      <p style={styles.articleExcerpt}>{article.extrait}</p>
                       <div style={styles.articleMeta}>
-                        <span>📅 {article.date}</span>
-                        <span>⏱️ {article.readTime}</span>
+                        <span>📅 {new Date(article.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span>⏱️ {article.tempsLecture || '5 min'}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
+            </>
           )}
-
-          {/* Regular Articles */}
-          <div style={styles.articlesGrid}>
-            {regularArticles.map((article) => (
-              <div
-                key={article.id}
-                style={styles.articleCard}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = professionalTheme.shadows.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={styles.articleImage}>{article.image}</div>
-                <div style={styles.articleContent}>
-                  <span style={styles.articleCategory}>{article.category}</span>
-                  <h3 style={styles.articleTitle}>{article.title}</h3>
-                  <p style={styles.articleExcerpt}>{article.excerpt}</p>
-                  <div style={styles.articleMeta}>
-                    <span>📅 {article.date}</span>
-                    <span>⏱️ {article.readTime}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

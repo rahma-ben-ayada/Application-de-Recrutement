@@ -38,6 +38,7 @@ app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 app.use('/api/settings',     require('./routes/settingRoutes'));
 app.use('/api/reports',       require('./routes/reportRoutes'));
 app.use('/api/skill-tests',  require('./routes/skillTestRoutes'));
+app.use('/api/articles',      require('./routes/articleRoutes'));
 
 // Route test
 app.get('/', (req, res) => {

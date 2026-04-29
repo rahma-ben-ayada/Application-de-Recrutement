@@ -16,6 +16,7 @@ import Fonctionnalités from '../pages/Fonctionnalités';
 import Offres          from '../pages/Offres';
 import Entreprises     from '../pages/Entreprises';
 import Ressources      from '../pages/Ressources';
+import ArticleDetails  from '../pages/ArticleDetails';
 
 // Admin
 import DashboardAdmin        from '../pages/admin/DashboardAdmin';
@@ -59,6 +60,7 @@ export default function AppRoutes() {
           <Route path="/offres"           element={<Offres />} />
           <Route path="/entreprises"      element={<Entreprises />} />
           <Route path="/ressources"       element={<Ressources />} />
+          <Route path="/article/:id"      element={<ArticleDetails />} />
 
           {/* Auth */}
           <Route path="/login"             element={<Login />} />
