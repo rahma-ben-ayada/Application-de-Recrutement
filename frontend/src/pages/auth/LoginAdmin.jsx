@@ -13,13 +13,9 @@ export default function LoginAdmin() {
   const [attempts, setAttempts] = useState(0);
   const [locked, setLocked] = useState(false);
   const [lockTime, setLockTime] = useState(0);
-  const [ipAddress, setIpAddress] = useState('192.168.1.xxx');
   const [focusedInput, setFocusedInput] = useState(null);
 
   useEffect(() => {
-    const simulatedIP = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-    setIpAddress(simulatedIP);
-
     const savedAttempts = localStorage.getItem('admin_login_attempts');
     const lockUntil = localStorage.getItem('admin_lock_until');
     if (savedAttempts) setAttempts(parseInt(savedAttempts));
@@ -102,10 +98,22 @@ export default function LoginAdmin() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const styles = {
     container: {
       minHeight: '100vh',
       display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
       background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 50%, #2E5082 100%)',
       position: 'relative',
       overflow: 'hidden',
@@ -113,65 +121,51 @@ export default function LoginAdmin() {
     },
     animatedBg: (delay) => ({
       position: 'absolute',
-      width: '600px',
-      height: '600px',
+      width: isMobile ? '300px' : '600px',
+      height: isMobile ? '300px' : '600px',
       borderRadius: '50%',
       background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%)',
       pointerEvents: 'none',
       animation: `float ${20 + delay}s ease-in-out infinite`,
     }),
-    securityBanner: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      background: 'rgba(10, 22, 40, 0.9)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
-      padding: '12px 60px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      fontSize: '12px',
-      color: 'rgba(255, 255, 255, 0.7)',
-      zIndex: 10,
-    },
     leftPanel: {
       flex: 1,
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      padding: '100px 80px',
+      padding: isMobile ? '40px 20px 20px' : '100px 80px',
       position: 'relative',
       zIndex: 1,
+      order: isMobile ? 2 : 1,
     },
     rightPanel: {
-      width: '580px',
+      width: isMobile ? '100%' : '580px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       background: 'rgba(255, 255, 255, 0.98)',
       backdropFilter: 'blur(20px)',
-      padding: '48px 40px',
+      padding: isMobile ? '32px 20px' : '48px 40px',
       position: 'relative',
       zIndex: 1,
-      boxShadow: '0 32px 64px rgba(0, 0, 0, 0.2)',
+      boxShadow: isMobile ? '0 16px 32px rgba(0, 0, 0, 0.2)' : '0 32px 64px rgba(0, 0, 0, 0.2)',
+      order: isMobile ? 1 : 2,
     },
     logo: {
       display: 'flex',
       alignItems: 'center',
-      gap: '12px',
-      marginBottom: '40px',
+      gap: isMobile ? '8px' : '12px',
+      marginBottom: isMobile ? '20px' : '40px',
     },
     logoIcon: {
-      width: '56px',
-      height: '56px',
-      borderRadius: '12px',
+      width: isMobile ? '40px' : '56px',
+      height: isMobile ? '40px' : '56px',
+      borderRadius: isMobile ? '10px' : '12px',
       background: 'linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #B8941F 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: '24px',
+      fontSize: isMobile ? '18px' : '24px',
       boxShadow: '0 8px 32px rgba(212, 175, 55, 0.4)',
     },
     securityBadge: {
@@ -181,31 +175,31 @@ export default function LoginAdmin() {
       background: 'linear-gradient(135deg, rgba(220,38,38,0.15) 0%, rgba(185,28,28,0.15) 100%)',
       border: '1px solid rgba(220, 38, 38, 0.3)',
       borderRadius: '50px',
-      padding: '10px 24px',
-      marginBottom: '32px',
+      padding: isMobile ? '8px 16px' : '10px 24px',
+      marginBottom: isMobile ? '20px' : '32px',
       boxShadow: '0 4px 16px rgba(220, 38, 68, 0.15)',
     },
     title: {
       fontFamily: '"Playfair Display", serif',
-      fontSize: '52px',
+      fontSize: isMobile ? '32px' : '52px',
       fontWeight: '700',
       color: '#fff',
       lineHeight: '1.1',
       marginBottom: '20px',
     },
     subtitle: {
-      fontSize: '15px',
+      fontSize: isMobile ? '13px' : '15px',
       color: 'rgba(255, 255, 255, 0.8)',
       lineHeight: '1.8',
-      maxWidth: '420px',
-      marginBottom: '40px',
+      maxWidth: isMobile ? '100%' : '420px',
+      marginBottom: isMobile ? '24px' : '40px',
     },
     formContainer: {
       width: '100%',
-      maxWidth: '420px',
+      maxWidth: isMobile ? '100%' : '420px',
     },
     inputGroup: {
-      marginBottom: '20px',
+      marginBottom: isMobile ? '16px' : '20px',
     },
     label: {
       fontSize: '13px',
@@ -216,7 +210,7 @@ export default function LoginAdmin() {
     },
     input: {
       width: '100%',
-      height: '52px',
+      height: isMobile ? '48px' : '52px',
       padding: '0 16px',
       paddingLeft: '48px',
       paddingRight: '48px',
@@ -224,7 +218,7 @@ export default function LoginAdmin() {
         ? '2px solid #D4AF37'
         : '2px solid #E2E8F0',
       borderRadius: '12px',
-      fontSize: '14px',
+      fontSize: isMobile ? '14px' : '14px',
       outline: 'none',
       background: '#F8FAFC',
       transition: 'all 0.3s ease',
@@ -236,14 +230,14 @@ export default function LoginAdmin() {
     },
     button: {
       width: '100%',
-      height: '52px',
+      height: isMobile ? '48px' : '52px',
       borderRadius: '12px',
       border: 'none',
       background: loading || locked
         ? '#94A3B8'
         : 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 100%)',
       color: '#fff',
-      fontSize: '15px',
+      fontSize: isMobile ? '14px' : '15px',
       fontWeight: '600',
       cursor: loading || locked ? 'not-allowed' : 'pointer',
       boxShadow: '0 8px 24px rgba(10, 22, 40, 0.3)',
@@ -290,25 +284,6 @@ export default function LoginAdmin() {
       <div style={{ ...styles.animatedBg(0), top: '-200px', left: '-150px' }} />
       <div style={{ ...styles.animatedBg(5), bottom: '-100px', right: '-100px' }} />
 
-      {/* Security Banner */}
-      <div style={styles.securityBanner}>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🔒 Connexion sécurisée SSL
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🛡️ Protection renforcée
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            ⏰ Verrouillage auto
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <span>IP: {ipAddress}</span>
-          <span style={{ color: '#D4AF37' }}>Admin v2.0</span>
-        </div>
-      </div>
-
       {/* Left Panel */}
       <div style={styles.leftPanel}>
         <div style={styles.logo}>
@@ -339,7 +314,7 @@ export default function LoginAdmin() {
           Accès exclusivement réservé aux administrateurs autorisés. Toute tentative d'intrusion sera signalée et enregistrée.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginBottom: isMobile ? '24px' : '40px' }}>
           {[
             { icon: '🔐', label: 'Authentification 2FA' },
             { icon: '📊', label: 'Journalisation activités' },
@@ -353,25 +328,25 @@ export default function LoginAdmin() {
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(10px)',
               borderRadius: '12px',
-              padding: '14px 18px',
+              padding: isMobile ? '12px 14px' : '14px 18px',
               border: '1px solid ' + 'rgba(255, 255, 255, 0.1)',
             }}>
-              <span style={{ fontSize: '20px' }}>{feature.icon}</span>
-              <span style={{ fontSize: '12px', color: '#fff', fontWeight: '500' }}>
+              <span style={{ fontSize: isMobile ? '18px' : '20px' }}>{feature.icon}</span>
+              <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#fff', fontWeight: '500' }}>
                 {feature.label}
               </span>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '40px' }}>
+        <div style={{ display: 'flex', gap: isMobile ? '24px' : '40px' }}>
           {[
             { value: '24/7', label: 'Support' },
             { value: '99.9%', label: 'Disponibilité' },
             { value: 'SSL', label: 'Sécurisé' },
           ].map((s, i) => (
             <div key={i}>
-              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '24px', fontWeight: '700', color: '#D4AF37' }}>
+              <div style={{ fontFamily: '"Playfair Display", serif', fontSize: isMobile ? '20px' : '24px', fontWeight: '700', color: '#D4AF37' }}>
                 {s.value}
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -387,26 +362,26 @@ export default function LoginAdmin() {
         <div style={styles.formContainer}>
 
           {/* Header */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ marginBottom: isMobile ? '24px' : '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '12px', marginBottom: '16px' }}>
               <div style={{
-                width: '56px',
-                height: '56px',
+                width: isMobile ? '48px' : '56px',
+                height: isMobile ? '48px' : '56px',
                 borderRadius: '12px',
                 background: 'linear-gradient(135deg, #0A1628 0%, #1E3A5F 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px',
+                fontSize: isMobile ? '20px' : '24px',
                 boxShadow: '0 8px 20px rgba(10, 22, 40, 0.2)',
               }}>
                 🔐
               </div>
               <div>
-                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '20px', fontWeight: '700', color: '#0A1628' }}>
+                <div style={{ fontFamily: '"Playfair Display", serif', fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: '#0A1628' }}>
                   Connexion Administrateur
                 </div>
-                <div style={{ fontSize: '13px', color: '#64748B', fontWeight: '500' }}>
+                <div style={{ fontSize: isMobile ? '12px' : '13px', color: '#64748B', fontWeight: '500' }}>
                   Identifiez-vous pour accéder au panneau
                 </div>
               </div>
@@ -514,13 +489,13 @@ export default function LoginAdmin() {
               disabled={loading || locked}
               style={styles.button}
               onMouseEnter={(e) => {
-                if (!loading && !locked) {
+                if (!loading && !locked && !isMobile) {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 12px 32px rgba(10, 22, 40, 0.4)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!loading && !locked) {
+                if (!loading && !locked && !isMobile) {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = '0 8px 24px rgba(10, 22, 40, 0.3)';
                 }
@@ -536,12 +511,12 @@ export default function LoginAdmin() {
                     borderRadius: '50%',
                     animation: 'spin 1s linear infinite',
                   }}></span>
-                  Vérification en cours...
+                  {isMobile ? 'Vérification...' : 'Vérification en cours...'}
                 </span>
               ) : locked ? (
                 '🔒 Compte verrouillé'
               ) : (
-                '🛡️ Accéder au panneau d\'administration'
+                isMobile ? '🛡️ Connexion Admin' : '🛡️ Accéder au panneau d\'administration'
               )}
             </button>
           </form>
