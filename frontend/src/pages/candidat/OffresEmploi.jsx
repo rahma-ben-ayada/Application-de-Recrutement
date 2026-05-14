@@ -4,28 +4,107 @@ import { professionalTheme, professionalKeyframes } from '../../theme/profession
 import CandidatLayout from '../../layouts/CandidatLayout';
 import api from '../../utils/api';
 
+// Modern SVG Icons
+const Icons = {
+  search: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  ),
+  briefcase: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+    </svg>
+  ),
+  mapPin: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+  ),
+  clock: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+  ),
+  heart: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ),
+  checkCircle: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+  ),
+  send: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  ),
+  filter: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+  ),
+  users: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  building: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+      <path d="M9 22v-4h6v4"/>
+      <path d="M8 6h.01"/>
+      <path d="M16 6h.01"/>
+      <path d="M8 10h.01"/>
+      <path d="M16 10h.01"/>
+      <path d="M8 14h.01"/>
+      <path d="M16 14h.01"/>
+      <path d="M8 18h.01"/>
+      <path d="M16 18h.01"/>
+    </svg>
+  ),
+  fileText: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <line x1="10" y1="9" x2="8" y2="9"/>
+    </svg>
+  ),
+};
+
 export default function OffresEmploi() {
   const navigate = useNavigate();
   const location = useLocation();
   const [offres, setOffres] = useState([]);
   const [mesCandidatures, setMesCandidatures] = useState([]);
-  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('Tous');
-  const [filterLieu, setFilterLieu] = useState('Tous');
+  const [filterType, setFilterType] = useState('all');
+  const [filterLieu, setFilterLieu] = useState('all');
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [offreToPostuler, setOffreToPostuler] = useState(null);
   const [lettre, setLettre] = useState('');
   const [cvFile, setCvFile] = useState(null);
-  const [videoFile, setVideoFile] = useState(null);
   const [message, setMessage] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [fromAlerte, setFromAlerte] = useState(false);
+  const [favoris, setFavoris] = useState([]);
 
-  const types = ['Tous', 'CDI', 'CDD', 'Stage', 'Freelance'];
-  const lieux = ['Tous', 'Tunis', 'Sfax', 'Sousse', 'Remote'];
+  const types = ['all', 'CDI', 'CDD', 'Stage', 'Freelance', 'Alternance'];
+  const lieux = ['all', 'Tunis', 'Sfax', 'Sousse', 'Remote', 'Nabeul', 'Monastir'];
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -40,7 +119,6 @@ export default function OffresEmploi() {
     // Check if coming from alertes page with results
     if (location.state?.alerteResultats) {
       setOffres(location.state.alerteResultats);
-      setFromAlerte(true);
       setMessage({
         type: 'success',
         text: `${location.state.alerteResultats.length} offre(s) trouvée(s) correspondant à vos alertes`
@@ -51,14 +129,12 @@ export default function OffresEmploi() {
 
   const fetchData = async () => {
     try {
-      const [offresData, candidaturesData, statsData] = await Promise.all([
+      const [offresData, candidaturesData] = await Promise.all([
         api('/offres'),
         api('/candidatures/mes'),
-        api('/candidatures/stats').catch(() => ({ stats: null })),
       ]);
       setOffres(offresData.offres || []);
       setMesCandidatures(candidaturesData.candidatures || []);
-      setStats(statsData.stats);
     } catch (err) {
       console.error(err);
     } finally {
@@ -74,22 +150,30 @@ export default function OffresEmploi() {
   const dejaPostule = (offreId) =>
     mesCandidatures.some(c => c.offre?._id === offreId || c.offre === offreId);
 
+  const isFavori = (offreId) => favoris.includes(offreId);
+
+  const toggleFavori = (offreId) => {
+    if (isFavori(offreId)) {
+      setFavoris(favoris.filter(id => id !== offreId));
+    } else {
+      setFavoris([...favoris, offreId]);
+    }
+  };
+
   const openPostuler = (offre) => {
     setOffreToPostuler(offre);
     setLettre('');
     setCvFile(null);
-    setVideoFile(null);
     setShowModal(true);
   };
 
   const handlePostuler = async () => {
-    if (!cvFile) return showMessage('error', '⚠️ Veuillez joindre votre CV !');
+    if (!cvFile) return showMessage('error', 'Veuillez joindre votre CV !');
     try {
       const formData = new FormData();
       formData.append('offreId', offreToPostuler._id);
       formData.append('lettre', lettre);
       formData.append('cv', cvFile);
-      if (videoFile) formData.append('video', videoFile);
 
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/candidatures', {
@@ -98,75 +182,41 @@ export default function OffresEmploi() {
         body: formData,
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
 
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur lors de la candidature');
+      }
+
+      showMessage('success', 'Candidature envoyée avec succès !');
       setShowModal(false);
-      showMessage('success', `✅ Candidature envoyée pour "${offreToPostuler.titre}" !`);
       fetchData();
     } catch (err) {
-      showMessage('error', err.message);
+      showMessage('error', err.message || 'Erreur lors de la candidature');
     }
   };
 
-  const filtered = offres.filter(o => {
-    const matchSearch =
-      o.titre?.toLowerCase().includes(search.toLowerCase()) ||
-      o.recruteur?.entreprise?.toLowerCase().includes(search.toLowerCase()) ||
-      (o.competences || []).some(c => c.toLowerCase().includes(search.toLowerCase()));
-    const matchType = filterType === 'Tous' || o.type === filterType;
-    const matchLieu = filterLieu === 'Tous' || o.lieu === filterLieu;
-    return matchSearch && matchType && matchLieu;
-  });
-
-  const statsCards = [
-    {
-      label: 'Offres disponibles',
-      value: offres.length,
-      color: '#5B73F7',
-      bg: 'rgba(91, 115, 247, 0.1)',
-      icon: '📋',
-    },
-    {
-      label: 'Mes candidatures',
-      value: mesCandidatures.length,
-      color: '#10B981',
-      bg: 'rgba(16, 185, 129, 0.1)',
-      icon: '📨',
-    },
-    {
-      label: 'En entretien',
-      value: stats?.en_entretien || 0,
-      color: '#F59E0B',
-      bg: 'rgba(245, 158, 11, 0.1)',
-      icon: '🎯',
-    },
-    {
-      label: 'Acceptées',
-      value: stats?.acceptees || 0,
-      color: '#06B6D4',
-      bg: 'rgba(6, 182, 212, 0.1)',
-      icon: '✅',
-    },
-  ];
-
-  const typeBadge = (type) => {
-    const styles = {
-      CDI: { bg: '#DBEAFE', color: '#1E3A8A' },
-      CDD: { bg: '#FEF3C7', color: '#D97706' },
-      Stage: { bg: '#D1FAE5', color: '#059669' },
-      Freelance: { bg: '#EDE9FE', color: '#7C3AED' },
+  const getTypeBadge = (type) => {
+    const badges = {
+      CDI: { bg: '#DBEAFE', color: '#1E3A8A', label: 'CDI' },
+      CDD: { bg: '#FEF3C7', color: '#D97706', label: 'CDD' },
+      Stage: { bg: '#D1FAE5', color: '#059669', label: 'Stage' },
+      Freelance: { bg: '#EDE9FE', color: '#7C3AED', label: 'Freelance' },
+      Alternance: { bg: '#FEE2E2', color: '#DC2626', label: 'Alternance' },
     };
-    const s = styles[type] || { bg: '#F1F5F9', color: '#475569' };
-    return (
-      <span style={{
-        background: s.bg, color: s.color,
-        padding: '0.25rem 0.75rem', borderRadius: professionalTheme.radius.full,
-        fontSize: professionalTheme.fontSizes.xs, fontWeight: 600,
-      }}>
-        {type}
-      </span>
-    );
+    return badges[type] || { bg: '#F1F5F9', color: '#475569', label: type };
   };
+
+  const filteredOffres = offres.filter(offre => {
+    const matchesSearch = !search ||
+      offre.titre?.toLowerCase().includes(search.toLowerCase()) ||
+      offre.description?.toLowerCase().includes(search.toLowerCase()) ||
+      offre.entrepriseId?.nom?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesType = filterType === 'all' || offre.type === filterType;
+    const matchesLieu = filterLieu === 'all' || offre.lieu?.includes(filterLieu);
+
+    return matchesSearch && matchesType && matchesLieu;
+  });
 
   const styles = {
     container: {
@@ -180,261 +230,197 @@ export default function OffresEmploi() {
       alignItems: 'center',
       marginBottom: '1rem',
     },
-    headerTitle: {
-      fontSize: professionalTheme.fontSizes['2xl'],
-      fontWeight: 800,
-      color: professionalTheme.colors.neutral[900],
-    },
-    statsGrid: {
-      display: 'grid',
-      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-      gap: '1.5rem',
-    },
-    statCard: {
-      background: '#FFFFFF',
-      borderRadius: professionalTheme.radius['2xl'],
-      padding: isMobile ? '1.5rem' : '2rem',
-      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
-      boxShadow: professionalTheme.shadows.sm,
-    },
-    statIcon: {
-      width: '56px',
-      height: '56px',
-      borderRadius: professionalTheme.radius.xl,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '1.75rem',
-    },
-    statContent: {
+    headerLeft: {
       flex: 1,
     },
-    statValue: {
-      fontSize: professionalTheme.fontSizes['2xl'],
+    headerTitle: {
+      fontSize: professionalTheme.fontSizes['3xl'],
       fontWeight: 800,
       color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.25rem',
     },
-    statLabel: {
-      fontSize: professionalTheme.fontSizes.sm,
+    headerSubtitle: {
+      fontSize: professionalTheme.fontSizes.base,
       color: professionalTheme.colors.neutral[600],
-      fontWeight: 500,
     },
-    filtersCard: {
+    filters: {
+      display: 'flex',
+      gap: '1rem',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      padding: '1.5rem',
       background: '#FFFFFF',
       borderRadius: professionalTheme.radius['2xl'],
-      padding: '1.5rem',
       border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      boxShadow: professionalTheme.shadows.sm,
     },
-    filtersGrid: {
-      display: 'grid',
-      gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr 1fr',
-      gap: '1rem',
-    },
-    filterGroup: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem',
-    },
-    filterLabel: {
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      color: professionalTheme.colors.neutral[700],
+    searchBox: {
+      position: 'relative',
+      flex: 1,
+      minWidth: '250px',
     },
     searchInput: {
       width: '100%',
-      padding: '0.75rem 1rem',
+      padding: '0.75rem 1rem 0.75rem 2.5rem',
       borderRadius: professionalTheme.radius.full,
-      border: `2px solid ${professionalTheme.colors.neutral[200]}`,
-      fontSize: professionalTheme.fontSizes.base,
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      background: professionalTheme.colors.neutral[50],
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[700],
       outline: 'none',
-      transition: professionalTheme.transitions.default,
     },
-    filterButtons: {
+    searchIcon: {
+      position: 'absolute',
+      left: '0.75rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      color: professionalTheme.colors.neutral[400],
+    },
+    filterGroup: {
       display: 'flex',
       gap: '0.5rem',
       flexWrap: 'wrap',
     },
-    filterButton: (isActive) => ({
+    filterButton: (active) => ({
       padding: '0.5rem 1rem',
       borderRadius: professionalTheme.radius.full,
-      border: isActive ? `2px solid ${professionalTheme.colors.primary[600]}` : `1px solid ${professionalTheme.colors.neutral[200]}`,
-      background: isActive ? professionalTheme.colors.primary[50] : '#FFFFFF',
-      color: isActive ? professionalTheme.colors.primary[700] : professionalTheme.colors.neutral[700],
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      background: active ? '#5B73F7' : '#FFFFFF',
+      color: active ? '#FFFFFF' : professionalTheme.colors.neutral[700],
       fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
+      fontWeight: 500,
       cursor: 'pointer',
       transition: professionalTheme.transitions.fast,
     }),
-    select: {
-      width: '100%',
-      padding: '0.75rem 1rem',
-      borderRadius: professionalTheme.radius.full,
-      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      fontSize: professionalTheme.fontSizes.base,
-      outline: 'none',
-      background: '#FFFFFF',
-      cursor: 'pointer',
-    },
-    contentGrid: {
+    grid: {
       display: 'grid',
-      gridTemplateColumns: selected ? '1fr 400px' : '1fr',
-      gap: '2rem',
+      gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(400px, 1fr))',
+      gap: '1.5rem',
     },
-    offresList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-    },
-    offreCard: {
+    card: {
       background: '#FFFFFF',
       borderRadius: professionalTheme.radius['2xl'],
-      padding: '1.5rem',
       border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      cursor: 'pointer',
-      transition: professionalTheme.transitions.default,
       boxShadow: professionalTheme.shadows.sm,
+      overflow: 'hidden',
+      transition: professionalTheme.transitions.default,
+      position: 'relative',
     },
-    offreHeader: {
+    cardHeader: {
+      padding: '1.5rem',
+      borderBottom: `1px solid ${professionalTheme.colors.neutral[100]}`,
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: '1rem',
-      gap: '1rem',
     },
-    offreCompany: {
+    companyInfo: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem',
-      marginBottom: '0.5rem',
+      gap: '1rem',
     },
-    offreLogo: {
+    companyLogo: {
       width: '48px',
       height: '48px',
-      borderRadius: professionalTheme.radius.lg,
+      borderRadius: professionalTheme.radius.xl,
       background: professionalTheme.colors.neutral[100],
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: '1.25rem',
+      fontSize: '1.5rem',
     },
-    offreTitle: {
-      fontSize: professionalTheme.fontSizes.lg,
-      fontWeight: 700,
+    companyName: {
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
       color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.5rem',
     },
-    offreMeta: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
+    cardBody: {
+      padding: '1.5rem',
     },
-    offreTags: {
-      display: 'flex',
-      gap: '0.5rem',
-      flexWrap: 'wrap',
-      marginBottom: '1rem',
-    },
-    offreActions: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: '0.5rem',
-    },
-    applyButton: {
-      padding: '0.625rem 1.25rem',
-      borderRadius: professionalTheme.radius.full,
-      background: professionalTheme.gradients.primary,
-      color: '#FFFFFF',
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      border: 'none',
-      cursor: 'pointer',
-      transition: professionalTheme.transitions.default,
-    },
-    appliedBadge: {
-      padding: '0.5rem 1rem',
-      borderRadius: professionalTheme.radius.full,
-      background: professionalTheme.colors.success.light,
-      color: professionalTheme.colors.success.dark,
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-    },
-    detailPanel: {
-      background: '#FFFFFF',
-      borderRadius: professionalTheme.radius['2xl'],
-      padding: '2rem',
-      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-      boxShadow: professionalTheme.shadows.sm,
-      position: 'sticky',
-      top: '20px',
-      maxHeight: 'calc(100vh - 100px)',
-      overflowY: 'auto',
-    },
-    detailHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '1.5rem',
-    },
-    detailTitle: {
+    cardTitle: {
       fontSize: professionalTheme.fontSizes.xl,
       fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.75rem',
+      lineHeight: '1.3',
     },
-    detailRow: {
+    cardDescription: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      lineHeight: '1.6',
+      marginBottom: '1rem',
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
+    },
+    cardMeta: {
       display: 'flex',
-      justifyContent: 'space-between',
-      padding: '0.75rem 0',
-      borderBottom: `1px solid ${professionalTheme.colors.neutral[100]}`,
+      gap: '1rem',
+      flexWrap: 'wrap',
+      marginBottom: '1rem',
     },
-    detailLabel: {
+    metaItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.25rem',
       fontSize: professionalTheme.fontSizes.sm,
       color: professionalTheme.colors.neutral[600],
     },
-    detailValue: {
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      color: professionalTheme.colors.neutral[900],
+    cardFooter: {
+      padding: '1rem 1.5rem',
+      background: professionalTheme.colors.neutral[50],
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
-    detailSection: {
-      marginTop: '1.5rem',
-    },
-    detailSectionTitle: {
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      color: professionalTheme.colors.neutral[700],
-      marginBottom: '0.75rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-    },
-    detailDescription: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[700],
-      lineHeight: 1.7,
-    },
-    competencesGrid: {
+    cardActions: {
       display: 'flex',
       gap: '0.5rem',
-      flexWrap: 'wrap',
     },
-    competenceTag: {
-      padding: '0.375rem 0.75rem',
+    button: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      padding: '0.5rem 1rem',
       borderRadius: professionalTheme.radius.full,
-      background: professionalTheme.colors.primary[50],
-      color: professionalTheme.colors.primary[700],
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      background: '#FFFFFF',
+      color: professionalTheme.colors.neutral[700],
+      fontSize: professionalTheme.fontSizes.sm,
+      fontWeight: 600,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.fast,
+    },
+    primaryButton: {
+      background: 'linear-gradient(135deg, #5B73F7 0%, #4F63E6 100%)',
+      color: '#FFFFFF',
+      border: 'none',
+      boxShadow: '0 4px 12px rgba(91, 115, 247, 0.25)',
+    },
+    favoriButton: {
+      padding: '0.5rem',
+      background: '#FFFFFF',
+      color: professionalTheme.colors.neutral[400],
+      border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+    },
+    favoriButtonActive: {
+      padding: '0.5rem',
+      background: '#FEE2E2',
+      color: '#EF4444',
+      border: `1px solid #FEE2E2`,
+    },
+    badge: {
+      padding: '0.25rem 0.75rem',
+      borderRadius: professionalTheme.radius.full,
       fontSize: professionalTheme.fontSizes.xs,
       fontWeight: 600,
     },
     modal: {
       position: 'fixed',
-      inset: 0,
-      background: 'rgba(15, 23, 42, 0.5)',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -444,23 +430,25 @@ export default function OffresEmploi() {
     modalContent: {
       background: '#FFFFFF',
       borderRadius: professionalTheme.radius['2xl'],
-      padding: '2rem',
       width: '100%',
-      maxWidth: '520px',
+      maxWidth: '500px',
       maxHeight: '90vh',
-      overflowY: 'auto',
-      boxShadow: professionalTheme.shadows['2xl'],
+      overflow: 'auto',
+    },
+    modalHeader: {
+      padding: '1.5rem 2rem',
+      borderBottom: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     modalTitle: {
       fontSize: professionalTheme.fontSizes.xl,
       fontWeight: 700,
       color: professionalTheme.colors.neutral[900],
-      marginBottom: '0.5rem',
     },
-    modalSubtitle: {
-      fontSize: professionalTheme.fontSizes.sm,
-      color: professionalTheme.colors.neutral[600],
-      marginBottom: '2rem',
+    modalBody: {
+      padding: '2rem',
     },
     formGroup: {
       marginBottom: '1.5rem',
@@ -472,77 +460,83 @@ export default function OffresEmploi() {
       color: professionalTheme.colors.neutral[900],
       marginBottom: '0.5rem',
     },
-    fileInput: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '1rem',
-      borderRadius: professionalTheme.radius.lg,
-      border: cvFile ? `2px solid ${professionalTheme.colors.success.main}` : `2px dashed ${professionalTheme.colors.neutral[200]}`,
-      background: professionalTheme.colors.neutral[50],
-    },
-    fileInputButton: {
-      padding: '0.5rem 1rem',
-      borderRadius: professionalTheme.radius.full,
-      background: professionalTheme.colors.primary[600],
-      color: '#FFFFFF',
-      fontSize: professionalTheme.fontSizes.sm,
-      fontWeight: 600,
-      cursor: 'pointer',
-      border: 'none',
-    },
-    textarea: {
+    formTextarea: {
       width: '100%',
       padding: '0.75rem 1rem',
       borderRadius: professionalTheme.radius.lg,
-      border: `2px solid ${professionalTheme.colors.neutral[200]}`,
-      fontSize: professionalTheme.fontSizes.base,
-      outline: 'none',
-      fontFamily: 'inherit',
-      resize: 'vertical',
-      minHeight: '100px',
-    },
-    modalActions: {
-      display: 'flex',
-      gap: '1rem',
-      marginTop: '2rem',
-    },
-    modalButton: {
-      flex: 1,
-      padding: '0.875rem 1.5rem',
-      borderRadius: professionalTheme.radius.full,
-      fontSize: professionalTheme.fontSizes.base,
-      fontWeight: 600,
-      cursor: 'pointer',
-      transition: professionalTheme.transitions.default,
-    },
-    emptyState: {
-      background: '#FFFFFF',
-      borderRadius: professionalTheme.radius['2xl'],
-      padding: '4rem 2rem',
-      textAlign: 'center',
       border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      background: '#FFFFFF',
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[700],
+      outline: 'none',
+      minHeight: '100px',
+      resize: 'vertical',
     },
-    messageBox: (type) => ({
-      padding: '1rem 1.25rem',
-      borderRadius: professionalTheme.radius.lg,
+    fileUpload: {
+      border: `2px dashed ${professionalTheme.colors.neutral[200]}`,
+      borderRadius: professionalTheme.radius.xl,
+      padding: '2rem',
+      textAlign: 'center',
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.fast,
+    },
+    modalFooter: {
+      padding: '1.5rem 2rem',
+      borderTop: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: '1rem',
+    },
+    message: {
+      padding: '1rem 1.5rem',
+      borderRadius: professionalTheme.radius.xl,
       marginBottom: '1.5rem',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      background: type === 'success' ? professionalTheme.colors.success.light : professionalTheme.colors.error.light,
-      color: type === 'success' ? professionalTheme.colors.success.dark : professionalTheme.colors.error.dark,
       fontSize: professionalTheme.fontSizes.sm,
       fontWeight: 500,
-    }),
+    },
+    emptyState: {
+      textAlign: 'center',
+      padding: '4rem 2rem',
+      color: professionalTheme.colors.neutral[500],
+    },
+    loadingState: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '400px',
+    },
+    stats: {
+      display: 'flex',
+      gap: '2rem',
+      padding: '0 1rem',
+    },
+    statItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+    },
   };
 
   if (loading) {
     return (
       <CandidatLayout title="Offres d'emploi">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <div style={styles.loadingState}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: '4px solid #E5E7EB',
+                borderTopColor: '#5B73F7',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }} />
+            </div>
             <div style={{ color: professionalTheme.colors.neutral[600] }}>Chargement...</div>
           </div>
         </div>
@@ -553,378 +547,290 @@ export default function OffresEmploi() {
   return (
     <CandidatLayout title="Offres d'emploi">
       <style>{professionalKeyframes}</style>
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
       <div style={styles.container}>
         {/* Message */}
         {message && (
-          <div style={styles.messageBox(message.type)}>
+          <div style={{
+            ...styles.message,
+            background: message.type === 'success' ? '#D1FAE5' : '#FEE2E2',
+            color: message.type === 'success' ? '#059669' : '#EF4444',
+          }}>
             {message.text}
-            <button
-              onClick={() => setMessage(null)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '1.25rem',
-                color: 'inherit',
-              }}
-            >
-              ✕
-            </button>
+            <button onClick={() => setMessage(null)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'inherit',
+            }}>✕</button>
           </div>
         )}
 
         {/* Header */}
         <div style={styles.header}>
-          <h1 style={styles.headerTitle}>Trouvez votre prochain emploi</h1>
-        </div>
-
-        {/* Stats */}
-        <div style={styles.statsGrid}>
-          {statsCards.map((stat, index) => (
-            <div key={index} style={styles.statCard}>
-              <div style={{ ...styles.statIcon, background: stat.bg }}>
-                {stat.icon}
-              </div>
-              <div style={styles.statContent}>
-                <div style={{ ...styles.statValue, color: stat.color }}>{stat.value}</div>
-                <div style={styles.statLabel}>{stat.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <div style={styles.filtersCard}>
-          <div style={styles.filtersGrid}>
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Recherche</label>
-              <input
-                placeholder="🔍 Titre, entreprise, compétence..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={styles.searchInput}
-              />
-            </div>
-
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Type de contrat</label>
-              <div style={styles.filterButtons}>
-                {types.map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setFilterType(t)}
-                    style={styles.filterButton(filterType === t)}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div style={styles.filterGroup}>
-              <label style={styles.filterLabel}>Lieu</label>
-              <select value={filterLieu} onChange={e => setFilterLieu(e.target.value)} style={styles.select}>
-                {lieux.map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
+          <div style={styles.headerLeft}>
+            <h1 style={styles.headerTitle}>Offres d'emploi</h1>
+            <p style={styles.headerSubtitle}>
+              {filteredOffres.length} offre{filteredOffres.length > 1 ? 's' : ''} disponible{filteredOffres.length > 1 ? 's' : ''}
+            </p>
           </div>
         </div>
 
-        {/* Content */}
-        <div style={styles.contentGrid}>
-          {/* Offres List */}
-          <div style={styles.offresList}>
-            {filtered.length === 0 ? (
-              <div style={styles.emptyState}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-                <div style={{ fontSize: professionalTheme.fontSizes.lg, fontWeight: 700, color: professionalTheme.colors.neutral[900], marginBottom: '0.5rem' }}>
-                  Aucune offre trouvée
-                </div>
-                <div style={{ fontSize: professionalTheme.fontSizes.base, color: professionalTheme.colors.neutral[600] }}>
-                  Essayez d'ajuster vos critères de recherche
-                </div>
-              </div>
-            ) : (
-              filtered.map(offre => (
+        {/* Filters */}
+        <div style={styles.filters}>
+          <div style={styles.searchBox}>
+            <div style={styles.searchIcon}>{Icons.search}</div>
+            <input
+              type="text"
+              placeholder="Rechercher par titre, entreprise, compétence..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={styles.searchInput}
+            />
+          </div>
+          <div style={styles.filterGroup}>
+            {types.map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                style={styles.filterButton(filterType === type)}
+                onMouseEnter={(e) => !e.currentTarget.style.background.includes('5B73F7') && (e.currentTarget.style.background = professionalTheme.colors.neutral[100])}
+                onMouseLeave={(e) => !e.currentTarget.style.background.includes('5B73F7') && (e.currentTarget.style.background = '#FFFFFF')}
+              >
+                {type === 'all' ? 'Tous' : type}
+              </button>
+            ))}
+          </div>
+          <div style={styles.filterGroup}>
+            {lieux.map(lieu => (
+              <button
+                key={lieu}
+                onClick={() => setFilterLieu(lieu)}
+                style={styles.filterButton(filterLieu === lieu)}
+                onMouseEnter={(e) => !e.currentTarget.style.background.includes('5B73F7') && (e.currentTarget.style.background = professionalTheme.colors.neutral[100])}
+                onMouseLeave={(e) => !e.currentTarget.style.background.includes('5B73F7') && (e.currentTarget.style.background = '#FFFFFF')}
+              >
+                {lieu === 'all' ? 'Tous les lieux' : lieu}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid */}
+        {filteredOffres.length > 0 ? (
+          <div style={styles.grid}>
+            {filteredOffres.map((offre) => {
+              const typeBadge = getTypeBadge(offre.type);
+              const applied = dejaPostule(offre._id);
+              const favori = isFavori(offre._id);
+
+              return (
                 <div
                   key={offre._id}
-                  style={{
-                    ...styles.offreCard,
-                    border: selected?._id === offre._id ? `2px solid ${professionalTheme.colors.primary[600]}` : `1px solid ${professionalTheme.colors.neutral[200]}`,
-                    boxShadow: selected?._id === offre._id ? professionalTheme.shadows.md : professionalTheme.shadows.sm,
-                  }}
-                  onClick={() => setSelected(selected?._id === offre._id ? null : offre)}
-                  onMouseEnter={(e) => {
-                    if (selected?._id !== offre._id) {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = professionalTheme.shadows.md;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selected?._id !== offre._id) {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = professionalTheme.shadows.sm;
-                    }
-                  }}
+                  style={styles.card}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  <div style={styles.offreHeader}>
-                    <div style={{ flex: 1 }}>
-                      <div style={styles.offreCompany}>
-                        <div style={styles.offreLogo}>🏢</div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
-                            {offre.recruteur?.entreprise || 'Entreprise'}
+                  <div style={styles.cardHeader}>
+                    <div style={styles.companyInfo}>
+                      <div style={styles.companyLogo}>
+                        {offre.entrepriseId?.logo ? (
+                          <img src={offre.entrepriseId.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: professionalTheme.radius.xl }} />
+                        ) : (
+                          Icons.building
+                        )}
+                      </div>
+                      <div>
+                        <div style={styles.companyName}>
+                          {offre.entrepriseId?.nom || 'Entreprise'}
+                        </div>
+                        <div style={styles.stats}>
+                          <div style={styles.statItem}>
+                            {Icons.users}
+                            {offre.candidaturesCount || 0} candidats
                           </div>
-                          <div style={styles.offreMeta}>
-                            📍 {offre.lieu} • {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
+                          <div style={styles.statItem}>
+                            {Icons.clock}
+                            {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
                           </div>
                         </div>
                       </div>
-                      <h3 style={styles.offreTitle}>{offre.titre}</h3>
-                      <div style={styles.offreTags}>
-                        {typeBadge(offre.type)}
-                        {offre.salaire && (
-                          <span style={{
-                            background: professionalTheme.colors.success.light,
-                            color: professionalTheme.colors.success.dark,
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: professionalTheme.radius.full,
-                            fontSize: professionalTheme.fontSizes.xs,
-                            fontWeight: 600,
-                          }}>
-                            💰 {offre.salaire}
-                          </span>
-                        )}
-                        {(offre.competences || []).slice(0, 3).map((c, i) => (
-                          <span key={i} style={{
-                            background: professionalTheme.colors.neutral[100],
-                            color: professionalTheme.colors.neutral[700],
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: professionalTheme.radius.full,
-                            fontSize: professionalTheme.fontSizes.xs,
-                            fontWeight: 500,
-                          }}>
-                            {c}
-                          </span>
-                        ))}
-                      </div>
                     </div>
-                    <div style={styles.offreActions}>
-                      <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[400] }}>
-                        {new Date(offre.createdAt).toLocaleDateString('fr-FR')}
+                    <button
+                      onClick={() => toggleFavori(offre._id)}
+                      style={{
+                        ...styles.button,
+                        ...(favori ? styles.favoriButtonActive : styles.favoriButton),
+                        padding: '0.5rem',
+                      }}
+                      title={favori ? "Retirer des favoris" : "Ajouter aux favoris"}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center' }}>
+                        {Icons.heart}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div style={styles.cardBody}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                      <h3 style={styles.cardTitle}>{offre.titre}</h3>
+                      <span style={{
+                        ...styles.badge,
+                        background: typeBadge.bg,
+                        color: typeBadge.color,
+                      }}>
+                        {typeBadge.label}
+                      </span>
+                    </div>
+                    <p style={styles.cardDescription}>
+                      {offre.description || 'Aucune description disponible'}
+                    </p>
+                    <div style={styles.cardMeta}>
+                      <div style={styles.metaItem}>
+                        {Icons.mapPin}
+                        {offre.lieu}
                       </div>
-                      {dejaPostule(offre._id) ? (
-                        <div style={styles.appliedBadge}>✓ Postulé</div>
+                      {offre.salaire && (
+                        <div style={styles.metaItem}>
+                          💰 {offre.salaire}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={styles.cardFooter}>
+                    <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[500] }}>
+                      {offre.entrepriseId?.nom}
+                    </div>
+                    <div style={styles.cardActions}>
+                      <button
+                        onClick={() => navigate(`/offres/${offre._id}`)}
+                        style={styles.button}
+                        onMouseEnter={(e) => e.currentTarget.style.background = professionalTheme.colors.neutral[100]}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#FFFFFF'}
+                      >
+                        Voir détails
+                      </button>
+                      {applied ? (
+                        <button
+                          style={{
+                            ...styles.button,
+                            background: '#D1FAE5',
+                            color: '#059669',
+                            borderColor: '#D1FAE5',
+                          }}
+                          disabled
+                        >
+                          {Icons.checkCircle}
+                          Postulé
+                        </button>
                       ) : (
                         <button
-                          style={styles.applyButton}
-                          onClick={e => {
-                            e.stopPropagation();
-                            openPostuler(offre);
+                          onClick={() => openPostuler(offre)}
+                          style={{
+                            ...styles.button,
+                            ...styles.primaryButton,
                           }}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                         >
-                          Postuler →
+                          {Icons.send}
+                          Postuler
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })}
           </div>
-
-          {/* Detail Panel */}
-          {selected && (
-            <div style={styles.detailPanel}>
-              <div style={styles.detailHeader}>
-                <h3 style={styles.detailTitle}>Détail de l'offre</h3>
-                <button
-                  onClick={() => setSelected(null)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: professionalTheme.colors.neutral[400],
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={styles.detailTitle}>{selected.titre}</div>
-              <div style={styles.offreMeta} style={{ marginBottom: '1rem' }}>
-                {selected.recruteur?.entreprise || '—'} • 📍 {selected.lieu}
-              </div>
-
-              {[
-                { label: 'Type', value: selected.type },
-                { label: 'Lieu', value: selected.lieu },
-                { label: 'Salaire', value: selected.salaire || '—' },
-                { label: 'Publié le', value: new Date(selected.createdAt).toLocaleDateString('fr-FR') },
-              ].map((f, i) => (
-                <div key={i} style={styles.detailRow}>
-                  <span style={styles.detailLabel}>{f.label}</span>
-                  <span style={styles.detailValue}>{f.value}</span>
-                </div>
-              ))}
-
-              {(selected.competences || []).length > 0 && (
-                <div style={styles.detailSection}>
-                  <div style={styles.detailSectionTitle}>Compétences requises</div>
-                  <div style={styles.competencesGrid}>
-                    {selected.competences.map((c, i) => (
-                      <span key={i} style={styles.competenceTag}>{c}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selected.description && (
-                <div style={styles.detailSection}>
-                  <div style={styles.detailSectionTitle}>Description</div>
-                  <p style={styles.detailDescription}>{selected.description}</p>
-                </div>
-              )}
-
-              {dejaPostule(selected._id) ? (
-                <div style={{
-                  ...styles.appliedBadge,
-                  textAlign: 'center',
-                  marginTop: '1.5rem',
-                  padding: '1rem',
-                }}>
-                  ✓ Vous avez déjà postulé à cette offre
-                </div>
-              ) : (
-                <button
-                  onClick={() => openPostuler(selected)}
-                  style={{ ...styles.applyButton, width: '100%', marginTop: '1.5rem' }}
-                >
-                  Postuler à cette offre →
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Modal */}
-        {showModal && offreToPostuler && (
-          <div style={styles.modal} onClick={() => setShowModal(false)}>
-            <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
-              <div style={styles.detailHeader}>
-                <h3 style={styles.modalTitle}>Postuler à l'offre</h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: professionalTheme.colors.neutral[400] }}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div style={{
-                background: professionalTheme.colors.primary[50],
-                borderRadius: professionalTheme.radius.lg,
-                padding: '1rem',
-                marginBottom: '2rem',
-              }}>
-                <div style={{ fontWeight: 700, color: professionalTheme.colors.primary[700] }}>
-                  {offreToPostuler.titre}
-                </div>
-                <div style={{ fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.primary[600] }}>
-                  {offreToPostuler.recruteur?.entreprise || '—'} • {offreToPostuler.lieu}
-                </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  📄 CV <span style={{ color: professionalTheme.colors.error.main }}>*</span>
-                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
-                    {' '}(PDF, DOC, DOCX)
-                  </span>
-                </label>
-                <div style={styles.fileInput}>
-                  <span style={{ fontSize: professionalTheme.fontSizes.sm, color: cvFile ? professionalTheme.colors.success.dark : professionalTheme.colors.neutral[500] }}>
-                    {cvFile ? `✓ ${cvFile.name}` : 'Aucun fichier sélectionné'}
-                  </span>
-                  <label style={styles.fileInputButton}>
-                    📁 Parcourir
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      style={{ display: 'none' }}
-                      onChange={e => setCvFile(e.target.files[0])}
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  🎥 Vidéo de présentation
-                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
-                    {' '}(30 sec max, MP4/MOV)
-                  </span>
-                </label>
-                <div style={styles.fileInput}>
-                  <span style={{ fontSize: professionalTheme.fontSizes.sm, color: videoFile ? professionalTheme.colors.success.dark : professionalTheme.colors.neutral[500] }}>
-                    {videoFile ? `✓ ${videoFile.name}` : 'Aucun fichier sélectionné'}
-                  </span>
-                  <label style={styles.fileInputButton}>
-                    🎬 Parcourir
-                    <input
-                      type="file"
-                      accept=".mp4,.mov,.webm"
-                      style={{ display: 'none' }}
-                      onChange={e => setVideoFile(e.target.files[0])}
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>
-                  ✍️ Lettre de motivation
-                  <span style={{ color: professionalTheme.colors.neutral[500], fontSize: professionalTheme.fontSizes.xs }}>
-                    {' '}(optionnel)
-                  </span>
-                </label>
-                <textarea
-                  placeholder="Présentez-vous et expliquez pourquoi vous êtes intéressé..."
-                  value={lettre}
-                  onChange={e => setLettre(e.target.value)}
-                  style={styles.textarea}
-                />
-              </div>
-
-              <div style={styles.modalActions}>
-                <button
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    ...styles.modalButton,
-                    background: '#FFFFFF',
-                    color: professionalTheme.colors.neutral[700],
-                    border: `1px solid ${professionalTheme.colors.neutral[200]}`,
-                  }}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={handlePostuler}
-                  style={{
-                    ...styles.modalButton,
-                    background: professionalTheme.gradients.primary,
-                    color: '#FFFFFF',
-                    border: 'none',
-                  }}
-                >
-                  Envoyer ma candidature →
-                </button>
-              </div>
-            </div>
+        ) : (
+          <div style={styles.emptyState}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }}>🔍</div>
+            <h3 style={{ fontSize: professionalTheme.fontSizes.xl, fontWeight: 700, marginBottom: '0.5rem', color: professionalTheme.colors.neutral[900] }}>
+              Aucune offre trouvée
+            </h3>
+            <p>
+              {search || filterType !== 'all' || filterLieu !== 'all'
+                ? 'Essayez d\'autres critères de recherche'
+                : 'Revenez bientôt pour de nouvelles opportunités'}
+            </p>
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {showModal && offreToPostuler && (
+        <div style={styles.modal} onClick={(e) => e.target.style === styles.modal && setShowModal(false)}>
+          <div style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Postuler - {offreToPostuler.titre}</h2>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: professionalTheme.colors.neutral[400] }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.modalBody}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Lettre de motivation (optionnelle)</label>
+                <textarea
+                  value={lettre}
+                  onChange={(e) => setLettre(e.target.value)}
+                  placeholder="Expliquez pourquoi vous êtes le candidat idéal..."
+                  style={styles.formTextarea}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>CV * {cvFile && `✓ ${cvFile.name}`}</label>
+                <div style={styles.fileUpload}>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setCvFile(e.target.files[0])}
+                    style={{ display: 'none' }}
+                    id="cv-upload"
+                  />
+                  <label htmlFor="cv-upload" style={{ cursor: 'pointer' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
+                    <div style={{ fontSize: professionalTheme.fontSizes.sm, color: professionalTheme.colors.neutral[600] }}>
+                      Cliquez pour uploader ou glissez-déposez
+                    </div>
+                    <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[400] }}>
+                      PDF, DOC jusqu'à 10MB
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.modalFooter}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={styles.button}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handlePostuler}
+                style={{
+                  ...styles.button,
+                  ...styles.primaryButton,
+                }}
+                disabled={!cvFile}
+              >
+                {Icons.send}
+                Envoyer ma candidature
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </CandidatLayout>
   );
 }

@@ -38,6 +38,7 @@ import EntretiensRH       from '../pages/recruteur/EntretiensRH';
 import ProfilRecruteur    from '../pages/recruteur/Profil';
 
 // Candidat
+import DashboardCandidat from '../pages/candidat/DashboardCandidat';
 import OffresEmploi       from '../pages/candidat/OffresEmploi';
 import MesFavoris         from '../pages/candidat/Favoris';
 import Alertes            from '../pages/candidat/Alertes';
@@ -105,7 +106,8 @@ export default function AppRoutes() {
 
           {/* Candidat */}
           <Route path="/candidat" element={<ProtectedRoute role="candidat" />}>
-            <Route index element={<Navigate to="/candidat/offres" replace />} />
+            <Route index element={<Navigate to="/candidat/dashboard" replace />} />
+            <Route path="dashboard"    element={<DashboardCandidat />} />
             <Route path="offres"       element={<OffresEmploi />} />
             <Route path="favoris"      element={<MesFavoris />} />
             <Route path="alertes"      element={<Alertes />} />

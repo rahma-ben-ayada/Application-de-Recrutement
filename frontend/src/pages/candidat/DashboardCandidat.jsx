@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { professionalTheme, professionalKeyframes } from '../../theme/professionalTheme';
-import RecruteurLayout from '../../layouts/RecruteurLayout';
+import CandidatLayout from '../../layouts/CandidatLayout';
 import api from '../../utils/api';
 
 // Modern SVG Icons
@@ -12,12 +12,10 @@ const Icons = {
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
     </svg>
   ),
-  users: (
+  send: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
     </svg>
   ),
   calendar: (
@@ -28,17 +26,21 @@ const Icons = {
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
-  target: (
+  heart: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <circle cx="12" cy="12" r="6"/>
-      <circle cx="12" cy="12" r="2"/>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   ),
   checkCircle: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
       <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+  ),
+  clock: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
     </svg>
   ),
   trendingUp: (
@@ -53,10 +55,22 @@ const Icons = {
       <polyline points="17 18 23 18 23 12"/>
     </svg>
   ),
-  plus: (
+  search: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  ),
+  user: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  bell: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
   ),
   fileText: (
@@ -83,11 +97,12 @@ const Icons = {
   ),
 };
 
-export default function DashboardRecruteur() {
+export default function DashboardCandidat() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
-  const [recentCandidatures, setRecentCandidatures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentCandidatures, setRecentCandidatures] = useState([]);
+  const [recommendedOffres, setRecommendedOffres] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -101,11 +116,12 @@ export default function DashboardRecruteur() {
   useEffect(() => {
     fetchStats();
     fetchRecentCandidatures();
+    fetchRecommendedOffres();
   }, []);
 
   const fetchStats = async () => {
     try {
-      const data = await api('/offres/stats');
+      const data = await api('/candidatures/stats');
       setStats(data.stats);
     } catch (err) {
       console.error('Error fetching stats:', err);
@@ -116,69 +132,79 @@ export default function DashboardRecruteur() {
 
   const fetchRecentCandidatures = async () => {
     try {
-      const data = await api('/candidatures/recent');
+      const data = await api('/candidatures/mes');
       setRecentCandidatures(data.candidatures || []);
     } catch (err) {
-      console.error('Error fetching recent candidatures:', err);
+      console.error('Error fetching candidatures:', err);
+    }
+  };
+
+  const fetchRecommendedOffres = async () => {
+    try {
+      const data = await api('/offres/recommended');
+      setRecommendedOffres(data.offres || []);
+    } catch (err) {
+      console.error('Error fetching recommended offres:', err);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchStats(), fetchRecentCandidatures()]);
+    await Promise.all([fetchStats(), fetchRecentCandidatures(), fetchRecommendedOffres()]);
     setTimeout(() => setRefreshing(false), 500);
   };
 
   const statsCards = [
     {
-      label: 'Offres publiées',
-      value: stats?.totalOffres || 0,
-      change: '+2 ce mois',
+      label: 'Candidatures',
+      value: stats?.totalCandidatures || 0,
+      change: '+3 cette sem',
       positive: true,
       color: '#5B73F7',
       bg: 'rgba(91, 115, 247, 0.1)',
-      icon: Icons.briefcase,
+      icon: Icons.send,
     },
     {
-      label: 'Candidatures reçues',
-      value: stats?.totalCandidatures || 0,
-      change: '+12 cette sem',
-      positive: true,
-      color: '#06B6D4',
-      bg: 'rgba(6, 182, 212, 0.1)',
-      icon: Icons.users,
-    },
-    {
-      label: 'Entretiens planifiés',
-      value: stats?.totalEntretiens || 0,
-      change: '+5 cette sem',
-      positive: true,
-      color: '#F59E0B',
-      bg: 'rgba(245, 158, 11, 0.1)',
-      icon: Icons.calendar,
-    },
-    {
-      label: 'Offres actives',
-      value: stats?.offresActives || 0,
-      change: 'Stable',
+      label: 'Entretiens',
+      value: stats?.entretiensPlanifies || 0,
+      change: '+2 cette sem',
       positive: true,
       color: '#10B981',
       bg: 'rgba(16, 185, 129, 0.1)',
-      icon: Icons.checkCircle,
+      icon: Icons.calendar,
+    },
+    {
+      label: 'Favoris',
+      value: stats?.totalFavoris || 0,
+      change: 'Stable',
+      positive: true,
+      color: '#EC4899',
+      bg: 'rgba(236, 72, 153, 0.1)',
+      icon: Icons.heart,
+    },
+    {
+      label: 'En attente',
+      value: stats?.enAttente || 0,
+      change: 'En cours',
+      positive: false,
+      color: '#F59E0B',
+      bg: 'rgba(245, 158, 11, 0.1)',
+      icon: Icons.clock,
     },
   ];
 
   const quickActions = [
-    { label: 'Nouvelle offre', icon: Icons.plus, path: '/recruteur/offres', color: '#10B981' },
-    { label: 'Mes candidatures', icon: Icons.users, path: '/recruteur/candidatures', color: '#5B73F7' },
-    { label: 'Planifier entretien', icon: Icons.calendar, path: '/recruteur/planifier', color: '#F59E0B' },
-    { label: 'Mes entretiens', icon: Icons.target, path: '/recruteur/entretiens', color: '#EC4899' },
+    { label: 'Chercher des offres', icon: Icons.search, path: '/candidat/offres', color: '#5B73F7' },
+    { label: 'Mes candidatures', icon: Icons.fileText, path: '/candidat/candidatures', color: '#10B981' },
+    { label: 'Mes entretiens', icon: Icons.calendar, path: '/candidat/entretiens', color: '#F59E0B' },
+    { label: 'Mon profil', icon: Icons.user, path: '/candidat/profil', color: '#8B5CF6' },
   ];
 
   const getStatusBadge = (statut) => {
     const badges = {
       en_attente: { bg: '#FEF3C7', color: '#D97706', label: 'En attente' },
-      entretien: { bg: '#DBEAFE', color: '#1E3A8A', label: 'Entretien' },
+      en_cours: { bg: '#DBEAFE', color: '#1E3A8A', label: 'En cours' },
+      entretien: { bg: '#D1FAE5', color: '#059669', label: 'Entretien' },
       accepte: { bg: '#D1FAE5', color: '#059669', label: 'Accepté' },
       refuse: { bg: '#FEE2E2', color: '#DC2626', label: 'Refusé' },
     };
@@ -349,45 +375,59 @@ export default function DashboardRecruteur() {
       transition: professionalTheme.transitions.fast,
       cursor: 'pointer',
     },
-    candidatCell: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
-    },
-    candidatAvatar: {
-      width: '40px',
-      height: '40px',
-      borderRadius: professionalTheme.radius.full,
-      background: professionalTheme.colors.neutral[100],
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '1rem',
-    },
     badge: {
       padding: '0.25rem 0.75rem',
       borderRadius: professionalTheme.radius.full,
       fontSize: professionalTheme.fontSizes.xs,
       fontWeight: 600,
     },
-    statsList: {
+    offreCard: {
+      padding: '1.5rem 2rem',
+      borderBottom: `1px solid ${professionalTheme.colors.neutral[200]}`,
+      cursor: 'pointer',
+      transition: professionalTheme.transitions.fast,
+    },
+    offreTitle: {
+      fontSize: professionalTheme.fontSizes.base,
+      fontWeight: 600,
+      color: professionalTheme.colors.neutral[900],
+      marginBottom: '0.5rem',
+    },
+    offreCompany: {
+      fontSize: professionalTheme.fontSizes.sm,
+      color: professionalTheme.colors.neutral[600],
+      marginBottom: '0.75rem',
+    },
+    offreMeta: {
+      display: 'flex',
+      gap: '1rem',
+      flexWrap: 'wrap',
+    },
+    offreMetaItem: {
+      fontSize: professionalTheme.fontSizes.xs,
+      color: professionalTheme.colors.neutral[500],
+      background: professionalTheme.colors.neutral[100],
+      padding: '0.25rem 0.5rem',
+      borderRadius: professionalTheme.radius.sm,
+    },
+    statBars: {
       padding: '1.5rem 2rem',
     },
-    statsGroup: {
+    statBarGroup: {
       marginBottom: '2rem',
     },
-    statsGroupTitle: {
+    statBarGroupTitle: {
       fontSize: professionalTheme.fontSizes.base,
       fontWeight: 600,
       color: professionalTheme.colors.neutral[900],
       marginBottom: '1rem',
     },
-    statBar: {
+    statBar: (value, total, color) => ({
       display: 'flex',
       alignItems: 'center',
       gap: '1rem',
       marginBottom: '0.75rem',
-    },
+    }),
     statBarLabel: {
       flex: 1,
       fontSize: professionalTheme.fontSizes.sm,
@@ -400,12 +440,6 @@ export default function DashboardRecruteur() {
       borderRadius: professionalTheme.radius.full,
       overflow: 'hidden',
     },
-    statBarFill: (width, color) => ({
-      height: '100%',
-      width: `${width}%`,
-      background: color,
-      borderRadius: professionalTheme.radius.full,
-    }),
     statBarValue: {
       fontSize: professionalTheme.fontSizes.sm,
       fontWeight: 700,
@@ -422,7 +456,7 @@ export default function DashboardRecruteur() {
 
   if (loading) {
     return (
-      <RecruteurLayout title="Dashboard RH">
+      <CandidatLayout title="Dashboard Candidat">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
@@ -438,12 +472,12 @@ export default function DashboardRecruteur() {
             <div style={{ color: professionalTheme.colors.neutral[600] }}>Chargement...</div>
           </div>
         </div>
-      </RecruteurLayout>
+      </CandidatLayout>
     );
   }
 
   return (
-    <RecruteurLayout title="Dashboard RH">
+    <CandidatLayout title="Dashboard Candidat">
       <style>{professionalKeyframes}</style>
       <style>{`
         @keyframes spin {
@@ -462,7 +496,7 @@ export default function DashboardRecruteur() {
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <h1 style={styles.headerTitle}>Tableau de bord</h1>
-            <p style={styles.headerSubtitle}>Bienvenue sur votre espace recruteur</p>
+            <p style={styles.headerSubtitle}>Bienvenue sur votre espace candidat</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -561,7 +595,7 @@ export default function DashboardRecruteur() {
             <div style={styles.cardHeader}>
               <h3 style={styles.cardTitle}>Candidatures récentes</h3>
               <button
-                onClick={() => navigate('/recruteur/candidatures')}
+                onClick={() => navigate('/candidat/candidatures')}
                 style={{
                   padding: '0.5rem 1rem',
                   borderRadius: professionalTheme.radius.full,
@@ -571,7 +605,10 @@ export default function DashboardRecruteur() {
                   fontSize: professionalTheme.fontSizes.sm,
                   fontWeight: 500,
                   cursor: 'pointer',
+                  transition: professionalTheme.transitions.fast,
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.background = professionalTheme.colors.neutral[50]}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#FFFFFF'}
               >
                 Voir tout
               </button>
@@ -581,8 +618,8 @@ export default function DashboardRecruteur() {
                 <table style={styles.table}>
                   <thead style={styles.tableHeader}>
                     <tr>
-                      <th style={styles.tableCell}>Candidat</th>
                       <th style={styles.tableCell}>Offre</th>
+                      <th style={styles.tableCell}>Entreprise</th>
                       <th style={styles.tableCell}>Statut</th>
                       <th style={styles.tableCell}>Date</th>
                     </tr>
@@ -592,27 +629,17 @@ export default function DashboardRecruteur() {
                       <tr
                         key={index}
                         style={styles.tableRow}
-                        onClick={() => navigate(`/recruteur/candidatures`)}
+                        onClick={() => navigate('/candidat/candidatures')}
                         onMouseEnter={(e) => e.currentTarget.style.background = professionalTheme.colors.neutral[50]}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                       >
                         <td style={styles.tableCell}>
-                          <div style={styles.candidatCell}>
-                            <div style={styles.candidatAvatar}>
-                              {candidature.candidatId?.photo || '👤'}
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
-                                {candidature.candidatId?.nom || 'Candidat'}
-                              </div>
-                              <div style={{ fontSize: professionalTheme.fontSizes.xs, color: professionalTheme.colors.neutral[500] }}>
-                                {candidature.candidatId?.email || ''}
-                              </div>
-                            </div>
+                          <div style={{ fontWeight: 600, color: professionalTheme.colors.neutral[900] }}>
+                            {candidature.offreId?.titre || 'Offre'}
                           </div>
                         </td>
                         <td style={styles.tableCell}>
-                          {candidature.offreId?.titre || 'Offre'}
+                          {candidature.offreId?.entrepriseId?.nom || 'Entreprise'}
                         </td>
                         <td style={styles.tableCell}>
                           <span style={{
@@ -632,64 +659,80 @@ export default function DashboardRecruteur() {
               ) : (
                 <div style={styles.emptyState}>
                   <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📭</div>
-                  <p>Aucune candidature récente</p>
+                  <p>Aucune candidature pour le moment</p>
+                  <button
+                    onClick={() => navigate('/candidat/offres')}
+                    style={{
+                      marginTop: '1rem',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: professionalTheme.radius.full,
+                      border: 'none',
+                      background: '#5B73F7',
+                      color: '#FFFFFF',
+                      fontSize: professionalTheme.fontSizes.sm,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Découvrir des offres
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Stats Bars */}
+          {/* Recommended Offres */}
           <div style={styles.card}>
             <div style={styles.cardHeader}>
-              <h3 style={styles.cardTitle}>Statistiques</h3>
+              <h3 style={styles.cardTitle}>Offres recommandées</h3>
+              <button
+                onClick={() => navigate('/candidat/offres')}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: professionalTheme.radius.full,
+                  border: `1px solid ${professionalTheme.colors.neutral[200]}`,
+                  background: '#FFFFFF',
+                  color: professionalTheme.colors.neutral[700],
+                  fontSize: professionalTheme.fontSizes.sm,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: professionalTheme.transitions.fast,
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = professionalTheme.colors.neutral[50]}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#FFFFFF'}
+              >
+                Voir tout
+              </button>
             </div>
-            <div style={styles.statsList}>
-              {/* Candidatures */}
-              <div style={styles.statsGroup}>
-                <h4 style={styles.statsGroupTitle}>Candidatures par statut</h4>
-                {[
-                  { label: 'En attente', value: stats?.candidaturesParStatut?.en_attente || 0, total: stats?.totalCandidatures || 1, color: '#F59E0B' },
-                  { label: 'Entretien', value: stats?.candidaturesParStatut?.entretien || 0, total: stats?.totalCandidatures || 1, color: '#3B82F6' },
-                  { label: 'Acceptées', value: stats?.candidaturesParStatut?.accepte || 0, total: stats?.totalCandidatures || 1, color: '#10B981' },
-                  { label: 'Refusées', value: stats?.candidaturesParStatut?.refuse || 0, total: stats?.totalCandidatures || 1, color: '#EF4444' },
-                ].map((item, index) => {
-                  const percentage = item.total > 0 ? Math.round((item.value / item.total) * 100) : 0;
-                  return (
-                    <div key={index} style={styles.statBar}>
-                      <div style={styles.statBarLabel}>{item.label}</div>
-                      <div style={styles.statBarTrack}>
-                        <div style={styles.statBarFill(percentage, item.color)} />
-                      </div>
-                      <div style={styles.statBarValue}>{item.value}</div>
+            <div style={styles.cardBody}>
+              {recommendedOffres.length > 0 ? (
+                recommendedOffres.slice(0, 4).map((offre, index) => (
+                  <div
+                    key={index}
+                    style={styles.offreCard}
+                    onClick={() => navigate(`/offres/${offre._id}`)}
+                    onMouseEnter={(e) => e.currentTarget.style.background = professionalTheme.colors.neutral[50]}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <div style={styles.offreTitle}>{offre.titre}</div>
+                    <div style={styles.offreCompany}>{offre.entrepriseId?.nom || 'Entreprise'}</div>
+                    <div style={styles.offreMeta}>
+                      <span style={styles.offreMetaItem}>{offre.type}</span>
+                      <span style={styles.offreMetaItem}>{offre.lieu}</span>
+                      <span style={styles.offreMetaItem}>{offre.salaire}</span>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Entretiens */}
-              <div style={styles.statsGroup}>
-                <h4 style={styles.statsGroupTitle}>Entretiens par statut</h4>
-                {[
-                  { label: 'Planifiés', value: stats?.entretiensParStatut?.planifie || 0, total: stats?.totalEntretiens || 1, color: '#F59E0B' },
-                  { label: 'Acceptés', value: stats?.entretiensParStatut?.accepte || 0, total: stats?.totalEntretiens || 1, color: '#10B981' },
-                  { label: 'Refusés', value: stats?.entretiensParStatut?.refuse || 0, total: stats?.totalEntretiens || 1, color: '#EF4444' },
-                ].map((item, index) => {
-                  const percentage = item.total > 0 ? Math.round((item.value / item.total) * 100) : 0;
-                  return (
-                    <div key={index} style={styles.statBar}>
-                      <div style={styles.statBarLabel}>{item.label}</div>
-                      <div style={styles.statBarTrack}>
-                        <div style={styles.statBarFill(percentage, item.color)} />
-                      </div>
-                      <div style={styles.statBarValue}>{item.value}</div>
-                    </div>
-                  );
-                })}
-              </div>
+                  </div>
+                ))
+              ) : (
+                <div style={styles.emptyState}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔍</div>
+                  <p>Explorez les offres disponibles</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </RecruteurLayout>
+    </CandidatLayout>
   );
 }
