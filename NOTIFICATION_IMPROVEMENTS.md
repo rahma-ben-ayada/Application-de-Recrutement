@@ -2,6 +2,14 @@
 
 ## ✨ Enhanced Notification Text & Icons
 
+### 👋 Welcome Notifications (First Login)
+
+| Role | Icon | Title | Message | Redirect |
+|------|------|-------|---------|----------|
+| **Candidate** | 🎉 | Bienvenue sur notre plateforme ! | "Bonjour [Nom] ! Nous sommes ravis de vous accueillir. Commencez à explorer les offres d'emploi et à postuler auprès des meilleures entreprises." | `/candidat/offres` |
+| **Recruiter** | 🎉 | Bienvenue recruteur ! | "Bonjour [Nom] ! Bienvenue sur notre plateforme de recrutement. Créez vos premières offres d'emploi et trouvez les meilleurs talents." | `/recruteur/offres` |
+| **Admin** | 🎉 | Bienvenue administrateur ! | "Bonjour [Nom] ! Vous avez maintenant accès au panneau d'administration. Gérez les utilisateurs, les offres et modérez le contenu." | `/admin/dashboard` |
+
 ### Candidate Notifications
 
 #### Application Status Updates

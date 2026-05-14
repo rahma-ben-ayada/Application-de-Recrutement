@@ -71,9 +71,17 @@ exports.adminLogin = async (req, res) => {
       });
     }
 
+    // Vérifier si c'est la première connexion
+    const isFirstLogin = !user.lastLogin;
+
     // Update last login
     user.lastLogin = new Date();
     await user.save();
+
+    // Envoyer notification de bienvenue si première connexion
+    if (isFirstLogin) {
+      await NotificationHelper.bienvenue(user._id, user.nom, user.role);
+    }
 
     // Log admin access
     console.log(`[ADMIN LOGIN] ${user.email} logged in at ${new Date().toISOString()} from IP: ${req.ip}`);
@@ -209,9 +217,17 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Vérifier si c'est la première connexion
+    const isFirstLogin = !user.lastLogin;
+
     // Mettre à jour lastLogin
     user.lastLogin = new Date();
     await user.save();
+
+    // Envoyer notification de bienvenue si première connexion
+    if (isFirstLogin) {
+      await NotificationHelper.bienvenue(user._id, user.nom, user.role);
+    }
 
     // Générer token
     const token = generateToken(user._id, user.role);

@@ -430,6 +430,42 @@ class NotificationHelper {
       donnees: { offreTitre, joursRestants },
     });
   }
+
+  /**
+   * Notification de bienvenue pour la première connexion
+   */
+  static async bienvenue(userId, userNom, role) {
+    const welcomeMessages = {
+      'candidat': {
+        titre: '🎉 Bienvenue sur notre plateforme !',
+        message: `Bonjour ${userNom} ! Nous sommes ravis de vous accueillir. Commencez à explorer les offres d'emploi et à postuler auprès des meilleures entreprises.`,
+        lien: '/candidat/offres',
+        type: 'success',
+      },
+      'recruteur': {
+        titre: '🎉 Bienvenue recruteur !',
+        message: `Bonjour ${userNom} ! Bienvenue sur notre plateforme de recrutement. Créez vos premières offres d'emploi et trouvez les meilleurs talents.`,
+        lien: '/recruteur/offres',
+        type: 'success',
+      },
+      'admin': {
+        titre: '🎉 Bienvenue administrateur !',
+        message: `Bonjour ${userNom} ! Vous avez maintenant accès au panneau d'administration. Gérez les utilisateurs, les offres et modérez le contenu.`,
+        lien: '/admin/dashboard',
+        type: 'success',
+      },
+    };
+
+    const config = welcomeMessages[role] || welcomeMessages.candidat;
+
+    return this.createNotification(userId, {
+      titre: config.titre,
+      message: config.message,
+      type: config.type,
+      lien: config.lien,
+      donnees: { firstLogin: true, role },
+    });
+  }
 }
 
 module.exports = NotificationHelper;
