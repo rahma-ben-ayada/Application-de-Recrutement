@@ -3,12 +3,26 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const passport = require('./config/passport');
+const http = require('http');
+const { Server } = require('socket.io');
 
 // Config
 dotenv.config();
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+
+// Socket.io configuration
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:3000', 'http://0.0.0.0:3000', process.env.FRONTEND_URL],
+    credentials: true,
+  },
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Initialize Passport
 app.use(passport.initialize());
@@ -54,11 +68,36 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('🔌 Client connecté:', socket.id);
+
+  // Join user's personal room for targeted notifications
+  socket.on('join-user-room', (userId) => {
+    socket.join(`user-${userId}`);
+    console.log(`👤 Utilisateur ${userId} a rejoint sa room`);
+  });
+
+  // Join role-based rooms
+  socket.on('join-role-room', (role) => {
+    socket.join(`role-${role}`);
+    console.log(`👥 Utilisateur avec rôle ${role} a rejoint la room rôle`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('🔌 Client déconnecté:', socket.id);
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0'; // Écouter sur toutes les interfaces réseau
 
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   console.log(`🚀 Serveur démarré sur http://${HOST}:${PORT}`);
   console.log(`🌐 Accès local: http://localhost:${PORT}`);
   console.log(`📡 Accès réseau: http://votre_ip_locale:${PORT}`);
+  console.log(`🔔 Socket.io actif pour les notifications en temps réel`);
 });
+
+// Export app and io for use in other modules
+module.exports = { app, server, io };

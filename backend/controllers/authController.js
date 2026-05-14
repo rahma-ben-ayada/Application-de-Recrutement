@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const NotificationHelper = require('../utils/notificationHelper');
 
 // ===== ADMIN LOGIN (Enhanced Security) =====
 exports.adminLogin = async (req, res) => {
@@ -119,6 +120,15 @@ exports.register = async (req, res) => {
       nom, email, password, role,
       entreprise, secteur, status,
     });
+
+    // Notifier les admins du nouvel utilisateur
+    if (role !== 'admin') {
+      await NotificationHelper.nouvelUtilisateur({
+        _id: user._id,
+        nom: user.nom,
+        role: user.role,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -269,6 +279,15 @@ exports.googleAuthCallback = async (req, res) => {
     }
 
     console.log(`Google Auth Success: ${user.email} (${user.role}) - Status: ${user.status}`);
+
+    // Notifier les admins pour les nouveaux utilisateurs (sauf admin)
+    if (user.role !== 'admin' && user.status === 'pending') {
+      await NotificationHelper.nouvelUtilisateur({
+        _id: user._id,
+        nom: user.nom,
+        role: user.role,
+      });
+    }
 
     // If user status is pending, redirect to pending page
     if (user.status === 'pending') {

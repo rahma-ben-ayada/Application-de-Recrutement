@@ -29,7 +29,10 @@ exports.getMesNotifications = async (req, res) => {
     const notifications = await Notification.find({
       utilisateur: req.user._id,
       isDeleted: false,
-      expireLe: { $gt: new Date() },
+      $or: [
+        { expireLe: null },  // Notifications sans expiration
+        { expireLe: { $gt: new Date() } },  // Notifications non expirées
+      ],
     })
       .sort({ createdAt: -1 })
       .limit(50);

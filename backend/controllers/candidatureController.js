@@ -1,6 +1,7 @@
 const Candidature = require('../models/Candidature');
 const Offre = require('../models/Offre');
 const Entretien = require('../models/Entretien');
+const NotificationHelper = require('../utils/notificationHelper');
 
 // ===== CANDIDAT — Postuler =====
 exports.postuler = async (req, res) => {
@@ -31,6 +32,16 @@ exports.postuler = async (req, res) => {
       video: video ? video.path : '',
       videoNom: video ? video.originalname : '',
     });
+
+    // Récupérer l'offre pour notifier le recruteur
+    const offre = await Offre.findById(offreId).populate('recruteur', 'nom');
+    if (offre?.recruteur?._id) {
+      await NotificationHelper.nouvelleCandidature(
+        offre.recruteur._id,
+        req.user.nom,
+        offre.titre
+      );
+    }
 
     res.status(201).json({
       success: true,
@@ -74,11 +85,22 @@ exports.getCandidaturesOffre = async (req, res) => {
 // ===== RECRUTEUR — Changer statut =====
 exports.updateStatut = async (req, res) => {
   try {
+    const oldCandidature = await Candidature.findById(req.params.id).populate('offre');
     const candidature = await Candidature.findByIdAndUpdate(
       req.params.id,
       { statut: req.body.statut },
       { new: true }
-    );
+    ).populate('offre');
+
+    // Notifier le candidat du changement de statut
+    if (oldCandidature.statut !== req.body.statut && candidature?.offre) {
+      await NotificationHelper.candidatureStatutChange(
+        candidature.candidat,
+        candidature.offre.titre,
+        req.body.statut
+      );
+    }
+
     res.status(200).json({ success: true, candidature });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

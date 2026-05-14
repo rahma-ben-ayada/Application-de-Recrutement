@@ -2,6 +2,7 @@ const Entretien = require('../models/Entretien');
 const Candidature = require('../models/Candidature');
 const Offre = require('../models/Offre');
 const User = require('../models/User');
+const NotificationHelper = require('../utils/notificationHelper');
 
 // ===== RECRUTEUR — Créer un entretien =====
 exports.creerEntretien = async (req, res) => {
@@ -46,6 +47,13 @@ exports.creerEntretien = async (req, res) => {
     // Mettre à jour le statut de la candidature
     await Candidature.findByIdAndUpdate(candidatureId, {
       statut: 'entretien',
+    });
+
+    // Notifier le candidat
+    await NotificationHelper.nouvelEntretien(candidature.candidat._id, {
+      _id: entretien._id,
+      offreTitre: candidature.offre.titre,
+      date: entretien.date,
     });
 
     const populated = await Entretien.findById(entretien._id)

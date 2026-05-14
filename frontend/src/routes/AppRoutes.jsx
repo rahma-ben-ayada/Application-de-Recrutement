@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { SidebarProvider } from '../context/SidebarContext';
 import { AlertProvider } from '../context/AlertContext';
+import { SocketProvider } from '../context/SocketContext';
 
 // Auth
 import Login            from '../pages/auth/Login';
@@ -44,6 +45,7 @@ import MesCandidatures    from '../pages/candidat/MesCandidatures';
 import MesEntretiens      from '../pages/candidat/MesEntretiens';
 import ProfilCandidat     from '../pages/candidat/Profil';
 import ParametresCandidat from '../pages/candidat/Parametres';
+import NotificationTest   from '../pages/NotificationTest';
 
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
@@ -54,7 +56,8 @@ export default function AppRoutes() {
       <SidebarProvider>
         <AuthProvider>
           <AlertProvider>
-            <Routes>
+            <SocketProvider>
+              <Routes>
 
           {/* Landing */}
           <Route path="/"     element={<LandingPage />} />
@@ -67,6 +70,9 @@ export default function AppRoutes() {
           <Route path="/entreprises"      element={<Entreprises />} />
           <Route path="/ressources"       element={<Ressources />} />
           <Route path="/article/:id"      element={<ArticleDetails />} />
+
+          {/* Test Page */}
+          <Route path="/test-notifications" element={<NotificationTest />} />
 
           {/* Auth */}
           <Route path="/login"             element={<Login />} />
@@ -112,7 +118,8 @@ export default function AppRoutes() {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
 
-            </Routes>
+              </Routes>
+            </SocketProvider>
           </AlertProvider>
         </AuthProvider>
       </SidebarProvider>

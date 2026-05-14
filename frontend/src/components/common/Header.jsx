@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SidebarToggle } from './Sidebar';
+import NotificationCenter from './NotificationCenter';
 import './Header.css';
 
 export default function Header({ title, onMenuToggle }) {
@@ -25,6 +26,9 @@ export default function Header({ title, onMenuToggle }) {
       </div>
 
       <div className="header-right">
+        {/* Notifications */}
+        <NotificationCenter />
+
         {/* Desktop user info */}
         <div className="header-user-info">
           <div className="header-user-name">{displayName}</div>

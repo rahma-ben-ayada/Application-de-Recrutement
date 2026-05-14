@@ -1,0 +1,569 @@
+/* ==================== Notification Center ==================== */
+/* ==================== Notification Center ==================== */
+.notification-center {
+  position: relative;
+  display: inline-block;
+}
+
+/* ==================== Notification Bell ==================== */
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  color: #6B7280;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+}
+
+.notification-bell:hover {
+  background-color: #F3F4F6;
+  color: #5B73F7;
+  transform: scale(1.05);
+}
+
+.notification-bell.active {
+  color: #5B73F7;
+  background-color: #EEF2FF;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  animation: badgeBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes badgeBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==================== Notification Dropdown ==================== */
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 420px;
+  max-width: 90vw;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E7EB;
+  z-index: 1000;
+  max-height: 650px;
+  display: flex;
+  flex-direction: column;
+  animation: dropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==================== Notification Header ==================== */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.notification-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notification-count {
+  background: linear-gradient(135deg, #5B73F7 0%, #4F63E6 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(91, 115, 247, 0.25);
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #F9FAFB;
+  border-color: #5B73F7;
+  color: #5B73F7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 115, 247, 0.15);
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================== Notification Filters ==================== */
+.notification-filters {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #F3F4F6;
+  overflow-x: auto;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  color: #6B7280;
+}
+
+.filter-btn:hover {
+  border-color: #5B73F7;
+  color: #5B73F7;
+  background-color: #FAFBFF;
+  transform: translateY(-1px);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #5B73F7 0%, #4F63E6 100%);
+  border-color: #5B73F7;
+  color: white;
+  box-shadow: 0 4px 12px rgba(91, 115, 247, 0.25);
+}
+
+.filter-icon {
+  font-size: 14px;
+}
+
+.filter-label {
+  font-size: 13px;
+}
+
+/* ==================== Notification List ==================== */
+.notification-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 450px;
+  padding: 8px 0;
+}
+
+.notification-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #9CA3AF;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.notification-empty p {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.notification-empty small {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+/* ==================== Notification Cards ==================== */
+.notification-card {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 16px;
+  animation: cardSlide 0.3s ease-out;
+}
+
+@keyframes cardSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification-card:hover {
+  background: linear-gradient(90deg, #FAFBFF 0%, #FFFFFF 100%);
+}
+
+.notification-card.unread {
+  background: linear-gradient(90deg, #EEF2FF 0%, #FFFFFF 100%);
+}
+
+.notification-card.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  background: linear-gradient(180deg, #5B73F7 0%, #4F63E6 100%);
+  border-radius: 4px 0 0 4px;
+}
+
+.notification-card-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.notification-card:hover .notification-card-wrapper {
+  padding-left: 20px;
+}
+
+.notification-card-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #5B73F7 0%, #4F63E6 100%);
+  border-radius: 4px 0 0 4px;
+  animation: indicatorPulse 2s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ==================== Notification Card Icon ==================== */
+.notification-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.notification-card:hover .notification-card-icon {
+  transform: scale(1.1) rotate(-5deg);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ==================== Notification Card Content ==================== */
+.notification-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.notification-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.notification-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.notification-card-type {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  background: #F3F4F6;
+  border-radius: 6px;
+}
+
+.notification-card-time {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.notification-card-message {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 400;
+}
+
+.notification-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #5B73F7;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.notification-card-link:hover {
+  color: #4F63E6;
+  gap: 8px;
+}
+
+.notification-card-link svg {
+  transition: transform 0.2s;
+}
+
+.notification-card:hover .notification-card-link svg {
+  transform: translateX(4px);
+}
+
+/* ==================== Notification Card Actions ==================== */
+.notification-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.notification-card:hover .notification-card-actions {
+  opacity: 1;
+}
+
+.notification-card-delete {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-card-delete:hover {
+  background-color: #FEE2E2;
+  color: #EF4444;
+  transform: scale(1.1);
+}
+
+.notification-card-delete svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================== Notification Footer ==================== */
+.notification-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #F3F4F6;
+}
+
+.view-all-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #5B73F7 0%, #4F63E6 100%);
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(91, 115, 247, 0.25);
+}
+
+.view-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(91, 115, 247, 0.35);
+}
+
+.view-all-btn svg {
+  transition: transform 0.2s;
+}
+
+.view-all-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* ==================== Scrollbar Styling ==================== */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #D1D5DB 0%, #9CA3AF 100%);
+  border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%);
+}
+
+/* ==================== Responsive Design ==================== */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: calc(100vw - 32px);
+    right: -16px;
+    max-width: none;
+    max-height: 80vh;
+  }
+
+  .notification-header {
+    padding: 16px;
+  }
+
+  .notification-header h3 {
+    font-size: 16px;
+  }
+
+  .notification-filters {
+    padding: 12px 16px;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .notification-card-wrapper {
+    padding: 16px;
+  }
+
+  .notification-card-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  .notification-card-title {
+    font-size: 14px;
+  }
+
+  .notification-card-message {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-card-wrapper {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .notification-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .notification-card-title {
+    font-size: 13px;
+  }
+
+  .notification-card-message {
+    font-size: 12px;
+    -webkit-line-clamp: 3;
+  }
+}
+
+

@@ -102,9 +102,7 @@
 
 @media (max-width: 640px) {
   .header-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 13px;
+    display: none;
   }
 }
 
@@ -134,8 +132,7 @@
 
 @media (max-width: 640px) {
   .header-logout-button {
-    padding: 6px 10px;
-    font-size: 11px;
+    display: none;
   }
 }
 
